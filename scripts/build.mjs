@@ -58,6 +58,7 @@ await build({
         dashboard: path.join(root, 'src/pages/dashboard/index.html'),
         popup: path.join(root, 'src/pages/popup/index.html'),
         overlay: path.join(root, 'src/pages/overlay/index.html'),
+        sidepanel: path.join(root, 'src/pages/sidepanel/index.html'),
       },
       output: { chunkFileNames: 'chunks/[name]-[hash].js', assetFileNames: 'assets/[name]-[hash][extname]' },
     },

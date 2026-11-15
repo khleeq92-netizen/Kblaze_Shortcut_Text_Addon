@@ -360,6 +360,45 @@ await test('WhatsApp-style isolated page: plain snippet + assistant popup window
   await until(async () => (await iso.evaluate(() => window.lexicalText())).split('Thank you').length === 3, 6000, 'second insertion');
   await iso.close();
 });
+await test('side panel: lists snippets, fills a gold signal form inline, live preview computes pips', async () => {
+  const sp = await ctx.newPage();
+  await sp.goto(ext('sidepanel/index.html'));
+  await sp.waitForSelector('.sp-item');
+  await sp.fill('.sp-filter input', 'Trading update');
+  await sp.click('.sp-item-head');
+  await sp.waitForSelector('.sp-open .qform');
+  const nums = sp.locator('.sp-open input[type=number]');
+  await nums.nth(0).fill('3800');
+  await nums.nth(1).fill('3790');
+  await nums.nth(2).fill('3830');
+  await until(async () => (await sp.textContent('.sp-open .preview-box')).includes('Risk/Reward: 1 : 3'), 3000, 'preview');
+  await sp.close();
+});
+await test('side panel insert path: rendered text is inserted into the focused field', async () => {
+  await page.bringToFront();
+  await clear();
+  await page.click('#textarea');
+  await page.keyboard.type('Note: ', { delay: 20 });
+  const r = await dash.evaluate(async () => {
+    const [tab] = await chrome.tabs.query({ url: 'http://127.0.0.1/*' });
+    return chrome.tabs.sendMessage(tab.id, { type: 'qth/insertText', payload: { text: 'From side panel\nline 2', html: '', isRich: false, cursorBack: null } }, { frameId: 0 });
+  });
+  assert(r && r.ok, JSON.stringify(r));
+  eq(await val('#textarea'), 'Note: From side panel\nline 2');
+});
+await test('setting "toolbar icon opens side panel" switches the action behaviour', async () => {
+  await setSettings({ actionOpens: 'sidepanel' });
+  await until(async () => (await dash.evaluate(() => chrome.action.getPopup({}))) === '', 3000, 'popup cleared');
+  await setSettings({ actionOpens: 'popup' });
+  await until(async () => (await dash.evaluate(() => chrome.action.getPopup({}))).endsWith('popup/index.html'), 3000, 'popup restored');
+});
+await test('templates: "Add all" creates a category folder with its snippets', async () => {
+  await dash.goto(ext('dashboard/index.html#/templates'));
+  await dash.click('.cat-bar button:has-text("Trade signals")');
+  await dash.click('button:has-text("Add all")');
+  await dash.waitForSelector('text=Added');
+  await until(async () => (await dash.$$('.snip')).length >= 3, 3000, 'folder list');
+});
 await test('popup renders snippet list', async () => {
   const p = await ctx.newPage();
   await p.goto(ext('popup/index.html'));

@@ -174,17 +174,39 @@ api.runtime.onMessage.addListener((msg: any, sender, sendResponse) => {
 });
 
 // ---- keyboard command + context menu: open the assistant in the active field
+// ---- side panel
+async function applyActionBehaviour() {
+  const s = await loadSettings();
+  const sp = (api as any).sidePanel;
+  if (!sp?.setPanelBehavior) return;
+  const panel = s.actionOpens === 'sidepanel';
+  await sp.setPanelBehavior({ openPanelOnActionClick: panel }).catch(() => {});
+  await api.action.setPopup({ popup: panel ? '' : 'popup/index.html' });
+}
+function openSidePanel(windowId?: number) {
+  const sp = (api as any).sidePanel;
+  if (sp?.open && windowId !== undefined) return sp.open({ windowId }).catch(() => {});
+  if ((api as any).sidebarAction?.open) return (api as any).sidebarAction.open();
+}
+api.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes[STORAGE_KEYS.settings]) applyActionBehaviour();
+});
+applyActionBehaviour();
+
 api.commands?.onCommand.addListener((command, tab) => {
+  if (command === 'open-side-panel') openSidePanel(tab?.windowId);
   if (command === 'open-assistant' && tab?.id !== undefined) api.tabs.sendMessage(tab.id, { type: MSG.openAssistant }).catch?.(() => {});
 });
 
 function setupMenus() {
   api.contextMenus.removeAll(() => {
     api.contextMenus.create({ id: 'qth-insert', title: 'Insert QuickText snippet…', contexts: ['editable'] });
+    if ((api as any).sidePanel?.open) api.contextMenus.create({ id: 'qth-sidepanel', title: 'Open QuickText side panel', contexts: ['all'] });
     api.contextMenus.create({ id: 'qth-new-from-selection', title: 'Create QuickText snippet from selection', contexts: ['selection'] });
   });
 }
 api.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === 'qth-sidepanel') { openSidePanel(tab?.windowId); return; }
   if (!tab?.id) return;
   if (info.menuItemId === 'qth-insert') api.tabs.sendMessage(tab.id, { type: MSG.openAssistant }, { frameId: info.frameId }).catch?.(() => {});
   if (info.menuItemId === 'qth-new-from-selection') {

@@ -24,7 +24,8 @@
     "storage",
     "contextMenus",
     "identity",
-    "scripting"
+    "scripting",
+    "sidePanel"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -56,6 +57,13 @@
     }
   ],
   "commands": {
+    "open-side-panel": {
+      "suggested_key": {
+        "default": "Alt+Shift+S",
+        "mac": "Alt+Shift+S"
+      },
+      "description": "Open the QuickText side panel"
+    },
     "open-assistant": {
       "suggested_key": {
         "default": "Alt+Shift+Q",
@@ -71,5 +79,8 @@
     "service_worker": "background.js",
     "type": "module"
   },
-  "minimum_chrome_version": "109"
+  "minimum_chrome_version": "114",
+  "side_panel": {
+    "default_path": "sidepanel/index.html"
+  }
 }

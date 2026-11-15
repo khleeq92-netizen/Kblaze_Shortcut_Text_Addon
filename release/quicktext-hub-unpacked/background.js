@@ -1,11 +1,11 @@
-const S = typeof browser < "u" && browser?.runtime ? browser : globalThis.chrome, Ot = "quicktext-hub-db", Ut = 1, Ae = {
+const k = typeof browser < "u" && browser?.runtime ? browser : globalThis.chrome, jt = "quicktext-hub-db", Gt = 1, we = {
   settings: "qth.settings",
   cloud: "qth.cloudConfig",
   revision: "qth.revision",
   sync: "qth.syncState",
   picked: "qth.pickedElement",
   pausedSites: "qth.pausedSites"
-}, W = {
+}, j = {
   getIndex: "qth/getIndex",
   expand: "qth/expand",
   claimForm: "qth/claimForm",
@@ -17,83 +17,83 @@ const S = typeof browser < "u" && browser?.runtime ? browser : globalThis.chrome
   picked: "qth/picked",
   // background -> content
   openAssistant: "qth/openAssistant"
-}, Ht = ["snippets", "folders", "tables", "workflows", "templates", "usage", "meta"];
+}, Vt = ["snippets", "folders", "tables", "workflows", "templates", "usage", "meta"];
 let ge = null;
 function Ke() {
   return ge || (ge = new Promise((e, t) => {
-    const n = indexedDB.open(Ot, Ut);
+    const n = indexedDB.open(jt, Gt);
     n.onupgradeneeded = () => {
-      const r = n.result;
-      for (const a of Ht)
-        r.objectStoreNames.contains(a) || (a === "usage" ? r.createObjectStore(a, { keyPath: "snippetId" }) : a === "meta" ? r.createObjectStore(a) : r.createObjectStore(a, { keyPath: "id" }).createIndex("updatedAt", "updatedAt"));
+      const a = n.result;
+      for (const r of Vt)
+        a.objectStoreNames.contains(r) || (r === "usage" ? a.createObjectStore(r, { keyPath: "snippetId" }) : r === "meta" ? a.createObjectStore(r) : a.createObjectStore(r, { keyPath: "id" }).createIndex("updatedAt", "updatedAt"));
     }, n.onsuccess = () => {
-      const r = n.result;
-      r.onversionchange = () => {
-        r.close(), ge = null;
-      }, e(r);
+      const a = n.result;
+      a.onversionchange = () => {
+        a.close(), ge = null;
+      }, e(a);
     }, n.onerror = () => t(n.error);
   }), ge);
 }
-function ft(e) {
+function yt(e) {
   return new Promise((t, n) => {
     e.onsuccess = () => t(e.result), e.onerror = () => n(e.error);
   });
 }
-async function ht(e) {
+async function gt(e) {
   const t = await Ke();
-  return ft(t.transaction(e, "readonly").objectStore(e).getAll());
+  return yt(t.transaction(e, "readonly").objectStore(e).getAll());
 }
-async function Ge(e, t) {
+async function Qe(e, t) {
   const n = await Ke();
-  return ft(n.transaction(e, "readonly").objectStore(e).get(t));
+  return yt(n.transaction(e, "readonly").objectStore(e).get(t));
 }
-async function gt(e, t, n) {
+async function bt(e, t, n) {
   if (!t.length) return;
-  const r = await Ke();
-  await new Promise((a, o) => {
-    const s = r.transaction(e, "readwrite"), c = s.objectStore(e);
-    for (const u of t) n !== void 0 ? c.put(u, n) : c.put(u);
-    s.oncomplete = () => a(), s.onerror = () => o(s.error), s.onabort = () => o(s.error);
+  const a = await Ke();
+  await new Promise((r, o) => {
+    const s = a.transaction(e, "readwrite"), l = s.objectStore(e);
+    for (const u of t) n !== void 0 ? l.put(u, n) : l.put(u);
+    s.oncomplete = () => r(), s.onerror = () => o(s.error), s.onabort = () => o(s.error);
   });
 }
-async function yt(e, t, n) {
-  return gt(e, [t], n);
+async function wt(e, t, n) {
+  return bt(e, [t], n);
 }
-const Bt = /* @__PURE__ */ new Set();
-async function wt(e, t = "local") {
-  Bt.forEach((n) => {
+const zt = /* @__PURE__ */ new Set();
+async function xt(e, t = "local") {
+  zt.forEach((n) => {
     try {
       n({ collections: e, origin: t });
     } catch {
     }
   });
   try {
-    S?.storage?.local && await new Promise((n) => S.storage.local.set({ [Ae.revision]: { at: Date.now(), collections: e, origin: t } }, () => n()));
+    k?.storage?.local && await new Promise((n) => k.storage.local.set({ [we.revision]: { at: Date.now(), collections: e, origin: t } }, () => n()));
   } catch {
   }
 }
-async function Le(e, t = !1) {
-  const n = await ht(e);
-  return t ? n : n.filter((r) => !r.deleted);
+async function Pe(e, t = !1) {
+  const n = await gt(e);
+  return t ? n : n.filter((a) => !a.deleted);
 }
-async function ke(e, t, n = {}) {
-  const r = Date.now(), a = t.map((o) => n.touch === !1 ? o : { ...o, createdAt: o.createdAt || r, updatedAt: r });
-  return await gt(e, a), await wt([e], n.origin || "local"), a;
+async function ve(e, t, n = {}) {
+  const a = Date.now(), r = t.map((o) => n.touch === !1 ? o : { ...o, createdAt: o.createdAt || a, updatedAt: a });
+  return await bt(e, r), await xt([e], n.origin || "local"), r;
 }
-async function bt(e) {
-  const t = /* @__PURE__ */ new Date(), n = t.toISOString().slice(0, 10), r = await Ge("usage", e) || { snippetId: e, count: 0, lastUsedAt: 0, daily: {} };
-  r.count++, r.lastUsedAt = t.getTime(), r.daily[n] = (r.daily[n] || 0) + 1;
-  const a = Object.keys(r.daily).sort();
-  for (; a.length > 90; ) delete r.daily[a.shift()];
-  await yt("usage", r), await wt(["usage"]);
+async function kt(e) {
+  const t = /* @__PURE__ */ new Date(), n = t.toISOString().slice(0, 10), a = await Qe("usage", e) || { snippetId: e, count: 0, lastUsedAt: 0, daily: {} };
+  a.count++, a.lastUsedAt = t.getTime(), a.daily[n] = (a.daily[n] || 0) + 1;
+  const r = Object.keys(a.daily).sort();
+  for (; r.length > 90; ) delete a.daily[r.shift()];
+  await wt("usage", a), await xt(["usage"]);
 }
-async function jt(e) {
-  return Ge("meta", e);
+async function Xt(e) {
+  return Qe("meta", e);
 }
-async function ot(e, t) {
-  return yt("meta", t, e);
+async function st(e, t) {
+  return wt("meta", t, e);
 }
-const it = {
+const lt = {
   theme: "system",
   expansionEnabled: !0,
   triggerMode: "immediate",
@@ -119,84 +119,85 @@ const it = {
   autoSync: !0,
   conflictStrategy: "newest",
   syncSettings: !0,
-  onboarded: !1
+  onboarded: !1,
+  actionOpens: "popup"
 };
-function Wt(e) {
-  return { ...it, ...e || {}, profile: { ...it.profile, ...e?.profile || {} } };
+function Kt(e) {
+  return { ...lt, ...e || {}, profile: { ...lt.profile, ...e?.profile || {} } };
 }
-async function zt() {
-  const e = await new Promise((t) => S.storage.local.get(Ae.settings, t));
-  return Wt(e?.[Ae.settings]);
+async function Mt() {
+  const e = await new Promise((t) => k.storage.local.get(we.settings, t));
+  return Kt(e?.[we.settings]);
 }
-function Vt(e, t) {
+function Qt(e, t) {
   const n = t.toLowerCase();
-  return e.blockedSites.some((r) => {
-    const a = r.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
-    return a && (n === a || n.endsWith("." + a));
+  return e.blockedSites.some((a) => {
+    const r = a.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+    return r && (n === r || n.endsWith("." + r));
   });
 }
-function ue(e) {
+function pe(e) {
   return e.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
-function Ue(e) {
-  return ue(e).replace(/\r?\n/g, "<br>");
+function He(e) {
+  return pe(e).replace(/\r?\n/g, "<br>");
 }
-const Kt = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", "#39": "'" };
-function We(e) {
+const Jt = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", "#39": "'" };
+function Ve(e) {
   return e.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+\d*);/gi, (t, n) => {
     if (n[0] === "#") {
-      const r = n[1].toLowerCase() === "x" ? parseInt(n.slice(2), 16) : parseInt(n.slice(1), 10);
-      return Number.isFinite(r) ? String.fromCodePoint(r) : t;
+      const a = n[1].toLowerCase() === "x" ? parseInt(n.slice(2), 16) : parseInt(n.slice(1), 10);
+      return Number.isFinite(a) ? String.fromCodePoint(a) : t;
     }
-    return Kt[n.toLowerCase()] ?? t;
+    return Jt[n.toLowerCase()] ?? t;
   });
 }
-const Gt = /^(p|div|h[1-6]|li|tr|blockquote|pre|ul|ol|table|section|article|header|footer)$/i;
-function st(e) {
+const Zt = /^(p|div|h[1-6]|li|tr|blockquote|pre|ul|ol|table|section|article|header|footer)$/i;
+function ct(e) {
   let t = "";
-  const n = [], r = /<\/?([a-zA-Z0-9]+)([^>]*)>|([^<]+)/g;
-  let a, o = null, s = "", c = !1;
+  const n = [], a = /<\/?([a-zA-Z0-9]+)([^>]*)>|([^<]+)/g;
+  let r, o = null, s = "", l = !1;
   const u = () => {
     t && !t.endsWith(`
 `) && (t += `
 `);
   };
-  for (; a = r.exec(e); ) {
-    if (a[3] !== void 0) {
-      const T = We(a[3].replace(/[\r\n\t ]+/g, " "));
-      t += T, c && (s += T);
+  for (; r = a.exec(e); ) {
+    if (r[3] !== void 0) {
+      const S = Ve(r[3].replace(/[\r\n\t ]+/g, " "));
+      t += S, l && (s += S);
       continue;
     }
-    const l = a[1].toLowerCase(), D = a[0][1] === "/";
-    if (l === "br") {
+    const c = r[1].toLowerCase(), D = r[0][1] === "/";
+    if (c === "br") {
       t += `
 `;
       continue;
     }
-    if (l === "a") {
+    if (c === "a") {
       if (D)
-        o && s.trim() !== o && !/^mailto:/i.test(o) && (t += ` (${o})`), c = !1, o = null;
+        o && s.trim() !== o && !/^mailto:/i.test(o) && (t += ` (${o})`), l = !1, o = null;
       else {
-        const T = /href\s*=\s*["']([^"']*)["']/i.exec(a[2]);
-        o = T ? We(T[1]) : null, c = !0, s = "";
+        const S = /href\s*=\s*["']([^"']*)["']/i.exec(r[2]);
+        o = S ? Ve(S[1]) : null, l = !0, s = "";
       }
       continue;
     }
-    if (l === "ul" || l === "ol") {
-      D ? (n.pop(), u()) : (u(), n.push({ ordered: l === "ol", n: 0 }));
+    if (c === "ul" || c === "ol") {
+      D ? (n.pop(), u()) : (u(), n.push({ ordered: c === "ol", n: 0 }));
       continue;
     }
-    if (l === "li" && !D) {
+    if (c === "li" && !D) {
       u();
-      const T = n[n.length - 1];
-      t += "  ".repeat(Math.max(0, n.length - 1)) + (T?.ordered ? `${++T.n}. ` : "• ");
+      const S = n[n.length - 1];
+      t += "  ".repeat(Math.max(0, n.length - 1)) + (S?.ordered ? `${++S.n}. ` : "• ");
       continue;
     }
-    if (l === "td" || l === "th") {
+    if (c === "td" || c === "th") {
       D && (t += "	");
       continue;
     }
-    Gt.test(l) && u();
+    Zt.test(c) && u();
   }
   return t.replace(/\t\n/g, `
 `).replace(/[  ]+\n/g, `
@@ -204,196 +205,196 @@ function st(e) {
 
 `).replace(/^\n+|\n+$/g, "");
 }
-class X extends Error {
+class ee extends Error {
   constructor(t, n) {
     super(t), this.pos = n;
   }
 }
-function Qt(e, t = !1) {
+function en(e, t = !1) {
   const n = [];
-  let r = 0, a = "", o = 0;
-  for (; r < e.length; ) {
-    if (e[r] === "\\" && e.startsWith("{{", r + 1)) {
-      a += "{{", r += 3;
+  let a = 0, r = "", o = 0;
+  for (; a < e.length; ) {
+    if (e[a] === "\\" && e.startsWith("{{", a + 1)) {
+      r += "{{", a += 3;
       continue;
     }
-    if (e.startsWith("{{", r)) {
-      let s = r + 2, c = null;
+    if (e.startsWith("{{", a)) {
+      let s = a + 2, l = null;
       for (; s < e.length; s++) {
-        const l = e[s];
-        if (c) {
-          l === "\\" ? s++ : l === c && (c = null);
+        const c = e[s];
+        if (l) {
+          c === "\\" ? s++ : c === l && (l = null);
           continue;
         }
-        if (l === '"' || l === "'") c = l;
-        else if (l === "}" && e[s + 1] === "}") break;
+        if (c === '"' || c === "'") l = c;
+        else if (c === "}" && e[s + 1] === "}") break;
       }
       if (s >= e.length) {
-        const l = e.indexOf("}}", r + 2);
-        if (l < 0) throw new X('A command starting with "{{" is never closed with "}}"', r);
-        s = l;
+        const c = e.indexOf("}}", a + 2);
+        if (c < 0) throw new ee('A command starting with "{{" is never closed with "}}"', a);
+        s = c;
       }
-      if (a && n.push({ type: "text", value: a, start: o, end: r }), e.slice(r + 2, s).includes("{{")) throw new X('Commands cannot be nested inside other commands. Use a formula instead, e.g. {{link: ="https://site.com/" & id}}', r);
-      let u = e.slice(r + 2, s);
-      t && (u = We(u.replace(/<[^>]*>/g, "")).replace(/\u00a0/g, " ")), n.push({ type: "cmd", value: u.trim(), start: r, end: s + 2 }), r = s + 2, a = "", o = r;
+      if (r && n.push({ type: "text", value: r, start: o, end: a }), e.slice(a + 2, s).includes("{{")) throw new ee('Commands cannot be nested inside other commands. Use a formula instead, e.g. {{link: ="https://site.com/" & id}}', a);
+      let u = e.slice(a + 2, s);
+      t && (u = Ve(u.replace(/<[^>]*>/g, "")).replace(/\u00a0/g, " ")), n.push({ type: "cmd", value: u.trim(), start: a, end: s + 2 }), a = s + 2, r = "", o = a;
       continue;
     }
-    a += e[r++];
+    r += e[a++];
   }
-  return a && n.push({ type: "text", value: a, start: o, end: e.length }), n;
+  return r && n.push({ type: "text", value: r, start: o, end: e.length }), n;
 }
-function ye(e, t) {
+function xe(e, t) {
   const n = [];
-  let r = "", a = null, o = 0;
+  let a = "", r = null, o = 0;
   for (let s = 0; s < e.length; s++) {
-    const c = e[s];
-    if (a) {
-      r += c, c === "\\" ? r += e[++s] ?? "" : c === a && (a = null);
+    const l = e[s];
+    if (r) {
+      a += l, l === "\\" ? a += e[++s] ?? "" : l === r && (r = null);
       continue;
     }
-    if (c === '"' || c === "'") {
-      a = c, r += c;
+    if (l === '"' || l === "'") {
+      r = l, a += l;
       continue;
     }
-    if ((c === "(" || c === "[") && o++, (c === ")" || c === "]") && o--, c === t && o <= 0) {
-      n.push(r), r = "";
+    if ((l === "(" || l === "[") && o++, (l === ")" || l === "]") && o--, l === t && o <= 0) {
+      n.push(a), a = "";
       continue;
     }
-    r += c;
+    a += l;
   }
-  return n.push(r), n;
+  return n.push(a), n;
 }
-function xt(e) {
+function Tt(e) {
   const t = e.trim();
   return t.length >= 2 && (t[0] === '"' && t.endsWith('"') || t[0] === "'" && t.endsWith("'")) ? t.slice(1, -1).replace(/\\(["'\\])/g, "$1").replace(/\\n/g, `
 `) : t;
 }
-function Jt(e) {
+function tn(e) {
   const t = e.trim();
   if (t.startsWith("=")) {
-    const c = ye(t.slice(1), ";");
-    return { name: "=", args: { main: c[0].trim(), ...ct(c.slice(1)) } };
+    const l = xe(t.slice(1), ";");
+    return { name: "=", args: { main: l[0].trim(), ...dt(l.slice(1)) } };
   }
   if (t.startsWith("#")) return { name: "#", args: { main: t.slice(1), opts: {}, flags: /* @__PURE__ */ new Set() } };
-  const n = ye(t, ";"), r = n[0].trim(), a = /^([A-Za-z][\w-]*)\s*:\s*([\s\S]*)$/.exec(r);
+  const n = xe(t, ";"), a = n[0].trim(), r = /^([A-Za-z][\w-]*)\s*:\s*([\s\S]*)$/.exec(a);
   let o, s = "";
-  if (a)
-    o = a[1].toLowerCase(), s = a[2].trim();
-  else if (/^[\p{L}_][\p{L}\p{N}_.]*$/u.test(r)) {
-    const c = r.toLowerCase();
-    ["else", "endif", "endrepeat", "endsection", "cursor", "today", "now", "time", "date", "index"].includes(c) && !r.includes(".") ? o = c : (o = "ref", s = r);
+  if (r)
+    o = r[1].toLowerCase(), s = r[2].trim();
+  else if (/^[\p{L}_][\p{L}\p{N}_.]*$/u.test(a)) {
+    const l = a.toLowerCase();
+    ["else", "endif", "endrepeat", "endsection", "cursor", "today", "now", "time", "date", "index"].includes(l) && !a.includes(".") ? o = l : (o = "ref", s = a);
   } else {
-    const c = /^([A-Za-z][\w-]*)\s+([\s\S]*)$/.exec(r);
-    if (c && ["if", "elseif", "repeat", "section"].includes(c[1].toLowerCase()))
-      o = c[1].toLowerCase(), s = c[2].trim();
-    else throw new X(`Cannot understand command "{{${e}}}"`);
+    const l = /^([A-Za-z][\w-]*)\s+([\s\S]*)$/.exec(a);
+    if (l && ["if", "elseif", "repeat", "section"].includes(l[1].toLowerCase()))
+      o = l[1].toLowerCase(), s = l[2].trim();
+    else throw new ee(`Cannot understand command "{{${e}}}"`);
   }
-  return { name: o, args: { main: o === "if" || o === "elseif" || o === "set" ? s : xt(s), ...ct(n.slice(1)) } };
+  return { name: o, args: { main: o === "if" || o === "elseif" || o === "set" ? s : Tt(s), ...dt(n.slice(1)) } };
 }
-function ct(e) {
+function dt(e) {
   const t = {}, n = /* @__PURE__ */ new Set();
-  for (const r of e) {
-    const a = r.trim();
-    if (!a) continue;
-    const o = a.indexOf("=");
-    o > 0 && /^[\w-]+$/.test(a.slice(0, o).trim()) ? t[a.slice(0, o).trim().toLowerCase()] = xt(a.slice(o + 1)) : n.add(a.toLowerCase());
+  for (const a of e) {
+    const r = a.trim();
+    if (!r) continue;
+    const o = r.indexOf("=");
+    o > 0 && /^[\w-]+$/.test(r.slice(0, o).trim()) ? t[r.slice(0, o).trim().toLowerCase()] = Tt(r.slice(o + 1)) : n.add(r.toLowerCase());
   }
   return { opts: t, flags: n };
 }
 function ze(e, t = !1) {
-  const n = Qt(e, t);
-  let r = 0;
-  function a(s) {
-    const c = [];
-    for (; r < n.length; ) {
-      const u = n[r++];
+  const n = en(e, t);
+  let a = 0;
+  function r(s) {
+    const l = [];
+    for (; a < n.length; ) {
+      const u = n[a++];
       if (u.type === "text") {
-        c.push({ k: "text", text: u.value });
+        l.push({ k: "text", text: u.value });
         continue;
       }
       if (!u.value) {
-        c.push({ k: "text", text: "" });
+        l.push({ k: "text", text: "" });
         continue;
       }
-      const { name: l, args: D } = Jt(u.value);
-      if (s.includes(l)) return { nodes: c, term: { name: l, args: D, end: u.end } };
-      if (l === "if") {
-        const T = [];
-        let w = D.main, A = null;
+      const { name: c, args: D } = tn(u.value);
+      if (s.includes(c)) return { nodes: l, term: { name: c, args: D, end: u.end } };
+      if (c === "if") {
+        const S = [];
+        let b = D.main, A = null;
         for (; ; ) {
-          const L = a(["elseif", "else", "endif"]);
-          if (!L.term) throw new X(`{{if: ${D.main}}} is missing {{endif}}`, u.start);
-          if (T.push({ cond: w, body: L.nodes }), L.term.name === "endif") break;
-          if (L.term.name === "elseif") {
-            w = L.term.args.main;
+          const q = r(["elseif", "else", "endif"]);
+          if (!q.term) throw new ee(`{{if: ${D.main}}} is missing {{endif}}`, u.start);
+          if (S.push({ cond: b, body: q.nodes }), q.term.name === "endif") break;
+          if (q.term.name === "elseif") {
+            b = q.term.args.main;
             continue;
           }
-          const j = a(["endif"]);
-          if (!j.term) throw new X(`{{if: ${D.main}}} is missing {{endif}}`, u.start);
-          A = j.nodes;
+          const W = r(["endif"]);
+          if (!W.term) throw new ee(`{{if: ${D.main}}} is missing {{endif}}`, u.start);
+          A = W.nodes;
           break;
         }
-        if (T.some((L) => !L.cond.trim())) throw new X("{{if}} / {{elseif}} needs a condition, e.g. {{if: amount > 100}}", u.start);
-        c.push({ k: "if", branches: T, elseBody: A, start: u.start });
+        if (S.some((q) => !q.cond.trim())) throw new ee("{{if}} / {{elseif}} needs a condition, e.g. {{if: amount > 100}}", u.start);
+        l.push({ k: "if", branches: S, elseBody: A, start: u.start });
         continue;
       }
-      if (l === "repeat" || l === "section") {
-        const T = l === "repeat" ? "endrepeat" : "endsection", w = a([T]);
-        if (!w.term) throw new X(`{{${l}: ${D.main}}} is missing {{${T}}}`, u.start);
-        c.push({ k: l, args: D, body: w.nodes, start: u.start, end: u.end, raw: u.value });
+      if (c === "repeat" || c === "section") {
+        const S = c === "repeat" ? "endrepeat" : "endsection", b = r([S]);
+        if (!b.term) throw new ee(`{{${c}: ${D.main}}} is missing {{${S}}}`, u.start);
+        l.push({ k: c, args: D, body: b.nodes, start: u.start, end: u.end, raw: u.value });
         continue;
       }
-      if (["else", "elseif", "endif", "endrepeat", "endsection"].includes(l)) throw new X(`{{${l}}} without a matching opening command`, u.start);
-      c.push({ k: "cmd", name: l, args: D, raw: u.value, start: u.start, end: u.end });
+      if (["else", "elseif", "endif", "endrepeat", "endsection"].includes(c)) throw new ee(`{{${c}}} without a matching opening command`, u.start);
+      l.push({ k: "cmd", name: c, args: D, raw: u.value, start: u.start, end: u.end });
     }
-    return { nodes: c, term: null };
+    return { nodes: l, term: null };
   }
-  return a([]).nodes;
+  return r([]).nodes;
 }
-const lt = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], dt = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], J = (e, t = 2) => String(e).padStart(t, "0"), Zt = (e) => {
+const ut = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], pt = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], Q = (e, t = 2) => String(e).padStart(t, "0"), nn = (e) => {
   const t = ["th", "st", "nd", "rd"], n = e % 100;
   return e + (t[(n - 20) % 10] || t[n] || t[0]);
 };
-function z(e, t) {
+function G(e, t) {
   if (!(e instanceof Date) || isNaN(e.getTime())) return "";
   const n = {
     YYYY: () => String(e.getFullYear()),
     YY: () => String(e.getFullYear()).slice(-2),
-    MMMM: () => lt[e.getMonth()],
-    MMM: () => lt[e.getMonth()].slice(0, 3),
-    MM: () => J(e.getMonth() + 1),
+    MMMM: () => ut[e.getMonth()],
+    MMM: () => ut[e.getMonth()].slice(0, 3),
+    MM: () => Q(e.getMonth() + 1),
     M: () => String(e.getMonth() + 1),
-    Do: () => Zt(e.getDate()),
-    DD: () => J(e.getDate()),
+    Do: () => nn(e.getDate()),
+    DD: () => Q(e.getDate()),
     D: () => String(e.getDate()),
-    dddd: () => dt[e.getDay()],
-    ddd: () => dt[e.getDay()].slice(0, 3),
-    HH: () => J(e.getHours()),
+    dddd: () => pt[e.getDay()],
+    ddd: () => pt[e.getDay()].slice(0, 3),
+    HH: () => Q(e.getHours()),
     H: () => String(e.getHours()),
-    hh: () => J(e.getHours() % 12 || 12),
+    hh: () => Q(e.getHours() % 12 || 12),
     h: () => String(e.getHours() % 12 || 12),
-    mm: () => J(e.getMinutes()),
+    mm: () => Q(e.getMinutes()),
     m: () => String(e.getMinutes()),
-    ss: () => J(e.getSeconds()),
+    ss: () => Q(e.getSeconds()),
     s: () => String(e.getSeconds()),
     A: () => e.getHours() < 12 ? "AM" : "PM",
     a: () => e.getHours() < 12 ? "am" : "pm",
     Q: () => String(Math.floor(e.getMonth() / 3) + 1)
   };
-  return t.replace(/\[([^\]]*)\]|YYYY|YY|MMMM|MMM|MM|M|Do|DD|D|dddd|ddd|HH|H|hh|h|mm|m|ss|s|A|a|Q/g, (r, a) => a !== void 0 ? a : n[r]());
+  return t.replace(/\[([^\]]*)\]|YYYY|YY|MMMM|MMM|MM|M|Do|DD|D|dddd|ddd|HH|H|hh|h|mm|m|ss|s|A|a|Q/g, (a, r) => r !== void 0 ? r : n[a]());
 }
 function me(e, t) {
-  const n = new Date(e.getTime()), r = /([+-])\s*(\d+)\s*(y|M|w|d|h|m|s|bd)/g;
-  let a, o = !1;
-  for (; a = r.exec(t); ) {
+  const n = new Date(e.getTime()), a = /([+-])\s*(\d+)\s*(y|M|w|d|h|m|s|bd)/g;
+  let r, o = !1;
+  for (; r = a.exec(t); ) {
     o = !0;
-    const s = parseInt(a[2], 10) * (a[1] === "-" ? -1 : 1);
-    switch (a[3]) {
+    const s = parseInt(r[2], 10) * (r[1] === "-" ? -1 : 1);
+    switch (r[3]) {
       case "y":
         n.setFullYear(n.getFullYear() + s);
         break;
       case "M":
-        Qe(n, s);
+        Je(n, s);
         break;
       case "w":
         n.setDate(n.getDate() + 7 * s);
@@ -402,7 +403,7 @@ function me(e, t) {
         n.setDate(n.getDate() + s);
         break;
       case "bd":
-        kt(n, s);
+        vt(n, s);
         break;
       case "h":
         n.setHours(n.getHours() + s);
@@ -418,94 +419,94 @@ function me(e, t) {
   if (!o && t.trim()) throw new Error(`Invalid date shift "${t}". Use e.g. +3d, -1w, +1M, +2bd`);
   return n;
 }
-function Qe(e, t) {
+function Je(e, t) {
   const n = e.getDate();
   e.setDate(1), e.setMonth(e.getMonth() + t);
-  const r = new Date(e.getFullYear(), e.getMonth() + 1, 0).getDate();
-  return e.setDate(Math.min(n, r)), e;
+  const a = new Date(e.getFullYear(), e.getMonth() + 1, 0).getDate();
+  return e.setDate(Math.min(n, a)), e;
 }
-function kt(e, t) {
+function vt(e, t) {
   const n = t < 0 ? -1 : 1;
-  let r = Math.abs(t);
-  for (; r > 0; )
-    e.setDate(e.getDate() + n), e.getDay() !== 0 && e.getDay() !== 6 && r--;
+  let a = Math.abs(t);
+  for (; a > 0; )
+    e.setDate(e.getDate() + n), e.getDay() !== 0 && e.getDay() !== 6 && a--;
   return e;
 }
-function H(e, t = /* @__PURE__ */ new Date()) {
+function O(e, t = /* @__PURE__ */ new Date()) {
   if (e instanceof Date) return isNaN(e.getTime()) ? null : e;
   if (typeof e == "number") return new Date(e);
   if (typeof e != "string") return null;
   const n = e.trim();
   if (!n) return null;
-  const r = n.toLowerCase(), a = new Date(t.getFullYear(), t.getMonth(), t.getDate());
-  if (r === "now") return new Date(t.getTime());
-  if (r === "today") return a;
-  if (r === "tomorrow") return me(a, "+1d");
-  if (r === "yesterday") return me(a, "-1d");
-  if (/^[+-]\s*\d/.test(n)) return me(/[hms]\b/.test(n) && !/bd/.test(n) ? t : a, n);
+  const a = n.toLowerCase(), r = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+  if (a === "now") return new Date(t.getTime());
+  if (a === "today") return r;
+  if (a === "tomorrow") return me(r, "+1d");
+  if (a === "yesterday") return me(r, "-1d");
+  if (/^[+-]\s*\d/.test(n)) return me(/[hms]\b/.test(n) && !/bd/.test(n) ? t : r, n);
   const o = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?$/.exec(n);
   if (o) return new Date(+o[1], +o[2] - 1, +o[3], +(o[4] || 0), +(o[5] || 0), +(o[6] || 0));
   const s = /^(\d{1,2}):(\d{2})(?:\s*([ap]m))?$/i.exec(n);
   if (s) {
-    let l = +s[1];
-    return s[3] && (l = l % 12 + (s[3].toLowerCase() === "pm" ? 12 : 0)), new Date(t.getFullYear(), t.getMonth(), t.getDate(), l, +s[2]);
+    let c = +s[1];
+    return s[3] && (c = c % 12 + (s[3].toLowerCase() === "pm" ? 12 : 0)), new Date(t.getFullYear(), t.getMonth(), t.getDate(), c, +s[2]);
   }
-  const c = /^(\d{1,2})[/.](\d{1,2})[/.](\d{4})$/.exec(n);
-  if (c) return new Date(+c[3], +c[2] - 1, +c[1]);
+  const l = /^(\d{1,2})[/.](\d{1,2})[/.](\d{4})$/.exec(n);
+  if (l) return new Date(+l[3], +l[2] - 1, +l[1]);
   const u = Date.parse(n);
   return isNaN(u) ? null : new Date(u);
 }
-function qe(e) {
-  return `${e.getFullYear()}-${J(e.getMonth() + 1)}-${J(e.getDate())}`;
+function Ie(e) {
+  return `${e.getFullYear()}-${Q(e.getMonth() + 1)}-${Q(e.getDate())}`;
 }
-function ut(e) {
-  return `${J(e.getHours())}:${J(e.getMinutes())}`;
+function mt(e) {
+  return `${Q(e.getHours())}:${Q(e.getMinutes())}`;
 }
-function Mt(e, t, n = "days") {
-  const r = t.getTime() - e.getTime();
+function Dt(e, t, n = "days") {
+  const a = t.getTime() - e.getTime();
   switch (n.toLowerCase()) {
     case "seconds":
-      return Math.floor(r / 1e3);
+      return Math.floor(a / 1e3);
     case "minutes":
-      return Math.floor(r / 6e4);
+      return Math.floor(a / 6e4);
     case "hours":
-      return Math.floor(r / 36e5);
+      return Math.floor(a / 36e5);
     case "weeks":
-      return Math.floor(r / (7 * 864e5));
+      return Math.floor(a / (7 * 864e5));
     case "months":
       return (t.getFullYear() - e.getFullYear()) * 12 + (t.getMonth() - e.getMonth()) - (t.getDate() < e.getDate() ? 1 : 0);
     case "years":
       return Math.floor(((t.getFullYear() - e.getFullYear()) * 12 + (t.getMonth() - e.getMonth()) - (t.getDate() < e.getDate() ? 1 : 0)) / 12);
     default: {
-      const a = Date.UTC(e.getFullYear(), e.getMonth(), e.getDate()), o = Date.UTC(t.getFullYear(), t.getMonth(), t.getDate());
-      return Math.round((o - a) / 864e5);
+      const r = Date.UTC(e.getFullYear(), e.getMonth(), e.getDate()), o = Date.UTC(t.getFullYear(), t.getMonth(), t.getDate());
+      return Math.round((o - r) / 864e5);
     }
   }
 }
-function $(e) {
+function I(e) {
   return Array.isArray(e);
 }
-function $e(e) {
+function Ye(e) {
   return !!e && typeof e == "object" && !Array.isArray(e) && !(e instanceof Date);
 }
-function P(e) {
+function E(e) {
   if (typeof e == "number") return e;
   if (typeof e == "boolean") return e ? 1 : 0;
   if (e == null) return 0;
   if (e instanceof Date) return e.getTime();
-  if (Array.isArray(e)) return e.length === 1 ? P(e[0]) : NaN;
+  if (Array.isArray(e)) return e.length === 1 ? E(e[0]) : NaN;
   if (typeof e == "string") {
     const t = e.trim();
     if (t === "") return 0;
-    const n = t.endsWith("%"), r = t.replace(/[%\s ]/g, "").replace(/^[^\d+\-.(]+/, "").replace(/[^\d.]+$/, "").replace(/,(?=\d{3}(\D|$))/g, ""), a = /^\(.*\)$/.test(r), o = Number(a ? "-" + r.slice(1, -1) : r);
-    return r === "" || isNaN(o) ? NaN : n ? o / 100 : o;
+    const n = t.endsWith("%"), a = t.replace(/[%\s ]/g, "").replace(/^[^\d+\-.(]+/, "").replace(/[^\d.]+$/, "").replace(/,(?=\d{3}(\D|$))/g, ""), r = /^\(.*\)$/.test(a), o = Number(r ? "-" + a.slice(1, -1) : a);
+    return a === "" || isNaN(o) ? NaN : n ? o / 100 : o;
   }
   return NaN;
 }
-function we(e) {
-  return typeof e == "number" ? Number.isFinite(e) : typeof e == "string" ? e.trim() !== "" && !isNaN(P(e)) : !1;
+function ke(e) {
+  return typeof e == "number" ? Number.isFinite(e) : typeof e == "string" ? e.trim() !== "" && !isNaN(E(e)) : !1;
 }
-function F(e) {
+function Y(e) {
   if (e == null) return !1;
   if (typeof e == "boolean") return e;
   if (typeof e == "number") return e !== 0 && !isNaN(e);
@@ -515,120 +516,120 @@ function F(e) {
   }
   return Array.isArray(e) ? e.length > 0 : !0;
 }
-function vt(e) {
+function St(e) {
   if (!Number.isFinite(e)) return isNaN(e) ? "NaN" : e > 0 ? "∞" : "-∞";
   const t = Math.round(e * 1e10) / 1e10;
   return String(t);
 }
-function p(e, t) {
+function m(e, t) {
   if (e == null) return "";
   if (typeof e == "string") return e;
-  if (typeof e == "number") return vt(e);
+  if (typeof e == "number") return St(e);
   if (typeof e == "boolean") return e ? "yes" : "no";
   if (e instanceof Date) {
     const n = e.getHours() !== 0 || e.getMinutes() !== 0;
-    return z(e, t ? n && e.__time ? `${t.dateFormat} ${t.timeFormat}` : t.dateFormat : "YYYY-MM-DD");
+    return G(e, t ? n && e.__time ? `${t.dateFormat} ${t.timeFormat}` : t.dateFormat : "YYYY-MM-DD");
   }
-  return Array.isArray(e) ? e.map((n) => p(n, t)).join(", ") : $e(e) ? "__label" in e ? p(e.__label, t) : Object.values(e).filter((n) => typeof n != "object").map((n) => p(n, t)).join(", ") : String(e);
+  return Array.isArray(e) ? e.map((n) => m(n, t)).join(", ") : Ye(e) ? "__label" in e ? m(e.__label, t) : Object.values(e).filter((n) => typeof n != "object").map((n) => m(n, t)).join(", ") : String(e);
 }
-function Q(e, t, n) {
-  if (!t) return p(e, n);
-  const [r, ...a] = t.split(":"), o = a.join(":").trim(), s = r.trim().toLowerCase(), c = () => {
-    const u = P(e);
-    if (isNaN(u)) throw new Error(`Cannot format "${p(e)}" as a number`);
+function K(e, t, n) {
+  if (!t) return m(e, n);
+  const [a, ...r] = t.split(":"), o = r.join(":").trim(), s = a.trim().toLowerCase(), l = () => {
+    const u = E(e);
+    if (isNaN(u)) throw new Error(`Cannot format "${m(e)}" as a number`);
     return u;
   };
   switch (s) {
     case "currency":
-      return new Intl.NumberFormat(n.locale, { style: "currency", currency: (o || n.currency).toUpperCase() }).format(c());
+      return new Intl.NumberFormat(n.locale, { style: "currency", currency: (o || n.currency).toUpperCase() }).format(l());
     case "number":
     case "decimal": {
       const u = o === "" ? void 0 : parseInt(o, 10);
-      return new Intl.NumberFormat(n.locale, u === void 0 ? { maximumFractionDigits: 10 } : { minimumFractionDigits: u, maximumFractionDigits: u }).format(c());
+      return new Intl.NumberFormat(n.locale, u === void 0 ? { maximumFractionDigits: 10 } : { minimumFractionDigits: u, maximumFractionDigits: u }).format(l());
     }
     case "integer":
-      return new Intl.NumberFormat(n.locale, { maximumFractionDigits: 0 }).format(c());
+      return new Intl.NumberFormat(n.locale, { maximumFractionDigits: 0 }).format(l());
     case "plain":
-      return vt(c());
+      return St(l());
     case "percent": {
       const u = o === "" ? 0 : parseInt(o, 10);
-      return new Intl.NumberFormat(n.locale, { style: "percent", minimumFractionDigits: u, maximumFractionDigits: u }).format(c());
+      return new Intl.NumberFormat(n.locale, { style: "percent", minimumFractionDigits: u, maximumFractionDigits: u }).format(l());
     }
     case "upper":
-      return p(e, n).toUpperCase();
+      return m(e, n).toUpperCase();
     case "lower":
-      return p(e, n).toLowerCase();
+      return m(e, n).toLowerCase();
     case "title":
-      return Je(p(e, n));
+      return Ze(m(e, n));
     case "date": {
-      const u = H(e);
-      return u ? z(u, o || n.dateFormat) : p(e, n);
+      const u = O(e);
+      return u ? G(u, o || n.dateFormat) : m(e, n);
     }
     case "time": {
-      const u = H(e);
-      return u ? z(u, o || n.timeFormat) : p(e, n);
+      const u = O(e);
+      return u ? G(u, o || n.timeFormat) : m(e, n);
     }
     case "datetime": {
-      const u = H(e);
-      return u ? z(u, o || `${n.dateFormat} ${n.timeFormat}`) : p(e, n);
+      const u = O(e);
+      return u ? G(u, o || `${n.dateFormat} ${n.timeFormat}`) : m(e, n);
     }
     default: {
-      const u = e instanceof Date ? e : typeof e == "string" ? H(e) : null;
-      return u ? z(u, t) : p(e, n);
+      const u = e instanceof Date ? e : typeof e == "string" ? O(e) : null;
+      return u ? G(u, t) : m(e, n);
     }
   }
 }
-function Je(e) {
-  return e.toLowerCase().replace(/(^|[\s\-_/(])(\p{L})/gu, (t, n, r) => n + r.toUpperCase());
+function Ze(e) {
+  return e.toLowerCase().replace(/(^|[\s\-_/(])(\p{L})/gu, (t, n, a) => n + a.toUpperCase());
 }
-class Y extends Error {
+class R extends Error {
 }
-function Xt(e) {
+function an(e) {
   const t = [];
   let n = 0;
   for (; n < e.length; ) {
-    const r = e[n];
-    if (/\s/.test(r)) {
+    const a = e[n];
+    if (/\s/.test(a)) {
       n++;
       continue;
     }
-    if (/\d/.test(r) || r === "." && /\d/.test(e[n + 1] || "")) {
+    if (/\d/.test(a) || a === "." && /\d/.test(e[n + 1] || "")) {
       const o = /^\d*\.?\d+(?:[eE][+-]?\d+)?/.exec(e.slice(n));
       t.push({ k: "num", v: o[0], pos: n }), n += o[0].length;
       continue;
     }
-    if (r === '"' || r === "'" || r === "“" || r === "”") {
-      const o = r === "“" ? "”" : r;
-      let s = n + 1, c = "";
+    if (a === '"' || a === "'" || a === "“" || a === "”") {
+      const o = a === "“" ? "”" : a;
+      let s = n + 1, l = "";
       for (; s < e.length && e[s] !== o && !(o === "”" && e[s] === '"'); )
         if (e[s] === "\\" && s + 1 < e.length) {
           const u = e[s + 1];
-          c += u === "n" ? `
+          l += u === "n" ? `
 ` : u === "t" ? "	" : u, s += 2;
-        } else c += e[s++];
-      if (s >= e.length) throw new Y(`Unterminated text starting at position ${n + 1}`);
-      t.push({ k: "str", v: c, pos: n }), n = s + 1;
+        } else l += e[s++];
+      if (s >= e.length) throw new R(`Unterminated text starting at position ${n + 1}`);
+      t.push({ k: "str", v: l, pos: n }), n = s + 1;
       continue;
     }
-    if (/[\p{L}_$]/u.test(r)) {
+    if (/[\p{L}_$]/u.test(a)) {
       const o = /^[\p{L}_$][\p{L}\p{N}_$]*/u.exec(e.slice(n));
       t.push({ k: "id", v: o[0], pos: n }), n += o[0].length;
       continue;
     }
-    const a = e.slice(n, n + 2);
-    if (["==", "!=", "<>", "<=", ">=", "&&", "||"].includes(a)) {
-      t.push({ k: "op", v: a, pos: n }), n += 2;
+    const r = e.slice(n, n + 2);
+    if (["==", "!=", "<>", "<=", ">=", "&&", "||"].includes(r)) {
+      t.push({ k: "op", v: r, pos: n }), n += 2;
       continue;
     }
-    if ("+-*/%^&=<>!(),.[]?:".includes(r)) {
-      t.push({ k: "op", v: r, pos: n }), n++;
+    if ("+-*/%^&=<>!(),.[]?:".includes(a)) {
+      t.push({ k: "op", v: a, pos: n }), n++;
       continue;
     }
-    throw new Y(`Unexpected character "${r}" at position ${n + 1}`);
+    throw new R(`Unexpected character "${a}" at position ${n + 1}`);
   }
   return t.push({ k: "eof", v: "", pos: e.length }), t;
 }
-const mt = {
+const ft = {
   or: 1,
   "||": 1,
   and: 2,
@@ -649,99 +650,99 @@ const mt = {
   "%": 7,
   "^": 8
 };
-function Dt(e) {
-  const t = Xt(e);
+function At(e) {
+  const t = an(e);
   let n = 0;
-  const r = () => t[n], a = () => t[n++], o = (w) => {
-    const A = a();
-    if (A.v !== w) throw new Y(`Expected "${w}" at position ${A.pos + 1}${A.k === "eof" ? " (end of formula)" : ""}`);
-  }, s = (w) => w.k === "op" && w.v in mt ? w.v : w.k === "id" && (w.v.toLowerCase() === "and" || w.v.toLowerCase() === "or") ? w.v.toLowerCase() : null;
-  function c(w) {
+  const a = () => t[n], r = () => t[n++], o = (b) => {
+    const A = r();
+    if (A.v !== b) throw new R(`Expected "${b}" at position ${A.pos + 1}${A.k === "eof" ? " (end of formula)" : ""}`);
+  }, s = (b) => b.k === "op" && b.v in ft ? b.v : b.k === "id" && (b.v.toLowerCase() === "and" || b.v.toLowerCase() === "or") ? b.v.toLowerCase() : null;
+  function l(b) {
     let A = u();
     for (; ; ) {
-      const L = r();
-      if (L.k === "op" && L.v === "?" && w <= 0) {
-        a();
-        const Ye = c(0);
+      const q = a();
+      if (q.k === "op" && q.v === "?" && b <= 0) {
+        r();
+        const $e = l(0);
         o(":");
-        const C = c(0);
-        A = { t: "call", fn: "if", args: [A, Ye, C] };
+        const C = l(0);
+        A = { t: "call", fn: "if", args: [A, $e, C] };
         continue;
       }
-      const j = s(L);
-      if (!j) break;
-      const ie = mt[j];
-      if (ie < w) break;
-      a();
-      const Ce = c(j === "^" ? ie : ie + 1);
-      A = { t: "bin", op: j, left: A, right: Ce };
+      const W = s(q);
+      if (!W) break;
+      const se = ft[W];
+      if (se < b) break;
+      r();
+      const Fe = l(W === "^" ? se : se + 1);
+      A = { t: "bin", op: W, left: A, right: Fe };
     }
     return A;
   }
   function u() {
-    const w = r();
-    return w.k === "op" && (w.v === "-" || w.v === "+" || w.v === "!") ? (a(), { t: "unary", op: w.v === "!" ? "not" : w.v, arg: u() }) : w.k === "id" && w.v.toLowerCase() === "not" ? (a(), { t: "unary", op: "not", arg: c(3) }) : l(D());
+    const b = a();
+    return b.k === "op" && (b.v === "-" || b.v === "+" || b.v === "!") ? (r(), { t: "unary", op: b.v === "!" ? "not" : b.v, arg: u() }) : b.k === "id" && b.v.toLowerCase() === "not" ? (r(), { t: "unary", op: "not", arg: l(3) }) : c(D());
   }
-  function l(w) {
+  function c(b) {
     for (; ; ) {
-      const A = r();
+      const A = a();
       if (A.k === "op" && A.v === ".") {
-        a();
-        const L = a();
-        if (L.k !== "id" && L.k !== "num") throw new Y(`Expected a field name after "." at position ${L.pos + 1}`);
-        w = { t: "member", obj: w, prop: L.v };
+        r();
+        const q = r();
+        if (q.k !== "id" && q.k !== "num") throw new R(`Expected a field name after "." at position ${q.pos + 1}`);
+        b = { t: "member", obj: b, prop: q.v };
       } else if (A.k === "op" && A.v === "[") {
-        a();
-        const L = c(0);
-        o("]"), w = { t: "index", obj: w, index: L };
-      } else return w;
+        r();
+        const q = l(0);
+        o("]"), b = { t: "index", obj: b, index: q };
+      } else return b;
     }
   }
   function D() {
-    const w = a();
-    if (w.k === "num") return { t: "num", v: parseFloat(w.v) };
-    if (w.k === "str") return { t: "str", v: w.v };
-    if (w.k === "id") {
-      const A = w.v.toLowerCase();
+    const b = r();
+    if (b.k === "num") return { t: "num", v: parseFloat(b.v) };
+    if (b.k === "str") return { t: "str", v: b.v };
+    if (b.k === "id") {
+      const A = b.v.toLowerCase();
       if (A === "true" || A === "yes") return { t: "bool", v: !0 };
       if (A === "false" || A === "no") return { t: "bool", v: !1 };
       if (A === "null") return { t: "null" };
-      if (r().v === "(" && r().k === "op") {
-        a();
-        const L = [];
-        if (!(r().k === "op" && r().v === ")"))
+      if (a().v === "(" && a().k === "op") {
+        r();
+        const q = [];
+        if (!(a().k === "op" && a().v === ")"))
           for (; ; ) {
-            if (L.push(c(0)), r().k === "op" && r().v === ",") {
-              a();
+            if (q.push(l(0)), a().k === "op" && a().v === ",") {
+              r();
               continue;
             }
             break;
           }
-        return o(")"), { t: "call", fn: A, args: L };
+        return o(")"), { t: "call", fn: A, args: q };
       }
-      return { t: "name", name: w.v };
+      return { t: "name", name: b.v };
     }
-    if (w.k === "op" && w.v === "(") {
-      const A = c(0);
+    if (b.k === "op" && b.v === "(") {
+      const A = l(0);
       return o(")"), A;
     }
-    if (w.k === "op" && w.v === "[") {
+    if (b.k === "op" && b.v === "[") {
       const A = [];
-      if (!(r().k === "op" && r().v === "]"))
+      if (!(a().k === "op" && a().v === "]"))
         for (; ; ) {
-          if (A.push(c(0)), r().k === "op" && r().v === ",") {
-            a();
+          if (A.push(l(0)), a().k === "op" && a().v === ",") {
+            r();
             continue;
           }
           break;
         }
       return o("]"), { t: "list", items: A };
     }
-    throw new Y(w.k === "eof" ? "Formula ended unexpectedly" : `Unexpected "${w.v}" at position ${w.pos + 1}`);
+    throw new R(b.k === "eof" ? "Formula ended unexpectedly" : `Unexpected "${b.v}" at position ${b.pos + 1}`);
   }
-  const T = c(0);
-  if (r().k !== "eof") throw new Y(`Unexpected "${r().v}" at position ${r().pos + 1}`);
-  return T;
+  const S = l(0);
+  if (a().k !== "eof") throw new R(`Unexpected "${a().v}" at position ${a().pos + 1}`);
+  return S;
 }
 function Z(e, t = /* @__PURE__ */ new Set()) {
   switch (e.t) {
@@ -769,245 +770,245 @@ function Z(e, t = /* @__PURE__ */ new Set()) {
   }
   return t;
 }
-function oe(e, t) {
-  if ($(e))
-    return t === "length" || t === "count" ? e.length : e.map((n) => oe(n, t));
-  if ($e(e)) {
+function ie(e, t) {
+  if (I(e))
+    return t === "length" || t === "count" ? e.length : e.map((n) => ie(n, t));
+  if (Ye(e)) {
     if (t in e) return e[t];
-    const n = Object.keys(e).find((r) => r.toLowerCase() === t.toLowerCase());
+    const n = Object.keys(e).find((a) => a.toLowerCase() === t.toLowerCase());
     return n ? e[n] : null;
   }
   return typeof e == "string" && t === "length" ? e.length : null;
 }
-function k(e, t = "value") {
-  const n = P(e);
-  if (isNaN(n)) throw new Y(`"${p(e)}" is not a number (${t})`);
+function M(e, t = "value") {
+  const n = E(e);
+  if (isNaN(n)) throw new R(`"${m(e)}" is not a number (${t})`);
   return n;
 }
-function Tt(e, t, n) {
-  if ($(t) || $(n)) {
-    const o = $(t) ? t : null, s = $(n) ? n : null, c = Math.max(o?.length ?? 0, s?.length ?? 0);
-    return Array.from({ length: c }, (u, l) => Tt(e, o ? o[l] ?? null : t, s ? s[l] ?? null : n));
+function qt(e, t, n) {
+  if (I(t) || I(n)) {
+    const o = I(t) ? t : null, s = I(n) ? n : null, l = Math.max(o?.length ?? 0, s?.length ?? 0);
+    return Array.from({ length: l }, (u, c) => qt(e, o ? o[c] ?? null : t, s ? s[c] ?? null : n));
   }
   if (t instanceof Date && (e === "+" || e === "-") && !(n instanceof Date)) {
     const o = new Date(t.getTime());
-    return o.setDate(o.getDate() + (e === "+" ? 1 : -1) * k(n, "days")), o;
+    return o.setDate(o.getDate() + (e === "+" ? 1 : -1) * M(n, "days")), o;
   }
-  if (t instanceof Date && n instanceof Date && e === "-") return Mt(n, t, "days");
-  const r = k(t, "left side of " + e), a = k(n, "right side of " + e);
+  if (t instanceof Date && n instanceof Date && e === "-") return Dt(n, t, "days");
+  const a = M(t, "left side of " + e), r = M(n, "right side of " + e);
   switch (e) {
     case "+":
-      return r + a;
+      return a + r;
     case "-":
-      return r - a;
+      return a - r;
     case "*":
-      return r * a;
+      return a * r;
     case "/":
-      if (a === 0) throw new Y("Division by zero");
-      return r / a;
+      if (r === 0) throw new R("Division by zero");
+      return a / r;
     case "%":
-      return r % a;
+      return a % r;
     case "^":
-      return Math.pow(r, a);
+      return Math.pow(a, r);
   }
-  throw new Y("Unknown operator " + e);
+  throw new R("Unknown operator " + e);
+}
+function ne(e, t) {
+  if (e == null || e === "") return t == null || t === "";
+  if (typeof e == "boolean" || typeof t == "boolean") return Y(e) === Y(t);
+  if (e instanceof Date || t instanceof Date) {
+    const n = O(e), a = O(t);
+    return !!n && !!a && Ie(n) === Ie(a);
+  }
+  return ke(e) && ke(t) ? Math.abs(E(e) - E(t)) < 1e-9 : m(e).trim().toLowerCase() === m(t).trim().toLowerCase();
 }
 function te(e, t) {
-  if (e == null || e === "") return t == null || t === "";
-  if (typeof e == "boolean" || typeof t == "boolean") return F(e) === F(t);
   if (e instanceof Date || t instanceof Date) {
-    const n = H(e), r = H(t);
-    return !!n && !!r && qe(n) === qe(r);
+    const n = O(e), a = O(t);
+    if (!n || !a) throw new R("Cannot compare a date with a non-date");
+    return n.getTime() - a.getTime();
   }
-  return we(e) && we(t) ? Math.abs(P(e) - P(t)) < 1e-9 : p(e).trim().toLowerCase() === p(t).trim().toLowerCase();
+  return ke(e) && ke(t) ? E(e) - E(t) : m(e).localeCompare(m(t));
 }
-function ee(e, t) {
-  if (e instanceof Date || t instanceof Date) {
-    const n = H(e), r = H(t);
-    if (!n || !r) throw new Y("Cannot compare a date with a non-date");
-    return n.getTime() - r.getTime();
-  }
-  return we(e) && we(t) ? P(e) - P(t) : p(e).localeCompare(p(t));
+function Ce(e) {
+  return e.flatMap((t) => I(t) ? Ce(t) : [t]);
 }
-function _e(e) {
-  return e.flatMap((t) => $(t) ? _e(t) : [t]);
+function Re(e) {
+  return Ce(e).filter((t) => t !== null && t !== "").map((t) => M(t));
 }
-function Fe(e) {
-  return _e(e).filter((t) => t !== null && t !== "").map((t) => k(t));
+function F(e, t, n) {
+  const a = O(e, t);
+  if (!a) throw new R(`${n}: "${m(e)}" is not a valid date`);
+  return a;
 }
-function E(e, t, n) {
-  const r = H(e, t);
-  if (!r) throw new Y(`${n}: "${p(e)}" is not a valid date`);
-  return r;
+function et(e, t) {
+  if (!I(e)) throw new R(`${t}: first argument must be a list or table`);
+  return e.filter(Ye);
 }
-function Ze(e, t) {
-  if (!$(e)) throw new Y(`${t}: first argument must be a list or table`);
-  return e.filter($e);
+const Lt = {};
+function p(e, t, n, a, r) {
+  Lt[e] = { fn: r, sig: n, doc: a, group: t };
 }
-const St = {};
-function m(e, t, n, r, a) {
-  St[e] = { fn: a, sig: n, doc: r, group: t };
-}
-m("upper", "Text", "upper(text)", "UPPERCASE text", ([e]) => p(e).toUpperCase());
-m("lower", "Text", "lower(text)", "lowercase text", ([e]) => p(e).toLowerCase());
-m("title", "Text", "title(text)", "Title Case Each Word", ([e]) => Je(p(e)));
-m("capitalize", "Text", "capitalize(text)", "Capitalize the first letter", ([e]) => {
-  const t = p(e);
+p("upper", "Text", "upper(text)", "UPPERCASE text", ([e]) => m(e).toUpperCase());
+p("lower", "Text", "lower(text)", "lowercase text", ([e]) => m(e).toLowerCase());
+p("title", "Text", "title(text)", "Title Case Each Word", ([e]) => Ze(m(e)));
+p("capitalize", "Text", "capitalize(text)", "Capitalize the first letter", ([e]) => {
+  const t = m(e);
   return t.charAt(0).toUpperCase() + t.slice(1);
 });
-m("trim", "Text", "trim(text)", "Remove surrounding spaces", ([e]) => p(e).trim());
-m("len", "Text", "len(text)", "Number of characters (or items in a list)", ([e]) => $(e) ? e.length : p(e).length);
-m("replace", "Text", "replace(text, find, with)", "Replace every occurrence of find", ([e, t, n]) => p(e).split(p(t)).join(p(n)));
-m("left", "Text", "left(text, n)", "First n characters", ([e, t]) => p(e).slice(0, k(t)));
-m("right", "Text", "right(text, n)", "Last n characters", ([e, t]) => {
-  const n = p(e), r = k(t);
-  return r <= 0 ? "" : n.slice(-r);
+p("trim", "Text", "trim(text)", "Remove surrounding spaces", ([e]) => m(e).trim());
+p("len", "Text", "len(text)", "Number of characters (or items in a list)", ([e]) => I(e) ? e.length : m(e).length);
+p("replace", "Text", "replace(text, find, with)", "Replace every occurrence of find", ([e, t, n]) => m(e).split(m(t)).join(m(n)));
+p("left", "Text", "left(text, n)", "First n characters", ([e, t]) => m(e).slice(0, M(t)));
+p("right", "Text", "right(text, n)", "Last n characters", ([e, t]) => {
+  const n = m(e), a = M(t);
+  return a <= 0 ? "" : n.slice(-a);
 });
-m("mid", "Text", "mid(text, start, length)", "Substring (start at 1)", ([e, t, n]) => p(e).substr(k(t) - 1, n === void 0 ? void 0 : k(n)));
-m("contains", "Text", "contains(text, part)", "True if text contains part (case-insensitive) or list contains item", ([e, t]) => $(e) ? e.some((n) => te(n, t)) : p(e).toLowerCase().includes(p(t).toLowerCase()));
-m("startswith", "Text", "startswith(text, part)", "True if text starts with part", ([e, t]) => p(e).toLowerCase().startsWith(p(t).toLowerCase()));
-m("endswith", "Text", "endswith(text, part)", "True if text ends with part", ([e, t]) => p(e).toLowerCase().endsWith(p(t).toLowerCase()));
-m("split", "Text", "split(text, separator)", "Split text into a list", ([e, t]) => p(e).split(t === void 0 ? "," : p(t)).map((n) => n.trim()));
-m("join", "Text", "join(list, separator)", "Join list items into text", ([e, t], n) => ($(e) ? e : [e]).map((r) => p(r, n.fo)).join(t === void 0 ? ", " : p(t)));
-m("concat", "Text", "concat(a, b, ...)", "Join values together", (e, t) => _e(e).map((n) => p(n, t.fo)).join(""));
-m("repeat", "Text", "repeat(text, n)", "Repeat text n times", ([e, t]) => p(e).repeat(Math.max(0, Math.min(1e3, k(t)))));
-m("pad", "Text", "pad(text, length, char)", "Left-pad to a length", ([e, t, n]) => p(e).padStart(k(t), n === void 0 ? " " : p(n)));
-m("truncate", "Text", "truncate(text, n)", "Shorten to n characters with …", ([e, t]) => {
-  const n = p(e), r = k(t);
-  return n.length > r ? n.slice(0, Math.max(0, r - 1)) + "…" : n;
+p("mid", "Text", "mid(text, start, length)", "Substring (start at 1)", ([e, t, n]) => m(e).substr(M(t) - 1, n === void 0 ? void 0 : M(n)));
+p("contains", "Text", "contains(text, part)", "True if text contains part (case-insensitive) or list contains item", ([e, t]) => I(e) ? e.some((n) => ne(n, t)) : m(e).toLowerCase().includes(m(t).toLowerCase()));
+p("startswith", "Text", "startswith(text, part)", "True if text starts with part", ([e, t]) => m(e).toLowerCase().startsWith(m(t).toLowerCase()));
+p("endswith", "Text", "endswith(text, part)", "True if text ends with part", ([e, t]) => m(e).toLowerCase().endsWith(m(t).toLowerCase()));
+p("split", "Text", "split(text, separator)", "Split text into a list", ([e, t]) => m(e).split(t === void 0 ? "," : m(t)).map((n) => n.trim()));
+p("join", "Text", "join(list, separator)", "Join list items into text", ([e, t], n) => (I(e) ? e : [e]).map((a) => m(a, n.fo)).join(t === void 0 ? ", " : m(t)));
+p("concat", "Text", "concat(a, b, ...)", "Join values together", (e, t) => Ce(e).map((n) => m(n, t.fo)).join(""));
+p("repeat", "Text", "repeat(text, n)", "Repeat text n times", ([e, t]) => m(e).repeat(Math.max(0, Math.min(1e3, M(t)))));
+p("pad", "Text", "pad(text, length, char)", "Left-pad to a length", ([e, t, n]) => m(e).padStart(M(t), n === void 0 ? " " : m(n)));
+p("truncate", "Text", "truncate(text, n)", "Shorten to n characters with …", ([e, t]) => {
+  const n = m(e), a = M(t);
+  return n.length > a ? n.slice(0, Math.max(0, a - 1)) + "…" : n;
 });
-m("initials", "Text", "initials(name)", 'Initials of a name: "Ada Lovelace" → "AL"', ([e]) => p(e).split(/\s+/).filter(Boolean).map((t) => t[0].toUpperCase()).join(""));
-m("firstname", "Text", "firstname(name)", "First word of a full name", ([e]) => p(e).trim().split(/\s+/)[0] || "");
-m("lastname", "Text", "lastname(name)", "Last word of a full name", ([e]) => {
-  const t = p(e).trim().split(/\s+/);
+p("initials", "Text", "initials(name)", 'Initials of a name: "Ada Lovelace" → "AL"', ([e]) => m(e).split(/\s+/).filter(Boolean).map((t) => t[0].toUpperCase()).join(""));
+p("firstname", "Text", "firstname(name)", "First word of a full name", ([e]) => m(e).trim().split(/\s+/)[0] || "");
+p("lastname", "Text", "lastname(name)", "Last word of a full name", ([e]) => {
+  const t = m(e).trim().split(/\s+/);
   return t.length > 1 ? t[t.length - 1] : "";
 });
-m("urlencode", "Text", "urlencode(text)", "Encode text for use inside a link", ([e]) => encodeURIComponent(p(e)));
-m("text", "Text", "text(value)", "Convert to text", ([e], t) => p(e, t.fo));
-m("format", "Text", 'format(value, "currency:EUR")', "Format a value (currency, number:2, percent, date:DD/MM/YYYY, upper …)", ([e, t], n) => Q(e, p(t), n.fo));
-m("if", "Logic", "if(condition, then, else)", "Choose a value based on a condition", ([e, t, n]) => F(e) ? t ?? "" : n ?? "");
-m("and", "Logic", "and(a, b, ...)", "True if all are true", (e) => e.every(F));
-m("or", "Logic", "or(a, b, ...)", "True if any is true", (e) => e.some(F));
-m("not", "Logic", "not(a)", "Negate", ([e]) => !F(e));
-m("isempty", "Logic", "isempty(value)", "True if blank", ([e]) => e == null || typeof e == "string" && e.trim() === "" || $(e) && e.length === 0);
-m("coalesce", "Logic", "coalesce(a, b, ...)", "First non-blank value", (e) => e.find((t) => !(t == null || t === "")) ?? "");
-m("choose", "Logic", 'choose(value, "a", "A", "b", "B", default)', "Map a value to a result", ([e, ...t]) => {
-  for (let n = 0; n + 1 < t.length; n += 2) if (te(e, t[n])) return t[n + 1];
+p("urlencode", "Text", "urlencode(text)", "Encode text for use inside a link", ([e]) => encodeURIComponent(m(e)));
+p("text", "Text", "text(value)", "Convert to text", ([e], t) => m(e, t.fo));
+p("format", "Text", 'format(value, "currency:EUR")', "Format a value (currency, number:2, percent, date:DD/MM/YYYY, upper …)", ([e, t], n) => K(e, m(t), n.fo));
+p("if", "Logic", "if(condition, then, else)", "Choose a value based on a condition", ([e, t, n]) => Y(e) ? t ?? "" : n ?? "");
+p("and", "Logic", "and(a, b, ...)", "True if all are true", (e) => e.every(Y));
+p("or", "Logic", "or(a, b, ...)", "True if any is true", (e) => e.some(Y));
+p("not", "Logic", "not(a)", "Negate", ([e]) => !Y(e));
+p("isempty", "Logic", "isempty(value)", "True if blank", ([e]) => e == null || typeof e == "string" && e.trim() === "" || I(e) && e.length === 0);
+p("coalesce", "Logic", "coalesce(a, b, ...)", "First non-blank value", (e) => e.find((t) => !(t == null || t === "")) ?? "");
+p("choose", "Logic", 'choose(value, "a", "A", "b", "B", default)', "Map a value to a result", ([e, ...t]) => {
+  for (let n = 0; n + 1 < t.length; n += 2) if (ne(e, t[n])) return t[n + 1];
   return t.length % 2 ? t[t.length - 1] : "";
 });
-m("matches", "Logic", "matches(text, pattern)", "True if text matches a regular expression", ([e, t]) => {
-  const n = p(t);
-  if (n.length > 300) throw new Y("matches: pattern too long");
+p("matches", "Logic", "matches(text, pattern)", "True if text matches a regular expression", ([e, t]) => {
+  const n = m(t);
+  if (n.length > 300) throw new R("matches: pattern too long");
   try {
-    return new RegExp(n, "i").test(p(e));
+    return new RegExp(n, "i").test(m(e));
   } catch {
-    throw new Y("matches: invalid pattern");
+    throw new R("matches: invalid pattern");
   }
 });
-m("isemail", "Logic", "isemail(text)", "True if text looks like an e-mail address", ([e]) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(p(e).trim()));
-m("isnumber", "Logic", "isnumber(value)", "True if value is numeric", ([e]) => we(e));
-m("round", "Math", "round(n, decimals)", "Round to decimals (default 0)", ([e, t]) => {
-  const n = Math.pow(10, t === void 0 ? 0 : k(t));
-  return Math.round(k(e) * n + Number.EPSILON) / n;
+p("isemail", "Logic", "isemail(text)", "True if text looks like an e-mail address", ([e]) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(m(e).trim()));
+p("isnumber", "Logic", "isnumber(value)", "True if value is numeric", ([e]) => ke(e));
+p("round", "Math", "round(n, decimals)", "Round to decimals (default 0)", ([e, t]) => {
+  const n = Math.pow(10, t === void 0 ? 0 : M(t));
+  return Math.round(M(e) * n + Number.EPSILON) / n;
 });
-m("floor", "Math", "floor(n)", "Round down", ([e]) => Math.floor(k(e)));
-m("ceil", "Math", "ceil(n)", "Round up", ([e]) => Math.ceil(k(e)));
-m("abs", "Math", "abs(n)", "Absolute value", ([e]) => Math.abs(k(e)));
-m("sqrt", "Math", "sqrt(n)", "Square root", ([e]) => Math.sqrt(k(e)));
-m("min", "Math", "min(a, b, ...)", "Smallest number (lists allowed)", (e) => Math.min(...Fe(e)));
-m("max", "Math", "max(a, b, ...)", "Largest number (lists allowed)", (e) => Math.max(...Fe(e)));
-m("sum", "Math", "sum(list or numbers)", "Total", (e) => Fe(e).reduce((t, n) => t + n, 0));
-m("avg", "Math", "avg(list or numbers)", "Average", (e) => {
-  const t = Fe(e);
-  return t.length ? t.reduce((n, r) => n + r, 0) / t.length : 0;
+p("floor", "Math", "floor(n)", "Round down", ([e]) => Math.floor(M(e)));
+p("ceil", "Math", "ceil(n)", "Round up", ([e]) => Math.ceil(M(e)));
+p("abs", "Math", "abs(n)", "Absolute value", ([e]) => Math.abs(M(e)));
+p("sqrt", "Math", "sqrt(n)", "Square root", ([e]) => Math.sqrt(M(e)));
+p("min", "Math", "min(a, b, ...)", "Smallest number (lists allowed)", (e) => Math.min(...Re(e)));
+p("max", "Math", "max(a, b, ...)", "Largest number (lists allowed)", (e) => Math.max(...Re(e)));
+p("sum", "Math", "sum(list or numbers)", "Total", (e) => Re(e).reduce((t, n) => t + n, 0));
+p("avg", "Math", "avg(list or numbers)", "Average", (e) => {
+  const t = Re(e);
+  return t.length ? t.reduce((n, a) => n + a, 0) / t.length : 0;
 });
-m("count", "Math", "count(list)", "Number of items", (e) => _e(e).filter((t) => t !== null && t !== "").length);
-m("number", "Math", "number(value)", "Convert to number", ([e]) => k(e));
-m("percent", "Math", "percent(part, whole)", "part as a percentage of whole (0-100)", ([e, t]) => {
-  const n = k(t);
-  if (n === 0) throw new Y("percent: whole is zero");
-  return k(e) / n * 100;
+p("count", "Math", "count(list)", "Number of items", (e) => Ce(e).filter((t) => t !== null && t !== "").length);
+p("number", "Math", "number(value)", "Convert to number", ([e]) => M(e));
+p("percent", "Math", "percent(part, whole)", "part as a percentage of whole (0-100)", ([e, t]) => {
+  const n = M(t);
+  if (n === 0) throw new R("percent: whole is zero");
+  return M(e) / n * 100;
 });
-m("percentof", "Math", "percentof(pct, amount)", "pct % of amount", ([e, t]) => k(e) / 100 * k(t));
-m("addpercent", "Math", "addpercent(amount, pct)", "amount increased by pct % (e.g. tax)", ([e, t]) => k(e) * (1 + k(t) / 100));
-m("discount", "Math", "discount(amount, pct)", "amount reduced by pct %", ([e, t]) => k(e) * (1 - k(t) / 100));
-m("currency", "Math", 'currency(amount, "USD")', "Format as currency", ([e, t], n) => Q(e, "currency" + (t ? ":" + p(t) : ""), n.fo));
-m("random", "Math", "random(min, max)", "Random whole number between min and max", ([e, t]) => {
-  const n = k(e ?? 0), r = k(t ?? 100);
-  return Math.floor(n + Math.random() * (r - n + 1));
+p("percentof", "Math", "percentof(pct, amount)", "pct % of amount", ([e, t]) => M(e) / 100 * M(t));
+p("addpercent", "Math", "addpercent(amount, pct)", "amount increased by pct % (e.g. tax)", ([e, t]) => M(e) * (1 + M(t) / 100));
+p("discount", "Math", "discount(amount, pct)", "amount reduced by pct %", ([e, t]) => M(e) * (1 - M(t) / 100));
+p("currency", "Math", 'currency(amount, "USD")', "Format as currency", ([e, t], n) => K(e, "currency" + (t ? ":" + m(t) : ""), n.fo));
+p("random", "Math", "random(min, max)", "Random whole number between min and max", ([e, t]) => {
+  const n = M(e ?? 0), a = M(t ?? 100);
+  return Math.floor(n + Math.random() * (a - n + 1));
 });
-m("today", "Date", "today()", "Today (midnight)", (e, t) => new Date(t.now.getFullYear(), t.now.getMonth(), t.now.getDate()));
-m("now", "Date", "now()", "Current date and time", (e, t) => {
+p("today", "Date", "today()", "Today (midnight)", (e, t) => new Date(t.now.getFullYear(), t.now.getMonth(), t.now.getDate()));
+p("now", "Date", "now()", "Current date and time", (e, t) => {
   const n = new Date(t.now.getTime());
   return n.__time = !0, n;
 });
-m("date", "Date", 'date("2025-01-31" | "+3d")', "Make a date from text or a shift", ([e], t) => E(e ?? "today", t.now, "date"));
-m("adddays", "Date", "adddays(date, n)", "Add (or subtract) days", ([e, t], n) => {
-  const r = new Date(E(e, n.now, "adddays"));
-  return r.setDate(r.getDate() + k(t)), r;
+p("date", "Date", 'date("2025-01-31" | "+3d")', "Make a date from text or a shift", ([e], t) => F(e ?? "today", t.now, "date"));
+p("adddays", "Date", "adddays(date, n)", "Add (or subtract) days", ([e, t], n) => {
+  const a = new Date(F(e, n.now, "adddays"));
+  return a.setDate(a.getDate() + M(t)), a;
 });
-m("addhours", "Date", "addhours(date, n)", "Add hours", ([e, t], n) => {
-  const r = new Date(E(e, n.now, "addhours").getTime() + k(t) * 36e5);
-  return r.__time = !0, r;
+p("addhours", "Date", "addhours(date, n)", "Add hours", ([e, t], n) => {
+  const a = new Date(F(e, n.now, "addhours").getTime() + M(t) * 36e5);
+  return a.__time = !0, a;
 });
-m("addminutes", "Date", "addminutes(date, n)", "Add minutes", ([e, t], n) => {
-  const r = new Date(E(e, n.now, "addminutes").getTime() + k(t) * 6e4);
-  return r.__time = !0, r;
+p("addminutes", "Date", "addminutes(date, n)", "Add minutes", ([e, t], n) => {
+  const a = new Date(F(e, n.now, "addminutes").getTime() + M(t) * 6e4);
+  return a.__time = !0, a;
 });
-m("addweeks", "Date", "addweeks(date, n)", "Add weeks", ([e, t], n) => {
-  const r = new Date(E(e, n.now, "addweeks"));
-  return r.setDate(r.getDate() + 7 * k(t)), r;
+p("addweeks", "Date", "addweeks(date, n)", "Add weeks", ([e, t], n) => {
+  const a = new Date(F(e, n.now, "addweeks"));
+  return a.setDate(a.getDate() + 7 * M(t)), a;
 });
-m("addmonths", "Date", "addmonths(date, n)", "Add months (clamps to month end)", ([e, t], n) => Qe(new Date(E(e, n.now, "addmonths")), k(t)));
-m("addyears", "Date", "addyears(date, n)", "Add years", ([e, t], n) => Qe(new Date(E(e, n.now, "addyears")), 12 * k(t)));
-m("addbusinessdays", "Date", "addbusinessdays(date, n)", "Add working days (skips weekends)", ([e, t], n) => kt(new Date(E(e, n.now, "addbusinessdays")), k(t)));
-m("shift", "Date", 'shift(date, "+1M +2d")', "Shift a date using shift syntax", ([e, t], n) => me(E(e, n.now, "shift"), p(t)));
-m("datediff", "Date", 'datediff(start, end, "days")', "Difference in days|weeks|months|years|hours|minutes", ([e, t, n], r) => Mt(E(e, r.now, "datediff"), E(t, r.now, "datediff"), n ? p(n) : "days"));
-m("formatdate", "Date", 'formatdate(date, "DD/MM/YYYY")', "Format a date", ([e, t], n) => z(E(e, n.now, "formatdate"), t === void 0 ? n.fo.dateFormat : p(t)));
-m("weekday", "Date", "weekday(date)", "Day name, e.g. Monday", ([e], t) => z(E(e ?? "today", t.now, "weekday"), "dddd"));
-m("year", "Date", "year(date)", "Year number", ([e], t) => E(e ?? "today", t.now, "year").getFullYear());
-m("month", "Date", "month(date)", "Month number 1-12", ([e], t) => E(e ?? "today", t.now, "month").getMonth() + 1);
-m("day", "Date", "day(date)", "Day of month", ([e], t) => E(e ?? "today", t.now, "day").getDate());
-m("endofmonth", "Date", "endofmonth(date)", "Last day of the month", ([e], t) => {
-  const n = E(e ?? "today", t.now, "endofmonth");
+p("addmonths", "Date", "addmonths(date, n)", "Add months (clamps to month end)", ([e, t], n) => Je(new Date(F(e, n.now, "addmonths")), M(t)));
+p("addyears", "Date", "addyears(date, n)", "Add years", ([e, t], n) => Je(new Date(F(e, n.now, "addyears")), 12 * M(t)));
+p("addbusinessdays", "Date", "addbusinessdays(date, n)", "Add working days (skips weekends)", ([e, t], n) => vt(new Date(F(e, n.now, "addbusinessdays")), M(t)));
+p("shift", "Date", 'shift(date, "+1M +2d")', "Shift a date using shift syntax", ([e, t], n) => me(F(e, n.now, "shift"), m(t)));
+p("datediff", "Date", 'datediff(start, end, "days")', "Difference in days|weeks|months|years|hours|minutes", ([e, t, n], a) => Dt(F(e, a.now, "datediff"), F(t, a.now, "datediff"), n ? m(n) : "days"));
+p("formatdate", "Date", 'formatdate(date, "DD/MM/YYYY")', "Format a date", ([e, t], n) => G(F(e, n.now, "formatdate"), t === void 0 ? n.fo.dateFormat : m(t)));
+p("weekday", "Date", "weekday(date)", "Day name, e.g. Monday", ([e], t) => G(F(e ?? "today", t.now, "weekday"), "dddd"));
+p("year", "Date", "year(date)", "Year number", ([e], t) => F(e ?? "today", t.now, "year").getFullYear());
+p("month", "Date", "month(date)", "Month number 1-12", ([e], t) => F(e ?? "today", t.now, "month").getMonth() + 1);
+p("day", "Date", "day(date)", "Day of month", ([e], t) => F(e ?? "today", t.now, "day").getDate());
+p("endofmonth", "Date", "endofmonth(date)", "Last day of the month", ([e], t) => {
+  const n = F(e ?? "today", t.now, "endofmonth");
   return new Date(n.getFullYear(), n.getMonth() + 1, 0);
 });
-m("greeting", "Date", "greeting()", "Good morning / afternoon / evening", (e, t) => {
+p("greeting", "Date", "greeting()", "Good morning / afternoon / evening", (e, t) => {
   const n = t.now.getHours();
   return n < 12 ? "Good morning" : n < 17 ? "Good afternoon" : "Good evening";
 });
-m("list", "Lists", "list(a, b, ...)", "Make a list", (e) => e);
-m("first", "Lists", "first(list)", "First item", ([e]) => $(e) ? e[0] ?? null : e);
-m("last", "Lists", "last(list)", "Last item", ([e]) => $(e) ? e[e.length - 1] ?? null : e);
-m("item", "Lists", "item(list, n)", "Item number n (1-based)", ([e, t]) => $(e) ? e[k(t) - 1] ?? null : null);
-m("unique", "Lists", "unique(list)", "Remove duplicates", ([e]) => $(e) ? e.filter((t, n) => e.findIndex((r) => te(t, r)) === n) : e);
-m("sort", "Lists", "sort(list)", "Sort ascending", ([e]) => $(e) ? [...e].sort(ee) : e);
-m("filter", "Lists", 'filter(table, "column", value)', "Rows whose column equals value", ([e, t, n]) => Ze(e, "filter").filter((r) => te(oe(r, p(t)), n)));
-m("lookup", "Lists", 'lookup(table, "matchColumn", value, "resultColumn")', "Find a row and return one column", ([e, t, n, r]) => {
-  const a = Ze(e, "lookup").find((o) => te(oe(o, p(t)), n));
-  return a ? r === void 0 ? a : oe(a, p(r)) : "";
+p("list", "Lists", "list(a, b, ...)", "Make a list", (e) => e);
+p("first", "Lists", "first(list)", "First item", ([e]) => I(e) ? e[0] ?? null : e);
+p("last", "Lists", "last(list)", "Last item", ([e]) => I(e) ? e[e.length - 1] ?? null : e);
+p("item", "Lists", "item(list, n)", "Item number n (1-based)", ([e, t]) => I(e) ? e[M(t) - 1] ?? null : null);
+p("unique", "Lists", "unique(list)", "Remove duplicates", ([e]) => I(e) ? e.filter((t, n) => e.findIndex((a) => ne(t, a)) === n) : e);
+p("sort", "Lists", "sort(list)", "Sort ascending", ([e]) => I(e) ? [...e].sort(te) : e);
+p("filter", "Lists", 'filter(table, "column", value)', "Rows whose column equals value", ([e, t, n]) => et(e, "filter").filter((a) => ne(ie(a, m(t)), n)));
+p("lookup", "Lists", 'lookup(table, "matchColumn", value, "resultColumn")', "Find a row and return one column", ([e, t, n, a]) => {
+  const r = et(e, "lookup").find((o) => ne(ie(o, m(t)), n));
+  return r ? a === void 0 ? r : ie(r, m(a)) : "";
 });
-function At(e, t, n) {
+function Pt(e, t, n) {
   switch (t) {
     case ">":
-      return ee(e, n) > 0;
+      return te(e, n) > 0;
     case ">=":
-      return ee(e, n) >= 0;
+      return te(e, n) >= 0;
     case "<":
-      return ee(e, n) < 0;
+      return te(e, n) < 0;
     case "<=":
-      return ee(e, n) <= 0;
+      return te(e, n) <= 0;
     case "!=":
     case "<>":
-      return !te(e, n);
+      return !ne(e, n);
     default:
-      return te(e, n);
+      return ne(e, n);
   }
 }
-m("countif", "Lists", 'countif(list, ">", 0)', "Count items matching a comparison (= != > >= < <=)", ([e, t, n]) => ($(e) ? e : [e]).filter((r) => At(r, p(t), n)).length);
-m("sumif", "Lists", 'sumif(list, ">", 0)', "Sum items matching a comparison", ([e, t, n]) => ($(e) ? e : [e]).filter((r) => At(r, p(t), n)).reduce((r, a) => r + k(a), 0));
-m("pluck", "Lists", 'pluck(table, "column")', "One column of a table as a list", ([e, t]) => Ze(e, "pluck").map((n) => oe(n, p(t))));
-function R(e, t) {
+p("countif", "Lists", 'countif(list, ">", 0)', "Count items matching a comparison (= != > >= < <=)", ([e, t, n]) => (I(e) ? e : [e]).filter((a) => Pt(a, m(t), n)).length);
+p("sumif", "Lists", 'sumif(list, ">", 0)', "Sum items matching a comparison", ([e, t, n]) => (I(e) ? e : [e]).filter((a) => Pt(a, m(t), n)).reduce((a, r) => a + M(r), 0));
+p("pluck", "Lists", 'pluck(table, "column")', "One column of a table as a list", ([e, t]) => et(e, "pluck").map((n) => ie(n, m(t))));
+function U(e, t) {
   switch (e.t) {
     case "num":
       return e.v;
@@ -1018,68 +1019,68 @@ function R(e, t) {
     case "null":
       return null;
     case "list":
-      return e.items.map((n) => R(n, t));
+      return e.items.map((n) => U(n, t));
     case "name": {
       const n = t.lookup(e.name);
-      if (!n.found) throw new Y(`Unknown name "${e.name}"`);
+      if (!n.found) throw new R(`Unknown name "${e.name}"`);
       return n.value;
     }
     case "member":
-      return oe(R(e.obj, t), e.prop);
+      return ie(U(e.obj, t), e.prop);
     case "index": {
-      const n = R(e.obj, t), r = R(e.index, t);
-      return $(n) ? n[k(r) - 1] ?? null : oe(n, p(r));
+      const n = U(e.obj, t), a = U(e.index, t);
+      return I(n) ? n[M(a) - 1] ?? null : ie(n, m(a));
     }
     case "unary": {
-      const n = R(e.arg, t);
-      return e.op === "not" ? !F(n) : e.op === "-" ? $(n) ? n.map((r) => -k(r)) : -k(n) : k(n);
+      const n = U(e.arg, t);
+      return e.op === "not" ? !Y(n) : e.op === "-" ? I(n) ? n.map((a) => -M(a)) : -M(n) : M(n);
     }
     case "call": {
-      const n = St[e.fn];
-      if (!n) throw new Y(`Unknown function "${e.fn}()"`);
-      return e.fn === "if" ? F(R(e.args[0], t)) ? e.args[1] ? R(e.args[1], t) : "" : e.args[2] ? R(e.args[2], t) : "" : n.fn(e.args.map((r) => R(r, t)), t);
+      const n = Lt[e.fn];
+      if (!n) throw new R(`Unknown function "${e.fn}()"`);
+      return e.fn === "if" ? Y(U(e.args[0], t)) ? e.args[1] ? U(e.args[1], t) : "" : e.args[2] ? U(e.args[2], t) : "" : n.fn(e.args.map((a) => U(a, t)), t);
     }
     case "bin": {
-      if (e.op === "and" || e.op === "&&") return F(R(e.left, t)) && F(R(e.right, t));
-      if (e.op === "or" || e.op === "||") return F(R(e.left, t)) || F(R(e.right, t));
-      const n = R(e.left, t), r = R(e.right, t);
+      if (e.op === "and" || e.op === "&&") return Y(U(e.left, t)) && Y(U(e.right, t));
+      if (e.op === "or" || e.op === "||") return Y(U(e.left, t)) || Y(U(e.right, t));
+      const n = U(e.left, t), a = U(e.right, t);
       switch (e.op) {
         case "&":
-          return p(n, t.fo) + p(r, t.fo);
+          return m(n, t.fo) + m(a, t.fo);
         case "=":
         case "==":
-          return te(n, r);
+          return ne(n, a);
         case "!=":
         case "<>":
-          return !te(n, r);
+          return !ne(n, a);
         case "<":
-          return ee(n, r) < 0;
+          return te(n, a) < 0;
         case "<=":
-          return ee(n, r) <= 0;
+          return te(n, a) <= 0;
         case ">":
-          return ee(n, r) > 0;
+          return te(n, a) > 0;
         case ">=":
-          return ee(n, r) >= 0;
+          return te(n, a) >= 0;
         default:
-          return Tt(e.op, n, r);
+          return qt(e.op, n, a);
       }
     }
   }
 }
-const Me = /* @__PURE__ */ new Map();
-function de(e, t) {
-  let n = Me.get(e);
-  return n || (n = Dt(e), Me.size > 500 && Me.clear(), Me.set(e, n)), R(n, t);
+const De = /* @__PURE__ */ new Map();
+function ue(e, t) {
+  let n = De.get(e);
+  return n || (n = At(e), De.size > 500 && De.clear(), De.set(e, n)), U(n, t);
 }
-function ve(e) {
+function Se(e) {
   if (!e) return [];
   try {
-    return [...Z(Dt(e.startsWith("=") ? e.slice(1) : e))];
+    return [...Z(At(e.startsWith("=") ? e.slice(1) : e))];
   } catch {
     return [];
   }
 }
-const De = "⁣⁣QTHCURSOR⁣⁣", Lt = {
+const Ae = "⁣⁣QTHCURSOR⁣⁣", It = {
   text: "text",
   input: "text",
   textarea: "textarea",
@@ -1098,96 +1099,96 @@ const De = "⁣⁣QTHCURSOR⁣⁣", Lt = {
   currency: "currency",
   money: "currency",
   pick: "pick"
-}, en = /* @__PURE__ */ new Set(["me", "data", "page", "index", "rownumber"]), Te = /^[\p{L}_][\p{L}\p{N}_]*$/u;
-function He(e) {
+}, rn = /* @__PURE__ */ new Set(["me", "data", "page", "index", "rownumber"]), qe = /^[\p{L}_][\p{L}\p{N}_]*$/u;
+function We(e) {
   const t = e.replace(/[_-]+/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").trim();
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
-function Be(e) {
+function je(e) {
   const t = e.includes("|") ? "|" : ",";
-  return ye(e, t).map((n) => n.trim().replace(/^["']|["']$/g, "")).filter((n) => n !== "");
+  return xe(e, t).map((n) => n.trim().replace(/^["']|["']$/g, "")).filter((n) => n !== "");
 }
-function Ve(e, t, n, r, a, o) {
-  const s = () => r ? n.repeats.get(r) : n, c = (u) => {
-    for (const l of u)
-      if (l.k === "cmd") {
-        const D = Lt[l.name];
-        if (D && l.args.main) s().fields.has(l.args.main) || s().fields.set(l.args.main, { type: D, args: l.args, start: l.start, end: l.end });
-        else if (l.name === "set") {
-          const T = l.args.main.split("=")[0].trim();
-          T && s().sets.add(T);
-        } else l.name === "ref" && n.pendingRefs.push({ name: l.args.main.split(".")[0], repeat: r });
-        (l.name === "=" || l.name === "validate" || ["upper", "lower", "title", "capitalize", "trim", "replace"].includes(l.name)) && ve(l.args.main).forEach((T) => n.pendingRefs.push({ name: T, repeat: r })), l.name === "set" && ve(l.args.main.split("=").slice(1).join("=")).forEach((T) => n.pendingRefs.push({ name: T, repeat: r }));
-        for (const T of [l.args.main, ...Object.values(l.args.opts)]) if (l.name !== "=" && T.startsWith("=")) ve(T).forEach((w) => n.pendingRefs.push({ name: w, repeat: r }));
-        else if ((l.name === "snippet" || l.name === "include") && t.resolveSnippet && a < 5 && !o.has(l.args.main)) {
-          const w = t.resolveSnippet(l.args.main);
-          if (w) {
-            o.add(l.args.main);
+function Xe(e, t, n, a, r, o) {
+  const s = () => a ? n.repeats.get(a) : n, l = (u) => {
+    for (const c of u)
+      if (c.k === "cmd") {
+        const D = It[c.name];
+        if (D && c.args.main) s().fields.has(c.args.main) || s().fields.set(c.args.main, { type: D, args: c.args, start: c.start, end: c.end });
+        else if (c.name === "set") {
+          const S = c.args.main.split("=")[0].trim();
+          S && s().sets.add(S);
+        } else c.name === "ref" && n.pendingRefs.push({ name: c.args.main.split(".")[0], repeat: a });
+        (c.name === "=" || c.name === "validate" || ["upper", "lower", "title", "capitalize", "trim", "replace"].includes(c.name)) && Se(c.args.main).forEach((S) => n.pendingRefs.push({ name: S, repeat: a })), c.name === "set" && Se(c.args.main.split("=").slice(1).join("=")).forEach((S) => n.pendingRefs.push({ name: S, repeat: a }));
+        for (const S of [c.args.main, ...Object.values(c.args.opts)]) if (c.name !== "=" && S.startsWith("=")) Se(S).forEach((b) => n.pendingRefs.push({ name: b, repeat: a }));
+        else if ((c.name === "snippet" || c.name === "include") && t.resolveSnippet && r < 5 && !o.has(c.args.main)) {
+          const b = t.resolveSnippet(c.args.main);
+          if (b) {
+            o.add(c.args.main);
             try {
-              Ve(ze(w.content, w.contentType === "html"), t, n, r, a + 1, o);
+              Xe(ze(b.content, b.contentType === "html"), t, n, a, r + 1, o);
             } catch {
             }
-            o.delete(l.args.main);
+            o.delete(c.args.main);
           }
         }
-      } else l.k === "if" ? (l.branches.forEach((D) => {
-        ve(D.cond).forEach((T) => n.pendingRefs.push({ name: T, repeat: r })), c(D.body);
-      }), l.elseBody && c(l.elseBody)) : l.k === "section" ? (n.fields.has(l.args.main) || s().fields.set(l.args.main, { type: "section", args: l.args, start: l.start, end: l.end }), c(l.body)) : l.k === "repeat" && (/^\d+$/.test(l.args.main) || l.args.opts.count ? c(l.body) : (n.repeats.has(l.args.main) || n.repeats.set(l.args.main, { fields: /* @__PURE__ */ new Map(), sets: /* @__PURE__ */ new Set() }), Ve(l.body, t, n, l.args.main, a, o)));
+      } else c.k === "if" ? (c.branches.forEach((D) => {
+        Se(D.cond).forEach((S) => n.pendingRefs.push({ name: S, repeat: a })), l(D.body);
+      }), c.elseBody && l(c.elseBody)) : c.k === "section" ? (n.fields.has(c.args.main) || s().fields.set(c.args.main, { type: "section", args: c.args, start: c.start, end: c.end }), l(c.body)) : c.k === "repeat" && (/^\d+$/.test(c.args.main) || c.args.opts.count ? l(c.body) : (n.repeats.has(c.args.main) || n.repeats.set(c.args.main, { fields: /* @__PURE__ */ new Map(), sets: /* @__PURE__ */ new Set() }), Xe(c.body, t, n, c.args.main, r, o)));
   };
-  c(e);
+  l(e);
 }
-function tn(e) {
+function on(e) {
   for (const { name: t, repeat: n } of e.pendingRefs)
-    if (!(e.fields.has(t) || e.sets.has(t) || e.repeats.has(t) || e.implicit.has(t) || en.has(t)))
+    if (!(e.fields.has(t) || e.sets.has(t) || e.repeats.has(t) || e.implicit.has(t) || rn.has(t)))
       if (n) {
-        const r = e.repeats.get(n);
-        !r.fields.has(t) && !r.sets.has(t) && r.fields.set(t, { type: "text", args: { main: t, opts: {}, flags: /* @__PURE__ */ new Set() }, start: -1, end: -1 });
+        const a = e.repeats.get(n);
+        !a.fields.has(t) && !a.sets.has(t) && a.fields.set(t, { type: "text", args: { main: t, opts: {}, flags: /* @__PURE__ */ new Set() }, start: -1, end: -1 });
       } else e.implicit.add(t);
 }
-function qt(e, t, n = {}) {
-  const r = t === "html";
-  let a = r;
-  const o = { locale: "en-US", currency: "USD", dateFormat: "DD MMM YYYY", timeFormat: "h:mm A", ...n.fo || {} }, s = n.now || /* @__PURE__ */ new Date(), c = n.values || {}, u = { forms: !0, formulas: !0, conditionals: !0, ...n.features || {} }, l = [], D = [], T = [], w = /* @__PURE__ */ new Set();
+function _t(e, t, n = {}) {
+  const a = t === "html";
+  let r = a;
+  const o = { locale: "en-US", currency: "USD", dateFormat: "DD MMM YYYY", timeFormat: "h:mm A", ...n.fo || {} }, s = n.now || /* @__PURE__ */ new Date(), l = n.values || {}, u = { forms: !0, formulas: !0, conditionals: !0, ...n.features || {} }, c = [], D = [], S = [], b = /* @__PURE__ */ new Set();
   let A;
   try {
-    A = ze(e, r);
+    A = ze(e, a);
   } catch (i) {
     return { text: "", html: "", cursor: null, form: [], errors: [i.message], validation: [], needsForm: !1, isRich: !1 };
   }
-  const L = { fields: /* @__PURE__ */ new Map(), sets: /* @__PURE__ */ new Set(), repeats: /* @__PURE__ */ new Map(), implicit: /* @__PURE__ */ new Set(), pendingRefs: [] };
-  Ve(A, n, L, null, 0, /* @__PURE__ */ new Set()), tn(L);
-  const j = {}, ie = {};
-  for (const [i, d] of Object.entries(n.data || {})) ie[i] = d.rows.map((y) => ({ ...y }));
-  const Ce = n.profile || {}, Ye = n.page || { url: "", title: "", host: "" }, C = [], Ee = () => {
+  const q = { fields: /* @__PURE__ */ new Map(), sets: /* @__PURE__ */ new Set(), repeats: /* @__PURE__ */ new Map(), implicit: /* @__PURE__ */ new Set(), pendingRefs: [] };
+  Xe(A, n, q, null, 0, /* @__PURE__ */ new Set()), on(q);
+  const W = {}, se = {};
+  for (const [i, d] of Object.entries(n.data || {})) se[i] = d.rows.map((g) => ({ ...g }));
+  const Fe = n.profile || {}, $e = n.page || { url: "", title: "", host: "" }, C = [], Ue = () => {
     for (let i = C.length - 1; i >= 0; i--) if (!C[i].repeat.startsWith("__")) return C[i];
   };
-  function Xe(i, d) {
-    const y = d.opts.default ?? d.opts.value_default;
+  function tt(i, d) {
+    const g = d.opts.default ?? d.opts.value_default;
     switch (i) {
       case "checkbox":
       case "toggle":
       case "section":
-        return y !== void 0 ? F(y) : d.flags.has("checked") || d.flags.has("on");
+        return g !== void 0 ? Y(g) : d.flags.has("checked") || d.flags.has("on");
       case "date": {
-        const h = H(y ?? "", s);
-        return h ? qe(h) : "";
+        const h = O(g ?? "", s);
+        return h ? Ie(h) : "";
       }
       case "time": {
-        if (y === void 0) return "";
-        const h = H(y === "now" ? "now" : y, s);
-        return h ? ut(h) : "";
+        if (g === void 0) return "";
+        const h = O(g === "now" ? "now" : g, s);
+        return h ? mt(h) : "";
       }
       case "datetime": {
-        const h = y ? H(y, s) : null;
-        return h ? `${qe(h)}T${ut(h)}` : "";
+        const h = g ? O(g, s) : null;
+        return h ? `${Ie(h)}T${mt(h)}` : "";
       }
       case "select":
-        return d.flags.has("multiple") ? y ? Be(y) : [] : y ?? (d.flags.has("required") || d.opts.required ? "" : Be(d.opts.options || "")[0] ?? "");
+        return d.flags.has("multiple") ? g ? je(g) : [] : g ?? (d.flags.has("required") || d.opts.required ? "" : je(d.opts.options || "")[0] ?? "");
       default:
-        return y ?? "";
+        return g ?? "";
     }
   }
-  function be(i, d, y) {
+  function Me(i, d, g) {
     switch (i) {
       case "checkbox":
       case "toggle":
@@ -1196,23 +1197,23 @@ function qt(e, t, n = {}) {
       case "number":
       case "currency": {
         if (d === "" || d === null || d === void 0) return null;
-        const h = P(d);
+        const h = E(d);
         return isNaN(h) ? String(d) : h;
       }
       case "date":
       case "datetime": {
-        const h = d ? H(d, s) : null;
+        const h = d ? O(d, s) : null;
         return h && i === "datetime" && (h.__time = !0), h;
       }
       case "time": {
-        const h = d ? H(d, s) : null;
+        const h = d ? O(d, s) : null;
         return h && (h.__time = !0), h;
       }
       case "pick": {
-        const h = n.data?.[y.opts.table || ""], x = h?.rows.find((N) => N.__id === d || N.id === d);
+        const h = n.data?.[g.opts.table || ""], x = h?.rows.find(($) => $.__id === d || $.id === d);
         if (!x) return null;
-        const g = y.opts.display || h?.columns?.[0] || Object.keys(x)[0];
-        return { ...x, __label: x[g] ?? "" };
+        const y = g.opts.display || h?.columns?.[0] || Object.keys(x)[0];
+        return { ...x, __label: x[y] ?? "" };
       }
       case "select":
         return Array.isArray(d) ? d : d ?? "";
@@ -1220,79 +1221,79 @@ function qt(e, t, n = {}) {
         return d ?? "";
     }
   }
-  function xe(i, d, y, h) {
-    const x = h ? h.row : c;
-    return x[i] !== void 0 ? x[i] : Xe(d, y);
+  function Te(i, d, g, h) {
+    const x = h ? h.row : l;
+    return x[i] !== void 0 ? x[i] : tt(d, g);
   }
-  function Ne(i) {
+  function Ee(i) {
     for (let h = C.length - 1; h >= 0; h--) {
       const x = C[h];
       if (i in x.rowVars) return { found: !0, value: x.rowVars[i] };
       if (i === "index" || i === "rownumber") return { found: !0, value: x.index + 1 };
-      const g = L.repeats.get(x.repeat)?.fields.get(i);
-      if (g && g.start >= 0 && x === Ee())
+      const y = q.repeats.get(x.repeat)?.fields.get(i);
+      if (y && y.start >= 0 && x === Ue())
         try {
-          ce(i, g.type, g.args, C.length, g.start, g.end);
+          ce(i, y.type, y.args, C.length, y.start, y.end);
         } catch {
         }
-      if (g) return { found: !0, value: be(g.type, xe(i, g.type, g.args, x), g.args) };
+      if (y) return { found: !0, value: Me(y.type, Te(i, y.type, y.args, x), y.args) };
     }
-    if (i in j) return { found: !0, value: j[i] };
-    if (L.sets.has(i)) return { found: !0, value: "" };
-    const d = L.fields.get(i);
+    if (i in W) return { found: !0, value: W[i] };
+    if (q.sets.has(i)) return { found: !0, value: "" };
+    const d = q.fields.get(i);
     if (d)
       try {
         ce(i, d.type, d.args, 0, d.start, d.end, !1, !0);
       } catch {
       }
-    if (d) return { found: !0, value: be(d.type, xe(i, d.type, d.args), d.args) };
-    if (L.implicit.has(i)) {
+    if (d) return { found: !0, value: Me(d.type, Te(i, d.type, d.args), d.args) };
+    if (q.implicit.has(i)) {
       try {
         ce(i, "text", { main: i, opts: {}, flags: /* @__PURE__ */ new Set() }, 0, void 0, void 0, !0, !0);
       } catch {
       }
-      return { found: !0, value: c[i] ?? "" };
+      return { found: !0, value: l[i] ?? "" };
     }
-    const y = L.repeats.get(i);
-    return y ? {
+    const g = q.repeats.get(i);
+    return g ? {
       found: !0,
-      value: et(i, { opts: {} }).map((x, g) => {
-        const N = { index: g + 1 };
-        for (const [f, b] of y.fields) N[f] = be(b.type, x[f] !== void 0 ? x[f] : Xe(b.type, b.args), b.args);
-        return N;
+      value: nt(i, { opts: {} }).map((x, y) => {
+        const $ = { index: y + 1 };
+        for (const [f, w] of g.fields) $[f] = Me(w.type, x[f] !== void 0 ? x[f] : tt(w.type, w.args), w.args);
+        return $;
       })
-    } : i === "me" ? { found: !0, value: Ce } : i === "data" ? { found: !0, value: ie } : i === "page" ? { found: !0, value: Ye } : { found: !1, value: null };
+    } : i === "me" ? { found: !0, value: Fe } : i === "data" ? { found: !0, value: se } : i === "page" ? { found: !0, value: $e } : { found: !1, value: null };
   }
-  const se = { lookup: Ne, fo: o, now: s }, ne = (i) => {
+  const le = { lookup: Ee, fo: o, now: s }, ae = (i) => {
     if (!u.formulas) throw new Error("Formulas require the Pro plan");
-    return de(i, se);
-  }, fe = (i) => i === void 0 ? "" : i.startsWith("=") ? p(ne(i.slice(1)), o) : i;
-  function et(i, d) {
-    const y = Math.max(0, parseInt(d.opts.min ?? "1", 10) || 0), h = c[i];
-    return Array.isArray(h) ? h : Array.from({ length: Math.max(y, 1) }, () => ({}));
+    return ue(i, le);
+  }, he = (i) => i === void 0 ? "" : i.startsWith("=") ? m(ae(i.slice(1)), o) : i;
+  function nt(i, d) {
+    const g = Math.max(0, parseInt(d.opts.min ?? "1", 10) || 0), h = l[i];
+    return Array.isArray(h) ? h : Array.from({ length: Math.max(g, 1) }, () => ({}));
   }
-  function ce(i, d, y, h, x, g, N = !1, f = !1) {
+  function ce(i, d, g, h, x, y, $ = !1, f = !1) {
     if (!u.forms) throw new Error("Dynamic form fields require an upgraded plan");
-    const b = f ? void 0 : Ee(), I = b ? `${b.repeat}#${b.index}.${i}` : i;
-    if (w.has(I)) return;
-    w.add(I);
-    const O = xe(i, d, y, b), v = y.opts, q = {
+    const w = f ? void 0 : Ue(), P = w ? `${w.repeat}#${w.index}.${i}` : i;
+    if (b.has(P)) return;
+    b.add(P);
+    const N = Te(i, d, g, w), v = g.opts, L = {
       name: i,
       type: d,
       depth: h,
-      value: O,
-      implicit: N,
+      value: N,
+      implicit: $,
       start: x,
-      end: g,
-      label: v.label || He(i),
-      required: y.flags.has("required") || F(v.required ?? ""),
+      end: y,
+      label: v.label || We(i),
+      required: g.flags.has("required") || Y(v.required ?? ""),
       defaultRaw: v.default,
-      options: d === "select" ? Be(fe(v.options) || "") : void 0,
-      multiple: y.flags.has("multiple"),
+      options: d === "select" ? je(he(v.options) || "") : void 0,
+      multiple: g.flags.has("multiple"),
       placeholder: v.placeholder,
-      min: v.min !== void 0 ? P(v.min) : void 0,
-      max: v.max !== void 0 ? P(v.max) : void 0,
-      step: v.step !== void 0 ? P(v.step) : void 0,
+      min: v.min !== void 0 ? E(v.min) : void 0,
+      max: v.max !== void 0 ? E(v.max) : void 0,
+      step: v.step !== void 0 ? E(v.step) : void 0,
       minLength: v.minlength !== void 0 ? parseInt(v.minlength, 10) : void 0,
       maxLength: v.maxlength !== void 0 ? parseInt(v.maxlength, 10) : void 0,
       pattern: v.pattern,
@@ -1304,20 +1305,20 @@ function qt(e, t, n = {}) {
       hint: v.hint || v.help
     };
     if (d === "pick") {
-      const K = n.data?.[v.table || ""];
-      if (!K) throw new Error(`Data Hub table "${v.table}" was not found`);
-      const Re = v.display || K.columns?.[0] || "name";
-      q.options = K.rows.map((M) => `${M.__id}\0${p(M[Re] ?? "")}`);
+      const z = n.data?.[v.table || ""];
+      if (!z) throw new Error(`Data Hub table "${v.table}" was not found`);
+      const Ne = v.display || z.columns?.[0] || "name";
+      L.options = z.rows.map((T) => `${T.__id}\0${m(T[Ne] ?? "")}`);
     }
-    const U = Ct(q);
-    U && (q.error = U, D.push(`${q.label}: ${U}`)), b ? b.formRow.push(q) : T.push(q);
+    const B = Et(L);
+    B && (L.error = B, D.push(`${L.label}: ${B}`)), w ? w.formRow.push(L) : S.push(L);
   }
-  function Ct(i) {
-    const d = i.value, y = d === "" || d === null || d === void 0 || Array.isArray(d) && d.length === 0 || (i.type === "checkbox" || i.type === "toggle") && i.required && !d;
-    if (i.required && y) return i.message || "This field is required";
-    if (!y) {
+  function Et(i) {
+    const d = i.value, g = d === "" || d === null || d === void 0 || Array.isArray(d) && d.length === 0 || (i.type === "checkbox" || i.type === "toggle") && i.required && !d;
+    if (i.required && g) return i.message || "This field is required";
+    if (!g) {
       if (i.type === "number" || i.type === "currency") {
-        const h = P(d);
+        const h = E(d);
         if (isNaN(h)) return "Enter a valid number";
         if (i.min !== void 0 && h < i.min) return i.message || `Must be at least ${i.min}`;
         if (i.max !== void 0 && h > i.max) return i.message || `Must be at most ${i.max}`;
@@ -1339,171 +1340,171 @@ function qt(e, t, n = {}) {
       }
     }
   }
-  let B = "";
+  let H = "";
   const V = (i) => {
-    B += a ? Ue(i) : i;
-  }, tt = (i, d) => {
-    a ? B += i : B += d;
+    H += r ? He(i) : i;
+  }, at = (i, d) => {
+    r ? H += i : H += d;
   };
-  function nt(i, d, y) {
-    const h = y.opts.format;
+  function rt(i, d, g) {
+    const h = g.opts.format;
     switch (i) {
       case "checkbox":
       case "toggle":
-        return F(d) ? fe(y.opts.value ?? y.opts.on ?? "") : fe(y.opts.off ?? "");
+        return Y(d) ? he(g.opts.value ?? g.opts.on ?? "") : he(g.opts.off ?? "");
       case "currency":
-        return d === null || d === "" ? "" : typeof d == "number" ? Q(d, h || `currency:${y.opts.currency || o.currency}`, o) : p(d, o);
+        return d === null || d === "" ? "" : typeof d == "number" ? K(d, h || `currency:${g.opts.currency || o.currency}`, o) : m(d, o);
       case "number":
-        return d === null ? "" : Q(d, h, o);
+        return d === null ? "" : K(d, h, o);
       case "date":
-        return d ? z(d, h || o.dateFormat) : "";
+        return d ? G(d, h || o.dateFormat) : "";
       case "time":
-        return d ? z(d, h || o.timeFormat) : "";
+        return d ? G(d, h || o.timeFormat) : "";
       case "datetime":
-        return d ? z(d, h || `${o.dateFormat} ${o.timeFormat}`) : "";
+        return d ? G(d, h || `${o.dateFormat} ${o.timeFormat}`) : "";
       case "select":
-        return Array.isArray(d) ? d.join(y.opts.separator ?? ", ") : Q(d, h, o);
+        return Array.isArray(d) ? d.join(g.opts.separator ?? ", ") : K(d, h, o);
       default:
-        return Q(d, h, o);
+        return K(d, h, o);
     }
   }
-  function Yt(i) {
-    const d = ne(i.main);
-    if (!$(d)) throw new Error("{{table}} source must be a list (a repeat section or data.<table>)");
-    let y = d.filter((M) => $e(M));
-    const x = (i.opts.columns ? ye(i.opts.columns, "|").map((M) => M.trim()).filter(Boolean) : Object.keys(y[0] || {}).filter((M) => !M.startsWith("__") && M !== "index")).map((M) => {
-      const _ = M.indexOf(":");
-      return _ > 0 ? { header: M.slice(0, _).trim(), expr: M.slice(_ + 1).trim() } : { header: He(M), expr: M };
-    }), g = (M, _, G) => {
-      C.push({ repeat: "__table", row: {}, rowVars: { ...M, index: _ + 1 }, index: _, formRow: [] });
+  function Nt(i) {
+    const d = ae(i.main);
+    if (!I(d)) throw new Error("{{table}} source must be a list (a repeat section or data.<table>)");
+    let g = d.filter((T) => Ye(T));
+    const x = (i.opts.columns ? xe(i.opts.columns, "|").map((T) => T.trim()).filter(Boolean) : Object.keys(g[0] || {}).filter((T) => !T.startsWith("__") && T !== "index")).map((T) => {
+      const _ = T.indexOf(":");
+      return _ > 0 ? { header: T.slice(0, _).trim(), expr: T.slice(_ + 1).trim() } : { header: We(T), expr: T };
+    }), y = (T, _, X) => {
+      C.push({ repeat: "__table", row: {}, rowVars: { ...T, index: _ + 1 }, index: _, formRow: [] });
       try {
-        return G();
+        return X();
       } finally {
         C.pop();
       }
     };
-    i.opts.where && (y = y.filter((M, _) => g(M, _, () => F(ne(i.opts.where))))), i.opts.limit && (y = y.slice(0, parseInt(i.opts.limit, 10) || y.length));
-    const N = (i.opts.formats || "").split("|").map((M) => M.trim()), f = y.map((M, _) => x.map((G, Pe) => g(M, _, () => Q(ne(G.expr), N[Pe] || void 0, o)))), b = i.opts.total ? x.map((M, _) => {
-      const G = ye(i.opts.total, "|").map((Oe) => Oe.trim().toLowerCase());
-      if (_ === 0 && !G.includes(M.header.toLowerCase())) return i.opts.totallabel || "Total";
-      if (!G.includes(M.header.toLowerCase())) return "";
-      const Pe = y.reduce((Oe, Rt, Pt) => Oe + (P(g(Rt, Pt, () => ne(M.expr))) || 0), 0);
-      return Q(Pe, N[_] || void 0, o);
-    }) : null, I = x.map((M) => M.header), O = [I, ...f, ...b ? [b] : []], v = I.map((M, _) => Math.max(...O.map((G) => (G[_] || "").length))), q = (M) => "| " + M.map((_, G) => (_ || "").padEnd(v[G])).join(" | ") + " |", U = [q(I), "|" + v.map((M) => "-".repeat(M + 2)).join("|") + "|", ...f.map(q), ...b ? [q(b)] : []].join(`
-`), K = 'style="border:1px solid #bbb;padding:4px 8px"', Re = `<table style="border-collapse:collapse"><thead><tr>${I.map((M) => `<th ${K}>${ue(M)}</th>`).join("")}</tr></thead><tbody>${f.map((M) => `<tr>${M.map((_) => `<td ${K}>${ue(_)}</td>`).join("")}</tr>`).join("")}${b ? `<tr>${b.map((M) => `<td ${K}><b>${ue(M)}</b></td>`).join("")}</tr>` : ""}</tbody></table>`;
-    tt(Re, U);
+    i.opts.where && (g = g.filter((T, _) => y(T, _, () => Y(ae(i.opts.where))))), i.opts.limit && (g = g.slice(0, parseInt(i.opts.limit, 10) || g.length));
+    const $ = (i.opts.formats || "").split("|").map((T) => T.trim()), f = g.map((T, _) => x.map((X, Be) => y(T, _, () => K(ae(X.expr), $[Be] || void 0, o)))), w = i.opts.total ? x.map((T, _) => {
+      const X = xe(i.opts.total, "|").map((Oe) => Oe.trim().toLowerCase());
+      if (_ === 0 && !X.includes(T.header.toLowerCase())) return i.opts.totallabel || "Total";
+      if (!X.includes(T.header.toLowerCase())) return "";
+      const Be = g.reduce((Oe, Ht, Wt) => Oe + (E(y(Ht, Wt, () => ae(T.expr))) || 0), 0);
+      return K(Be, $[_] || void 0, o);
+    }) : null, P = x.map((T) => T.header), N = [P, ...f, ...w ? [w] : []], v = P.map((T, _) => Math.max(...N.map((X) => (X[_] || "").length))), L = (T) => "| " + T.map((_, X) => (_ || "").padEnd(v[X])).join(" | ") + " |", B = [L(P), "|" + v.map((T) => "-".repeat(T + 2)).join("|") + "|", ...f.map(L), ...w ? [L(w)] : []].join(`
+`), z = 'style="border:1px solid #bbb;padding:4px 8px"', Ne = `<table style="border-collapse:collapse"><thead><tr>${P.map((T) => `<th ${z}>${pe(T)}</th>`).join("")}</tr></thead><tbody>${f.map((T) => `<tr>${T.map((_) => `<td ${z}>${pe(_)}</td>`).join("")}</tr>`).join("")}${w ? `<tr>${w.map((T) => `<td ${z}><b>${pe(T)}</b></td>`).join("")}</tr>` : ""}</tbody></table>`;
+    at(Ne, B);
   }
-  function re(i, d, y) {
+  function re(i, d, g) {
     for (const h of i)
       try {
-        Et(h, d, y);
+        Bt(h, d, g);
       } catch (x) {
-        const g = x instanceof X || x instanceof Error ? x.message : String(x), N = h.k === "cmd" ? `{{${h.raw}}}` : h.k === "if" ? "{{if}}" : `{{${h.k}}}`;
-        l.push(`${N}: ${g}`);
+        const y = x instanceof ee || x instanceof Error ? x.message : String(x), $ = h.k === "cmd" ? `{{${h.raw}}}` : h.k === "if" ? "{{if}}" : `{{${h.k}}}`;
+        c.push(`${$}: ${y}`);
       }
   }
-  function Et(i, d, y) {
-    const h = Ee();
+  function Bt(i, d, g) {
+    const h = Ue();
     switch (i.k) {
       case "text":
-        B += i.text;
+        H += i.text;
         return;
       case "if": {
         if (!u.conditionals) throw new Error("Conditional rules require the Pro plan");
         for (const f of i.branches)
-          if (F(de(f.cond, se))) {
-            re(f.body, d, y);
+          if (Y(ue(f.cond, le))) {
+            re(f.body, d, g);
             return;
           }
-        i.elseBody && re(i.elseBody, d, y);
+        i.elseBody && re(i.elseBody, d, g);
         return;
       }
       case "section": {
         const f = i.args.main;
-        if (!Te.test(f)) throw new Error("Section needs a name, e.g. {{section: extras; label=Add extras?}}");
-        ce(f, "section", i.args, d, i.start, i.end), F(be("section", xe(f, "section", i.args, h), i.args)) && re(i.body, d + 1, y);
+        if (!qe.test(f)) throw new Error("Section needs a name, e.g. {{section: extras; label=Add extras?}}");
+        ce(f, "section", i.args, d, i.start, i.end), Y(Me("section", Te(f, "section", i.args, h), i.args)) && re(i.body, d + 1, g);
         return;
       }
       case "repeat": {
-        const f = i.args.main, b = i.args.opts.separator ?? "", I = /^\d+$/.test(f) ? parseInt(f, 10) : i.args.opts.count ? Math.round(P(ne(i.args.opts.count))) : null;
-        if (I !== null) {
-          const q = Math.max(0, Math.min(500, isNaN(I) ? 0 : I));
-          for (let U = 0; U < q; U++) {
-            U && b && V(b), C.push({ repeat: "__static", row: {}, rowVars: { index: U + 1 }, index: U, formRow: [] });
+        const f = i.args.main, w = i.args.opts.separator ?? "", P = /^\d+$/.test(f) ? parseInt(f, 10) : i.args.opts.count ? Math.round(E(ae(i.args.opts.count))) : null;
+        if (P !== null) {
+          const L = Math.max(0, Math.min(500, isNaN(P) ? 0 : P));
+          for (let B = 0; B < L; B++) {
+            B && w && V(w), C.push({ repeat: "__static", row: {}, rowVars: { index: B + 1 }, index: B, formRow: [] });
             try {
-              re(i.body, d, y);
+              re(i.body, d, g);
             } finally {
               C.pop();
             }
           }
           return;
         }
-        if (!Te.test(f)) throw new Error("Repeat needs a name, e.g. {{repeat: items; label=Item}}");
+        if (!qe.test(f)) throw new Error("Repeat needs a name, e.g. {{repeat: items; label=Item}}");
         if (!u.forms) throw new Error("Repeating sections require an upgraded plan");
-        const O = et(f, i.args), v = {
+        const N = nt(f, i.args), v = {
           type: "repeat",
           name: f,
-          label: i.args.opts.label || He(f),
+          label: i.args.opts.label || We(f),
           min: parseInt(i.args.opts.min ?? "1", 10) || 0,
           max: parseInt(i.args.opts.max ?? "50", 10) || 50,
           depth: d,
           rows: []
         };
-        T.push(v), O.forEach((q, U) => {
-          U && b && V(b);
-          const K = { repeat: f, row: q || {}, rowVars: {}, index: U, formRow: [] };
-          C.push(K);
+        S.push(v), N.forEach((L, B) => {
+          B && w && V(w);
+          const z = { repeat: f, row: L || {}, rowVars: {}, index: B, formRow: [] };
+          C.push(z);
           try {
-            re(i.body, d + 1, y);
+            re(i.body, d + 1, g);
           } finally {
-            C.pop(), v.rows.push(K.formRow);
+            C.pop(), v.rows.push(z.formRow);
           }
         });
         return;
       }
     }
-    const { name: x, args: g } = i, N = Lt[x];
-    if (N && (g.main || !["date", "time"].includes(x))) {
-      const f = g.main;
-      if (!f || !Te.test(f)) throw new Error(`Field name "${f}" may only contain letters, numbers and _ (use label=… for display text)`);
-      if (ce(f, N, g, d, i.start, i.end), g.flags.has("hidden") || g.opts.show === "no" || g.opts.show === "false") return;
-      const b = Ne(f).value;
-      V(nt(N, b, g));
+    const { name: x, args: y } = i, $ = It[x];
+    if ($ && (y.main || !["date", "time"].includes(x))) {
+      const f = y.main;
+      if (!f || !qe.test(f)) throw new Error(`Field name "${f}" may only contain letters, numbers and _ (use label=… for display text)`);
+      if (ce(f, $, y, d, i.start, i.end), y.flags.has("hidden") || y.opts.show === "no" || y.opts.show === "false") return;
+      const w = Ee(f).value;
+      V(rt($, w, y));
       return;
     }
     switch (x) {
       case "#":
         return;
       case "ref": {
-        const f = g.main, b = f.split(".")[0];
-        (L.implicit.has(b) || h && L.repeats.get(h.repeat)?.fields.get(b)?.start === -1) && !f.includes(".") && ce(b, "text", g, d, i.start, i.end, !0);
-        let O;
-        if (f.includes(".")) O = de(f, se);
+        const f = y.main, w = f.split(".")[0];
+        (q.implicit.has(w) || h && q.repeats.get(h.repeat)?.fields.get(w)?.start === -1) && !f.includes(".") && ce(w, "text", y, d, i.start, i.end, !0);
+        let N;
+        if (f.includes(".")) N = ue(f, le);
         else {
-          const v = Ne(b);
-          if (!v.found) throw new Error(`Unknown name "${b}"`);
-          O = v.value;
-          const q = L.fields.get(b) || (h ? L.repeats.get(h.repeat)?.fields.get(b) : void 0);
-          if (q && !g.opts.format) {
-            V(nt(q.type, O, { ...q.args, opts: { ...q.args.opts } }));
+          const v = Ee(w);
+          if (!v.found) throw new Error(`Unknown name "${w}"`);
+          N = v.value;
+          const L = q.fields.get(w) || (h ? q.repeats.get(h.repeat)?.fields.get(w) : void 0);
+          if (L && !y.opts.format) {
+            V(rt(L.type, N, { ...L.args, opts: { ...L.args.opts } }));
             return;
           }
         }
-        V(Q(O, g.opts.format, o));
+        V(K(N, y.opts.format, o));
         return;
       }
       case "=": {
-        const f = ne(g.main);
-        V(Q(f, g.opts.format, o));
+        const f = ae(y.main);
+        V(K(f, y.opts.format, o));
         return;
       }
       case "set": {
-        const f = g.main.indexOf("=");
+        const f = y.main.indexOf("=");
         if (f < 1) throw new Error("Use {{set: name = formula}}");
-        const b = g.main.slice(0, f).trim();
-        if (!Te.test(b)) throw new Error(`Invalid variable name "${b}"`);
-        const I = ne(g.main.slice(f + 1));
-        h ? h.rowVars[b] = I : j[b] = I;
+        const w = y.main.slice(0, f).trim();
+        if (!qe.test(w)) throw new Error(`Invalid variable name "${w}"`);
+        const P = ae(y.main.slice(f + 1));
+        h ? h.rowVars[w] = P : W[w] = P;
         return;
       }
       case "upper":
@@ -1511,13 +1512,13 @@ function qt(e, t, n = {}) {
       case "title":
       case "capitalize":
       case "trim": {
-        const f = p(de(g.main, se), o);
-        V(x === "upper" ? f.toUpperCase() : x === "lower" ? f.toLowerCase() : x === "title" ? Je(f) : x === "trim" ? f.trim() : f.charAt(0).toUpperCase() + f.slice(1));
+        const f = m(ue(y.main, le), o);
+        V(x === "upper" ? f.toUpperCase() : x === "lower" ? f.toLowerCase() : x === "title" ? Ze(f) : x === "trim" ? f.trim() : f.charAt(0).toUpperCase() + f.slice(1));
         return;
       }
       case "replace": {
-        const f = p(de(g.main, se), o);
-        V(f.split(g.opts.find ?? "").join(g.opts.with ?? g.opts.by ?? ""));
+        const f = m(ue(y.main, le), o);
+        V(f.split(y.opts.find ?? "").join(y.opts.with ?? y.opts.by ?? ""));
         return;
       }
       case "today":
@@ -1525,47 +1526,47 @@ function qt(e, t, n = {}) {
       case "now":
       case "time": {
         let f = new Date(s.getTime());
-        (x === "today" || x === "date") && (f = new Date(s.getFullYear(), s.getMonth(), s.getDate())), g.opts.shift && (f = me(f, g.opts.shift)), g.main && x !== "date" && (f = me(f, g.main));
-        const b = g.opts.format || (x === "time" ? o.timeFormat : x === "now" ? `${o.dateFormat} ${o.timeFormat}` : o.dateFormat);
-        V(z(f, b));
+        (x === "today" || x === "date") && (f = new Date(s.getFullYear(), s.getMonth(), s.getDate())), y.opts.shift && (f = me(f, y.opts.shift)), y.main && x !== "date" && (f = me(f, y.main));
+        const w = y.opts.format || (x === "time" ? o.timeFormat : x === "now" ? `${o.dateFormat} ${o.timeFormat}` : o.dateFormat);
+        V(G(f, w));
         return;
       }
       case "cursor":
-        B += De;
+        H += Ae;
         return;
       case "link": {
-        const f = fe(g.opts.url ?? (g.main.startsWith("="), g.main)), b = fe(g.opts.text ?? "") || f;
+        const f = he(y.opts.url ?? (y.main.startsWith("="), y.main)), w = he(y.opts.text ?? "") || f;
         if (!/^(https?:|mailto:|tel:)/i.test(f)) throw new Error(`Links must start with https://, http://, mailto: or tel: (got "${f}")`);
-        const I = g.opts.plain || "both", O = b === f || I === "url" ? f : I === "text" ? b : `${b} (${f})`;
-        tt(`<a href="${ue(f)}">${ue(b)}</a>`, O);
+        const P = y.opts.plain || "both", N = w === f || P === "url" ? f : P === "text" ? w : `${w} (${f})`;
+        at(`<a href="${pe(f)}">${pe(w)}</a>`, N);
         return;
       }
       case "table":
-        Yt(g);
+        Nt(y);
         return;
       case "snippet":
       case "include": {
-        if (y >= 5) throw new Error("Snippets are nested too deeply (max 5)");
-        const f = n.resolveSnippet?.(g.main);
-        if (!f) throw new Error(`No snippet with shortcut "${g.main}"`);
-        const b = f.contentType === "html", I = ze(f.content, b);
-        if (b === a) {
-          re(I, d, y + 1);
+        if (g >= 5) throw new Error("Snippets are nested too deeply (max 5)");
+        const f = n.resolveSnippet?.(y.main);
+        if (!f) throw new Error(`No snippet with shortcut "${y.main}"`);
+        const w = f.contentType === "html", P = ze(f.content, w);
+        if (w === r) {
+          re(P, d, g + 1);
           return;
         }
-        const O = B, v = a;
-        B = "", a = b;
+        const N = H, v = r;
+        H = "", r = w;
         try {
-          re(I, d, y + 1);
+          re(P, d, g + 1);
         } finally {
-          a = v;
+          r = v;
         }
-        const q = B;
-        B = O + (b ? st(q) : Ue(q));
+        const L = H;
+        H = N + (w ? ct(L) : He(L));
         return;
       }
       case "validate": {
-        F(de(g.main, se)) || D.push(g.opts.message || `Check failed: ${g.main}`);
+        Y(ue(y.main, le)) || D.push(y.opts.message || `Check failed: ${y.main}`);
         return;
       }
       case "index": {
@@ -1584,15 +1585,15 @@ function qt(e, t, n = {}) {
     }
   }
   re(A, 0, 0);
-  let le, he;
-  r ? (he = B, le = st(B)) : (le = B, he = Ue(B));
-  let rt = null;
-  const at = le.indexOf(De);
-  at >= 0 && (rt = at), le = le.split(De).join(""), he = he.split(De).join("");
-  const Nt = T.length > 0;
-  return { text: le, html: he, cursor: rt, form: T, errors: l, validation: D, needsForm: Nt, isRich: r };
+  let de, ye;
+  a ? (ye = H, de = ct(H)) : (de = H, ye = He(H));
+  let ot = null;
+  const it = de.indexOf(Ae);
+  it >= 0 && (ot = it), de = de.split(Ae).join(""), ye = ye.split(Ae).join("");
+  const Ot = S.length > 0;
+  return { text: de, html: ye, cursor: ot, form: S, errors: c, validation: D, needsForm: Ot, isRich: a };
 }
-const je = ["dynamicForms", "formulas", "conditionals", "richText", "dataHub", "autopilot", "analytics", "sharing", "marketplaceSubmit", "cloudSync"], pt = {
+const Ge = ["dynamicForms", "formulas", "conditionals", "richText", "dataHub", "autopilot", "analytics", "sharing", "marketplaceSubmit", "cloudSync"], ht = {
   free: {
     id: "free",
     name: "Free",
@@ -1605,38 +1606,38 @@ const je = ["dynamicForms", "formulas", "conditionals", "richText", "dataHub", "
     name: "Pro",
     tagline: "Advanced forms, formulas, rich content and analytics",
     limits: { snippets: 5e3, folders: 500, tables: 50, workflows: 100, libraryTemplates: 1 / 0, teamMembers: 0 },
-    features: je
+    features: Ge
   },
   business: {
     id: "business",
     name: "Business",
     tagline: "Teams, shared folders, roles and team analytics",
     limits: { snippets: 2e4, folders: 2e3, tables: 200, workflows: 500, libraryTemplates: 1 / 0, teamMembers: 250 },
-    features: [...je, "teams", "teamAnalytics", "roles"]
+    features: [...Ge, "teams", "teamAnalytics", "roles"]
   },
   enterprise: {
     id: "enterprise",
     name: "Enterprise",
     tagline: "Custom limits, access management and audit logs",
     limits: { snippets: 1 / 0, folders: 1 / 0, tables: 1 / 0, workflows: 1 / 0, libraryTemplates: 1 / 0, teamMembers: 1 / 0 },
-    features: [...je, "teams", "teamAnalytics", "roles", "auditLogs"]
+    features: [...Ge, "teams", "teamAnalytics", "roles", "auditLogs"]
   }
 };
-function nn(e) {
-  return pt[e || "pro"] || pt.pro;
+function sn(e) {
+  return ht[e || "pro"] || ht.pro;
 }
-function Se(e, t, n = !0) {
-  return !n || nn(e).features.includes(t);
+function Le(e, t, n = !0) {
+  return !n || sn(e).features.includes(t);
 }
-function It(e) {
-  const { settings: t } = e, n = new Map(e.snippets.filter((o) => !o.deleted).map((o) => [o.shortcut, o])), r = {};
+function Yt(e) {
+  const { settings: t } = e, n = new Map(e.snippets.filter((o) => !o.deleted).map((o) => [o.shortcut, o])), a = {};
   for (const o of e.tables)
-    o.deleted || (r[o.key] = { label: o.name, columns: o.columns.map((s) => s.key), rows: o.rows.map((s) => ({ __id: s.id, ...s.values })) });
-  const a = t.enforcePlanLimits;
+    o.deleted || (a[o.key] = { label: o.name, columns: o.columns.map((s) => s.key), rows: o.rows.map((s) => ({ __id: s.id, ...s.values })) });
+  const r = t.enforcePlanLimits;
   return {
     values: e.values || {},
     profile: { ...t.profile },
-    data: Se(t.plan, "dataHub", a) ? r : {},
+    data: Le(t.plan, "dataHub", r) ? a : {},
     page: e.page,
     resolveSnippet: (o) => {
       const s = n.get(o);
@@ -1644,13 +1645,720 @@ function It(e) {
     },
     fo: { locale: t.locale, currency: t.currency, dateFormat: t.dateFormat, timeFormat: t.timeFormat },
     features: {
-      forms: Se(t.plan, "dynamicForms", a),
-      formulas: Se(t.plan, "formulas", a),
-      conditionals: Se(t.plan, "conditionals", a)
+      forms: Le(t.plan, "dynamicForms", r),
+      formulas: Le(t.plan, "formulas", r),
+      conditionals: Le(t.plan, "conditionals", r)
     }
   };
 }
-const rn = [
+const be = "⚠️ _Not financial advice. Trade at your own risk and always use a stop loss._", J = "{{number: pip_factor; label=Pips per 1.00 move (Gold 10 · EURUSD 10000 · JPY pairs 100); default=10; hidden}}", ln = [
+  // ───────────────────────── Market analysis
+  {
+    id: "lib-xau-weekly",
+    name: "Gold weekly outlook (high timeframe)",
+    category: "Market analysis",
+    shortcut: "/xauw",
+    contentType: "text",
+    description: "Weekly HTF post: context, key level, bearish & bullish scenarios with targets.",
+    content: `🟡 *{{text: symbol; default=XAUUSD}} Weekly Outlook*
+*High Timeframe Analysis*
+━━━━━━━━━━━━━━━
+
+*📊 Context*
+{{textarea: context; label=Last week recap; required; rows=4; placeholder=Gold saw strong selling pressure last week…}}
+
+*🔑 Key level: {{number: key_level; label=Key level; required; format=number}}*
+{{textarea: key_note; label=Why this level matters; default=This is the level that decides the next leg. Everything depends on how the daily and weekly candles close around it.}}
+━━━━━━━━━━━━━━━
+
+*🔻 Scenario 1 — Breakdown*
+• Bearish daily candle close below *{{key_level}}*
+• Look for sell setups after the close is confirmed
+• Target zone: *{{text: bear_targets; label=Bearish target zone; required; placeholder=3,600 – 3,350}}*
+
+*🔺 Scenario 2 — Hold & bounce*
+• Rejection / daily close back above *{{key_level}}*
+• Look for buy setups on lower-timeframe confirmation
+• Target zone: *{{text: bull_targets; label=Bullish target zone; required; placeholder=3,950 – 4,050}}*
+{{section: extra; label=Add extra notes?}}
+*📝 Notes*
+{{textarea: notes}}
+{{endsection}}
+━━━━━━━━━━━━━━━
+📅 Week of {{today; format=D MMM YYYY}}{{section: credit; label=Add credit line?}}
+Credits: {{text: credit_name; label=Credit to}}{{endsection}}
+
+${be}`
+  },
+  {
+    id: "lib-xau-daily",
+    name: "Gold daily trading plan",
+    category: "Market analysis",
+    shortcut: "/xaud",
+    contentType: "text",
+    description: "Intraday plan with bias, Asian range, levels and session notes.",
+    content: `🟡 *{{text: symbol; default=XAUUSD}} Daily Plan — {{today; format=ddd, D MMM}}*
+
+*Bias:* {{select: bias; options=🔺 Bullish,🔻 Bearish,➖ Neutral / range; required}}
+*Asian range:* {{number: asia_low; label=Asian low; format=number}} – {{number: asia_high; label=Asian high; format=number}}  ({{= round(abs(asia_high - asia_low) * pip_factor)}} pips)
+
+*Resistance:* {{text: resistance; required; placeholder=3,860 / 3,885}}
+*Support:* {{text: support; required; placeholder=3,810 / 3,790}}
+
+*Plan*
+{{textarea: plan; required; rows=3; placeholder=Wait for London to sweep the Asian high, then look for sells back into the range…}}
+{{checkbox: news_day; label=High-impact news today?; hidden}}{{if: news_day}}
+📰 *News:* {{text: news_event; label=News event & time}} — avoid entries 15 min before/after.
+{{endif}}
+${J}${be}`
+  },
+  {
+    id: "lib-levels",
+    name: "Key levels update",
+    category: "Market analysis",
+    shortcut: "/levels",
+    contentType: "text",
+    description: "Quick support/resistance list with current price.",
+    content: `📍 *{{text: symbol; default=XAUUSD}} key levels* — {{now; format=D MMM, HH:mm}}
+
+Current price: *{{number: price; required; format=number}}*
+
+🔴 Resistance
+{{repeat: res; label=Resistance; min=1}}  R{{index}}: {{number: level; format=number}}
+{{endrepeat}}
+🟢 Support
+{{repeat: sup; label=Support; min=1}}  S{{index}}: {{number: level; format=number}}
+{{endrepeat}}
+{{textarea: comment; label=Comment (optional)}}`
+  },
+  {
+    id: "lib-news-alert",
+    name: "High-impact news alert",
+    category: "Market analysis",
+    shortcut: "/news",
+    contentType: "text",
+    description: "NFP / CPI / FOMC warning with time and forecast.",
+    content: `📰 *NEWS ALERT — {{select: event; options=NFP (Non-Farm Payrolls),CPI (Inflation),FOMC Rate Decision,Fed Chair Speech,GDP,Unemployment Claims,PPI,Retail Sales; required}}*
+
+🕒 Time: *{{time: at; label=Release time; required}}* ({{date: on; default=today; format=ddd D MMM}})
+Forecast: {{text: forecast; placeholder=e.g. 180K}} | Previous: {{text: previous; placeholder=e.g. 150K}}
+
+Expect high volatility on {{text: pairs; label=Affected pairs; default=XAUUSD and USD pairs}}.
+✅ Close or protect open trades
+✅ No new entries 15 minutes before and after
+✅ Wait for the first candle to close before reacting
+
+Stay safe, traders 🙏`
+  },
+  {
+    id: "lib-gm-traders",
+    name: "Good morning / market open",
+    category: "Market analysis",
+    shortcut: "/gm",
+    contentType: "text",
+    description: "Daily greeting with day name and focus for the session.",
+    content: `{{= greeting()}} traders ☀️
+
+Happy {{= weekday(today())}}! {{select: focus; options=Patience is a position — wait for your setup.,Protect your capital first — profits follow.,Plan the trade and trade the plan.,No setup = no trade. Stay disciplined.}}
+
+Today we're watching *{{text: symbol; default=XAUUSD}}*{{text: watch_note; label=What are you watching? (optional); hidden}}{{if: watch_note}} — {{watch_note}}{{endif}}.
+Analysis coming before the {{select: session; options=London,New York,Asian}} session. 📊`
+  },
+  {
+    id: "lib-session",
+    name: "Session update",
+    category: "Market analysis",
+    shortcut: "/session",
+    contentType: "text",
+    description: "London / New York session recap with price move.",
+    content: `⏱ *{{select: session; options=London,New York,Asian}} session update — {{text: symbol; default=XAUUSD}}*
+
+Open: {{number: open; required; format=number}} → Now: {{number: now_price; label=Current price; required; format=number}}
+Move: *{{= now_price - open > 0 ? "+" : ""}}{{= round((now_price - open) * pip_factor)}} pips* {{= now_price >= open ? "🟢" : "🔴"}}
+
+{{textarea: summary; label=What happened; required}}
+${J}`
+  },
+  // ───────────────────────── Trade signals
+  {
+    id: "lib-signal",
+    name: "Trade signal (entry, SL, TPs, R:R)",
+    category: "Trade signals",
+    shortcut: "/entry",
+    contentType: "text",
+    description: "Full signal with pips risk and risk/reward calculated; validates SL side.",
+    content: `🚨 *{{select: side; options=BUY,SELL; required}} {{text: symbol; default=XAUUSD}}* {{select: kind; label=Order type; options=NOW,LIMIT,STOP; default=NOW}}
+
+📍 Entry: *{{number: entry; required; format=number}}*
+🛑 SL: *{{number: sl; label=Stop loss; required; format=number}}*  ({{= round(abs(entry - sl) * pip_factor)}} pips)
+🎯 TP1: *{{number: tp1; required; format=number}}*  (+{{= round(abs(tp1 - entry) * pip_factor)}} pips · R:R 1:{{= round(abs(tp1 - entry) / abs(entry - sl), 1)}})
+{{number: tp2; label=TP2 (optional); format=number; hidden}}{{if: tp2}}🎯 TP2: *{{tp2}}*  (+{{= round(abs(tp2 - entry) * pip_factor)}} pips)
+{{endif}}{{number: tp3; label=TP3 (optional); format=number; hidden}}{{if: tp3}}🎯 TP3: *{{tp3}}*  (+{{= round(abs(tp3 - entry) * pip_factor)}} pips)
+{{endif}}
+Risk: {{select: risk; label=Suggested risk; options=1%,0.5%,2%; default=1%}} per trade · Move SL to entry after TP1 ✅
+{{validate: if(side = "BUY", sl < entry, sl > entry); message=Stop loss must be below entry for BUY and above entry for SELL}}${J}
+${be}`
+  },
+  {
+    id: "lib-pending",
+    name: "Pending order placed",
+    category: "Trade signals",
+    shortcut: "/pending",
+    contentType: "text",
+    description: "Limit / stop order alert with expiry.",
+    content: `⏳ *PENDING ORDER — {{select: side; options=BUY LIMIT,SELL LIMIT,BUY STOP,SELL STOP}} {{text: symbol; default=XAUUSD}}*
+
+Entry: *{{number: entry; required; format=number}}*
+SL: {{number: sl; required; format=number}} · TP: {{number: tp; required; format=number}}
+R:R 1:{{= round(abs(tp - entry) / abs(entry - sl), 1)}}
+
+Cancel if not triggered by *{{select: expiry; options=end of today,London close,New York close,end of week}}*.`
+  },
+  {
+    id: "lib-signal-short",
+    name: "Quick signal (one line)",
+    category: "Trade signals",
+    shortcut: "/qs",
+    contentType: "text",
+    description: "Compact signal for fast-moving markets.",
+    content: "{{select: side; options=🟢 BUY,🔴 SELL}} *{{text: symbol; default=XAUUSD}}* @ {{number: entry; required; format=number}} | SL {{number: sl; required; format=number}} | TP {{number: tp; required; format=number}} | R:R 1:{{= round(abs(tp - entry) / abs(entry - sl), 1)}}"
+  },
+  // ───────────────────────── Trade management
+  {
+    id: "lib-tp-hit",
+    name: "TP hit 🎯",
+    category: "Trade management",
+    shortcut: "/tphit",
+    contentType: "text",
+    description: "Celebrate a target hit with pips and next instruction.",
+    content: `🎯 *{{select: which; options=TP1,TP2,TP3,FINAL TP}} HIT — {{text: symbol; default=XAUUSD}} {{select: side; options=BUY,SELL}}* ✅
+
++{{= round(abs(exit - entry) * pip_factor)}} pips secured 💰 (entry {{number: entry; required; format=number}} → {{number: exit; label=Target price; required; format=number}})
+
+{{select: next; label=Next instruction; options=Move SL to entry (risk-free) and let the rest run 🚀,Close 50% and trail the stop,Trade fully closed — congratulations!}}
+${J}`
+  },
+  {
+    id: "lib-sl-hit",
+    name: "Stop loss hit",
+    category: "Trade management",
+    shortcut: "/slhit",
+    contentType: "text",
+    description: "Professional loss update keeping the group calm.",
+    content: `🛑 *SL hit — {{text: symbol; default=XAUUSD}} {{select: side; options=BUY,SELL}}*
+
+−{{= round(abs(entry - sl) * pip_factor)}} pips (entry {{number: entry; required; format=number}}, SL {{number: sl; required; format=number}}).
+
+Losses are part of trading — the stop did its job and protected our capital. 🙏
+{{select: next; options=We wait for the next clean setup.,Re-entry plan will be shared if conditions are met.,No more trades today — protecting the week.}}
+${J}`
+  },
+  {
+    id: "lib-breakeven",
+    name: "Move SL to breakeven",
+    category: "Trade management",
+    shortcut: "/beven",
+    contentType: "text",
+    description: "Instruction to secure a trade at entry.",
+    content: `🔒 *{{text: symbol; default=XAUUSD}} update* — price moved +{{= round(abs(price - entry) * pip_factor)}} pips in our favour.
+
+Move SL to *entry ({{number: entry; required; format=number}})* now. Trade is risk-free ✅
+Current price: {{number: price; required; format=number}}
+${J}`
+  },
+  {
+    id: "lib-partial",
+    name: "Partial close",
+    category: "Trade management",
+    shortcut: "/partial",
+    contentType: "text",
+    description: "Book partial profits and trail the rest.",
+    content: `💰 *Partial close — {{text: symbol; default=XAUUSD}}*
+
+Close *{{select: pct; options=50%,30%,70%,25%}}* at {{number: price; required; format=number}} (+{{= round(abs(price - entry) * pip_factor)}} pips from entry {{number: entry; required; format=number}}).
+Trail the remaining position with SL at {{number: new_sl; label=New stop loss; required; format=number}}.
+${J}`
+  },
+  {
+    id: "lib-running",
+    name: "Trade running in profit",
+    category: "Trade management",
+    shortcut: "/running",
+    contentType: "text",
+    description: "Live update of an open trade.",
+    content: `📈 *{{text: symbol; default=XAUUSD}} {{select: side; options=BUY,SELL}}* running +{{= round(abs(price - entry) * pip_factor)}} pips 🔥
+
+Entry {{number: entry; required; format=number}} → now {{number: price; required; format=number}}
+{{select: tip; options=Hold — targets still valid.,Consider securing partials here.,SL already at breakeven — let it run.}}
+${J}`
+  },
+  {
+    id: "lib-trade-closed",
+    name: "Trade closed — result",
+    category: "Trade management",
+    shortcut: "/tclose",
+    contentType: "text",
+    description: "Final result with pips and money for a chosen lot size.",
+    content: `✅ *Trade closed — {{text: symbol; default=XAUUSD}} {{select: side; options=BUY,SELL}}*
+
+Entry {{number: entry; required; format=number}} → Exit {{number: exit; required; format=number}}
+{{set: pips = round((exit - entry) * pip_factor * if(side = "BUY", 1, -1))}}Result: *{{= pips > 0 ? "+" : ""}}{{= pips}} pips* {{= pips > 0 ? "🟢" : pips < 0 ? "🔴" : "⚪"}}
+{{number: lots; label=Lot size (optional, for $ result); hidden}}{{number: pip_value; label=Pip value per lot ($); default=10; hidden}}{{if: lots}}≈ {{= pips * pip_value * lots; format=currency}} on {{lots}} lot(s)
+{{endif}}
+{{textarea: note; label=Comment (optional)}}
+${J}`
+  },
+  {
+    id: "lib-cancel",
+    name: "Signal cancelled",
+    category: "Trade management",
+    shortcut: "/cancel",
+    contentType: "text",
+    description: "Cancel a pending order / idea with reason.",
+    content: `❌ *Cancel {{text: symbol; default=XAUUSD}} {{select: what; options=pending order,signal,re-entry idea}}*
+
+Reason: {{select: reason; options=Price moved too far before entry,Setup invalidated on the close,High-impact news ahead,Market conditions changed}}.
+We wait for a better opportunity. 🙏`
+  },
+  // ───────────────────────── Risk & journal
+  {
+    id: "lib-lots",
+    name: "Position size calculator",
+    category: "Risk & journal",
+    shortcut: "/lots",
+    contentType: "text",
+    description: "Lot size from balance, risk % and stop loss in pips.",
+    content: `🧮 *Position size*
+
+Balance: {{currency: balance; required; min=1}}
+Risk: {{number: risk_pct; label=Risk %; default=1; min=0.1; max=10; step=0.1}}% = *{{= percentof(risk_pct, balance); format=currency}}*
+Stop loss: {{number: sl_pips; label=Stop loss (pips); required; min=1}} pips
+Pip value per 1.00 lot: {{number: pip_value; label=Pip value per lot ($) — Gold 10 (0.1 pip) · majors 10; default=10; min=0.01}} $
+
+👉 Lot size: *{{= floor(percentof(risk_pct, balance) / (sl_pips * pip_value) * 100) / 100}} lots*`
+  },
+  {
+    id: "lib-weekly-perf",
+    name: "Weekly performance report",
+    category: "Risk & journal",
+    shortcut: "/wkperf",
+    contentType: "text",
+    description: "Table of the week’s trades with total pips and win rate.",
+    content: `📊 *Weekly results — {{= formatdate(addbusinessdays(today(), -4), "D MMM")}} to {{today; format=D MMM YYYY}}*
+
+{{repeat: trades; label=Trade; min=1}}{{text: symbol; default=XAUUSD; hidden}}{{select: side; options=BUY,SELL; hidden}}{{number: pips; label=Result (pips, negative for loss); hidden}}{{endrepeat}}{{table: trades; columns=#:index|Pair:symbol|Side:side|Pips:pips; total=Pips}}
+
+✅ Wins: {{= countif(trades.pips, ">", 0)}} · ❌ Losses: {{= countif(trades.pips, "<", 0)}} · ⚪ BE: {{= countif(trades.pips, "=", 0)}}
+🎯 Win rate: *{{= round(percent(countif(trades.pips, ">", 0), count(trades.pips)))}}%*
+💰 Net: *{{= sum(trades.pips) > 0 ? "+" : ""}}{{= sum(trades.pips)}} pips*
+
+Thank you for trading with us 🙏`
+  },
+  {
+    id: "lib-monthly-report",
+    name: "Monthly performance summary",
+    category: "Risk & journal",
+    shortcut: "/mreport",
+    contentType: "text",
+    description: "Month totals, win rate, best week and growth %.",
+    content: `🏆 *{{today; format=MMMM YYYY}} performance*
+
+Total signals: {{number: total; required; min=1}}
+Wins: {{number: wins; required; min=0}} · Losses: {{= total - wins}}
+Win rate: *{{= round(percent(wins, total))}}%*
+Net pips: *{{number: net_pips; label=Net pips; required}}*
+{{number: growth; label=Account growth % (optional); hidden}}{{if: growth}}Account growth: *{{growth}}%* 📈
+{{endif}}Best trade: {{text: best; label=Best trade; placeholder=XAUUSD sell +420 pips}}
+
+Grateful for this community — next month, same discipline. 💪
+${be}`
+  },
+  {
+    id: "lib-journal",
+    name: "Trade journal entry",
+    category: "Risk & journal",
+    shortcut: "/journal",
+    contentType: "text",
+    description: "Personal journal: setup, execution, emotions, lesson.",
+    content: `📓 Journal — {{now; format=ddd D MMM YYYY, HH:mm}}
+Pair: {{text: symbol; default=XAUUSD}} | {{select: side; options=BUY,SELL}} | Result: {{number: pips; label=Result (pips)}} pips
+Setup: {{select: setup; options=Break & retest,Liquidity sweep,Supply/demand zone,Trendline bounce,Breakout,Other}}
+Followed plan? {{select: plan; options=Yes,Partly,No}}
+Emotion: {{select: emotion; options=Calm,Confident,Anxious,FOMO,Revenge,Bored}}
+What went well: {{textarea: good; rows=2}}
+Mistake: {{textarea: mistake; rows=2}}
+Lesson: {{text: lesson; required}}
+Screenshot: {{text: chart; label=Chart link (optional)}}`
+  },
+  {
+    id: "lib-disclaimer",
+    name: "Risk disclaimer",
+    category: "Risk & journal",
+    shortcut: "/nfa",
+    contentType: "text",
+    description: "Standard trading disclaimer.",
+    content: `⚠️ *Disclaimer*
+All content shared here is for educational purposes only and is not financial advice. Trading forex, gold and CFDs carries a high level of risk and may not be suitable for everyone. Never risk money you cannot afford to lose. Past performance does not guarantee future results.`
+  },
+  {
+    id: "lib-tip",
+    name: "Trading tip of the day",
+    category: "Risk & journal",
+    shortcut: "/tip",
+    contentType: "text",
+    description: "Educational post for your channel.",
+    content: `💡 *Trading tip #{{number: n; label=Tip number; default=1}}* — {{text: title; required; placeholder=Wait for the candle close}}
+
+{{textarea: body; required; rows=4}}
+
+{{select: cta; options=Save this for later 📌,Share with a trader friend 🤝,Questions? Reply below 👇}}`
+  },
+  // ───────────────────────── VIP channel
+  {
+    id: "lib-vip-welcome",
+    name: "Welcome new VIP member",
+    category: "VIP channel",
+    shortcut: "/welcome",
+    contentType: "text",
+    description: "Onboarding message with plan and automatic expiry date.",
+    content: `🎉 Welcome to *{{text: group; label=Group name; default=Gold VIP}}*, {{text: name; required}}!
+
+✅ Plan: *{{select: plan; options=1 Month,3 Months,6 Months,12 Months; default=1 Month}}*
+📅 Valid until: *{{= formatdate(addmonths(today(), number(left(plan, 2))), "D MMMM YYYY")}}*
+
+What you get:
+• Daily gold analysis & signals with entry, SL and TPs
+• Live trade management updates
+• Weekly & monthly performance reports
+
+📌 Please read the pinned rules and set notifications to *All*.
+Let's grow together 💪`
+  },
+  {
+    id: "lib-vip-pay",
+    name: "VIP subscription — payment details",
+    category: "VIP channel",
+    shortcut: "/vippay",
+    contentType: "text",
+    description: "Price, discount and payment instructions.",
+    content: `💎 *{{text: group; label=Group name; default=Gold VIP}} — Subscription*
+
+Plan: *{{select: plan; options=1 Month,3 Months,6 Months,12 Months}}*
+Price: {{currency: price; required; min=0}}{{number: disc; label=Discount % (optional); default=0; min=0; max=90; hidden}}{{if: disc > 0}} → *{{= discount(price, disc); format=currency}}* ({{disc}}% off 🔥){{endif}}
+
+*How to pay*
+{{textarea: methods; label=Payment details (UPI / bank / USDT); required; rows=3; placeholder=UPI: yourname@bank
+USDT (TRC20): …}}
+
+After paying, send the screenshot here and you'll be added within {{select: eta; options=30 minutes,1 hour,a few hours}}. ✅`
+  },
+  {
+    id: "lib-vip-renew",
+    name: "Subscription renewal reminder",
+    category: "VIP channel",
+    shortcut: "/renew",
+    contentType: "text",
+    description: "Days-left countdown computed from the expiry date.",
+    content: `⏰ Hi {{name}}, your *{{text: group; label=Group name; default=Gold VIP}}* membership {{date: expiry; label=Expiry date; default=+3d; hidden}}{{if: datediff(today(), expiry) > 0}}expires in *{{= datediff(today(), expiry)}} day(s)* — on {{= formatdate(expiry, "dddd, D MMM")}}{{elseif: datediff(today(), expiry) = 0}}expires *today*{{else}}expired on {{= formatdate(expiry, "D MMM")}}{{endif}}.
+
+Renew now to keep receiving signals without interruption:
+Renewal price: {{currency: price; required}}
+{{text: pay; label=Payment details; default=Same UPI / bank as before}}
+
+Thank you for being part of the community 🙏`
+  },
+  {
+    id: "lib-vip-expired",
+    name: "Membership expired",
+    category: "VIP channel",
+    shortcut: "/expired",
+    contentType: "text",
+    description: "Polite removal notice with re-join offer.",
+    content: `Hi {{name}}, your VIP membership ended on {{date: ended; default=today; format=D MMM YYYY}}, so access has been paused.
+
+Rejoin any time — {{select: offer; options=renew within 48 hours and get 10% off 🎁,the same price applies,reply here and I'll share the payment details}}.
+Hope to see you back soon! 🙏`
+  },
+  {
+    id: "lib-vip-access",
+    name: "Payment received — access granted",
+    category: "VIP channel",
+    shortcut: "/access",
+    contentType: "text",
+    description: "Confirms payment and shares the joining link.",
+    content: `✅ Payment of {{currency: amount; required}} received — thank you, {{name}}!
+
+Your *{{select: plan; options=1 Month,3 Months,6 Months,12 Months}}* access is active until *{{= formatdate(addmonths(today(), number(left(plan, 2))), "D MMM YYYY")}}*.
+Join here: {{text: link; label=Group invite link; required; pattern=url}}
+
+Please don't share the link — it's personal. Welcome aboard 🚀`
+  },
+  {
+    id: "lib-vip-promo",
+    name: "Promo / offer announcement",
+    category: "VIP channel",
+    shortcut: "/promo",
+    contentType: "text",
+    description: "Limited-time offer with discounted price and deadline.",
+    content: `🔥 *{{text: title; label=Offer name; default=Limited-time VIP offer}}* 🔥
+
+{{select: plan; options=1 Month,3 Months,6 Months,12 Months}} VIP access: ~{{currency: price; required}}~ → *{{= discount(price, disc); format=currency}}*
+That's *{{number: disc; label=Discount %; required; min=1; max=90}}% OFF* 🎁
+
+⏳ Offer ends *{{date: ends; default=+3d; format=dddd, D MMM}}* — only {{number: seats; label=Seats available; default=20}} seats.
+DM "{{text: keyword; default=VIP}}" to grab it 👇`
+  },
+  {
+    id: "lib-vip-rules",
+    name: "Group rules",
+    category: "VIP channel",
+    shortcut: "/rules",
+    contentType: "text",
+    description: "Pinned rules for a signals group.",
+    content: `📌 *{{text: group; label=Group name; default=Gold VIP}} — Rules*
+
+1️⃣ Always use a stop loss and risk max {{number: max_risk; label=Max risk %; default=2}}% per trade.
+2️⃣ Signals are posted with entry, SL and TP — don't enter late if price has moved more than {{number: late_pips; label=Late-entry limit (pips); default=30}} pips.
+3️⃣ Follow trade-management updates (BE, partials, closes).
+4️⃣ No spam, links or promotions.
+5️⃣ Respect all members — no rude language.
+6️⃣ Membership is personal — sharing content leads to removal without refund.
+
+Questions? Contact {{text: admin; label=Admin contact; default=@admin}}. Happy trading 📈`
+  },
+  {
+    id: "lib-vip-howjoin",
+    name: "“How do I join?” reply",
+    category: "VIP channel",
+    shortcut: "/howjoin",
+    contentType: "text",
+    description: "Answer to people asking how to join.",
+    content: `Hi {{name}} 👋 Thanks for your interest!
+
+Here's how to join *{{text: group; label=Group name; default=Gold VIP}}*:
+1. Choose a plan — {{text: plans; label=Plans & prices; default=1 month / 3 months / 12 months}}
+2. Pay via {{text: methods; label=Payment methods; default=UPI, bank transfer or USDT}}
+3. Send the payment screenshot here
+4. Get your personal invite link ✅
+
+{{checkbox: free; label=Mention free channel; default=yes; hidden}}{{if: free}}Want to see our work first? Free channel: {{text: free_link; label=Free channel link}}
+{{endif}}Any questions, just ask 🙂`
+  },
+  {
+    id: "lib-broker",
+    name: "Broker account opening steps",
+    category: "VIP channel",
+    shortcut: "/broker",
+    contentType: "text",
+    description: "Referral / account opening instructions.",
+    content: `🏦 *Open your trading account with {{text: broker; required}}*
+
+1. Register here: {{text: link; label=Referral link; required; pattern=url}}
+2. Complete verification (ID + address proof)
+3. Choose account type: *{{select: acct; options=Standard,Raw/ECN,Cent,Pro}}*
+4. Deposit at least {{currency: min_dep; label=Minimum deposit; default=100}}
+5. Send me your account ID: {{text: idnote; label=What to send; default=your MT5 login number}}
+
+{{text: bonus; label=Bonus / benefit (optional); hidden}}{{if: bonus}}🎁 Benefit: {{bonus}}
+{{endif}}${be}`
+  },
+  // ───────────────────────── Payments & business
+  {
+    id: "lib-emi",
+    name: "Instalment plan (EMI schedule)",
+    category: "Payments",
+    shortcut: "/emi",
+    contentType: "text",
+    description: "Splits a total into monthly instalments with due dates.",
+    content: `Dear {{name}},
+
+As discussed, your total of {{currency: total; required; min=1}} will be paid in *{{number: months; label=Number of instalments; default=3; min=1; max=24}} monthly instalments* of {{= total / months; format=currency}}:
+
+{{date: first_due; label=First due date; default=+7d; hidden}}{{repeat: schedule; count=months}}{{index}}. {{= formatdate(addmonths(first_due, index - 1), "D MMM YYYY")}} — {{= total / months; format=currency}}
+{{endrepeat}}
+Kindly pay on or before each date. Thank you!
+{{me.name}}`
+  },
+  {
+    id: "lib-bank",
+    name: "Share payment details",
+    category: "Payments",
+    shortcut: "/bank",
+    contentType: "text",
+    description: "Bank / UPI details with amount and reference.",
+    content: `Please make the payment of *{{currency: amount; required}}* using:
+
+{{select: method; options=UPI,Bank transfer,USDT (crypto),Card link}}{{if: method = "UPI"}}
+UPI ID: *{{text: upi; label=UPI ID; default=yourname@bank}}*{{elseif: method = "Bank transfer"}}
+Bank: {{text: bank_name; label=Bank name}}
+A/C name: {{text: acct_name; label=Account name}}
+A/C no: {{text: acct_no; label=Account number}}
+IFSC/SWIFT: {{text: ifsc; label=IFSC / SWIFT}}{{elseif: method = "USDT (crypto)"}}
+USDT address ({{select: network; options=TRC20,ERC20,BEP20}}): {{text: wallet; label=Wallet address}}{{else}}
+Pay here: {{text: card_link; label=Payment link}}{{endif}}
+
+Reference: *{{text: ref; label=Reference / invoice no.; required}}*
+Please share the screenshot once done. Thank you! 🙏`
+  },
+  {
+    id: "lib-payment-followup",
+    name: "Payment follow-up (2nd reminder)",
+    category: "Payments",
+    shortcut: "/payfup",
+    contentType: "text",
+    description: "Firmer reminder with days overdue computed.",
+    content: `Hi {{name}},
+
+Following up on the payment of *{{currency: amount; required}}* that was due on {{date: due; label=Original due date; default=-5d; format=D MMM YYYY}}{{if: datediff(due, today()) > 0}} — now *{{= datediff(due, today())}} day(s) overdue*{{endif}}.
+
+Please clear it by {{date: final; label=New deadline; default=+2d; format=dddd, D MMM}}{{checkbox: late_fee; label=Mention late fee; hidden}}{{if: late_fee}} to avoid a late fee of {{currency: fee; label=Late fee}}{{endif}}. If already paid, kindly share the receipt.
+
+Thank you,
+{{me.name}}`
+  },
+  {
+    id: "lib-shortly",
+    name: "Quick reply: will get back shortly",
+    category: "Customer support",
+    shortcut: "/shortly",
+    contentType: "text",
+    description: "Holding reply with ETA.",
+    content: "Hi {{name}}, thanks for your message! I'm checking this and will get back to you within {{select: eta; options=15 minutes,1 hour,a few hours,today,24 hours}}. 🙏"
+  },
+  {
+    id: "lib-screenshot",
+    name: "Quick reply: please share a screenshot",
+    category: "Customer support",
+    shortcut: "/sshot",
+    contentType: "text",
+    description: "Ask for screenshot / details to resolve an issue.",
+    content: "Hi {{name}}, could you please share {{select: what; options=a screenshot of the issue,your payment screenshot,your account ID,the error message}}? That will help me sort this out quickly. Thank you!"
+  },
+  {
+    id: "lib-order-status",
+    name: "Order / request status update",
+    category: "Customer support",
+    shortcut: "/status",
+    contentType: "text",
+    description: "Status with stage and expected date.",
+    content: `Hi {{name}}, update on your {{select: kind; options=order,request,application,refund}} *#{{text: ref; label=Reference no.; required}}*:
+
+Status: *{{select: status; options=Received ✅,In progress ⏳,Shipped 🚚,Completed 🎉,On hold ⚠️}}*
+Expected by: {{date: eta; default=+2bd; format=ddd, D MMM}}
+{{text: note; label=Note (optional); hidden}}{{if: note}}Note: {{note}}
+{{endif}}
+Thanks for your patience!`
+  },
+  // ───────────────────────── College / admissions administration
+  {
+    id: "lib-fee-receipt",
+    name: "Fee receipt confirmation",
+    category: "College administration",
+    shortcut: "/receipt",
+    contentType: "text",
+    description: "Receipt with balance due computed.",
+    content: `🧾 *Fee receipt — {{me.company}}*
+Receipt no: {{text: receipt; required}}   Date: {{today; format=DD/MM/YYYY}}
+
+Student: {{student}}   Class/Course: {{text: course; required}}
+Amount received: *{{currency: paid; required}}* via {{select: mode; options=Cash,UPI,Bank transfer,Cheque,Card}}
+{{currency: total; label=Total fee for the term; hidden}}{{if: total > paid}}Balance due: *{{= total - paid; format=currency}}* by {{date: due; default=+30d; format=D MMM YYYY}}{{else}}Fees fully paid ✅{{endif}}
+
+Thank you.
+Accounts Office`
+  },
+  {
+    id: "lib-exam-notice",
+    name: "Exam timetable notice",
+    category: "College administration",
+    shortcut: "/exam",
+    contentType: "text",
+    description: "Exam schedule table built from rows.",
+    content: `*{{select: exam; options=Mid-term,Final,Unit test,Practical,Internal}} Examination — {{text: course; label=Class / course; required}}*
+
+{{repeat: papers; label=Paper; min=1}}{{date: on; label=Date; default=+7d; hidden}}{{text: subject; hidden}}{{text: timing; label=Time; default=10:00 – 13:00; hidden}}{{endrepeat}}{{table: papers; columns=Date:formatdate(on, "ddd D MMM")|Subject:subject|Time:timing}}
+
+Report 30 minutes early with your ID card and admit card.
+{{me.title}}, {{me.company}}`
+  },
+  {
+    id: "lib-ptm",
+    name: "Parent-teacher meeting invitation",
+    category: "College administration",
+    shortcut: "/ptm",
+    contentType: "text",
+    description: "PTM invite with date, time and venue.",
+    content: `Dear Parent,
+
+You are invited to the Parent-Teacher Meeting for *{{text: class; label=Class; required}}* on *{{date: on; default=+7d; format=dddd, D MMMM}}* from {{time: from; default=10:00}} to {{time: to; default=13:00}} at {{text: venue; default=the school auditorium}}.
+
+{{checkbox: report; label=Report cards will be shared; default=yes; hidden}}{{if: report}}Report cards will be shared during the meeting. {{endif}}Your presence is important.
+
+Regards,
+{{me.name}}, {{me.company}}`
+  },
+  {
+    id: "lib-holiday",
+    name: "Holiday notice",
+    category: "College administration",
+    shortcut: "/holiday",
+    contentType: "text",
+    description: "Holiday announcement with reopening date.",
+    content: `📢 *Holiday Notice*
+
+The {{select: inst; options=college,school,office,institute}} will remain closed from *{{date: from; default=+1d; format=D MMM}}* to *{{date: to; default=+2d; format=D MMM YYYY}}* ({{= datediff(from, to) + 1}} day(s)) on account of {{text: reason; required; placeholder=Diwali}}.
+Classes resume on *{{= formatdate(addbusinessdays(to, 1), "dddd, D MMM")}}*.
+
+{{me.company}}`
+  },
+  {
+    id: "lib-result",
+    name: "Result announcement",
+    category: "College administration",
+    shortcut: "/result",
+    contentType: "text",
+    description: "Individual result with percentage and grade.",
+    content: `Dear {{student}},
+
+Your {{text: exam; default=final examination}} result: *{{number: marks; required; min=0}} / {{number: max_marks; label=Out of; default=500; min=1}}* = *{{= round(percent(marks, max_marks), 1)}}%*
+Grade: *{{= choose(true, percent(marks, max_marks) >= 90, "A+", percent(marks, max_marks) >= 75, "A", percent(marks, max_marks) >= 60, "B", percent(marks, max_marks) >= 45, "C", percent(marks, max_marks) >= 33, "D", "Needs improvement")}}*
+
+{{= percent(marks, max_marks) >= 33 ? "Congratulations! 🎉" : "Please meet your class teacher to plan improvement."}}
+{{me.company}}`
+  },
+  {
+    id: "lib-docs",
+    name: "Document submission reminder",
+    category: "Admissions",
+    shortcut: "/docs",
+    contentType: "text",
+    description: "List of pending documents with deadline.",
+    content: `Dear {{applicant}},
+
+To complete your admission for {{text: course; required}}, please submit the following by *{{date: by; default=+5d; format=dddd, D MMM}}*:
+{{repeat: docs; label=Document; min=1}}  ☐ {{text: doc; default=Photocopy of Aadhaar}}
+{{endrepeat}}
+Submit at the admission office ({{text: hours; label=Office hours; default=10 am – 4 pm, Mon–Sat}}) or reply here with scans.
+
+Admissions Office, {{me.company}}`
+  },
+  {
+    id: "lib-admit-confirm",
+    name: "Admission confirmed + fee breakdown",
+    category: "Admissions",
+    shortcut: "/admit",
+    contentType: "text",
+    description: "Confirmation with itemised fee table and total.",
+    content: `🎓 Dear {{applicant}}, your admission to *{{text: course; required}}* ({{text: session; default=2025-26}}) is confirmed!
+
+Fee details:
+{{repeat: fees; label=Fee item; min=1}}{{text: item; default=Tuition fee; hidden}}{{currency: amount; hidden}}{{endrepeat}}{{table: fees; columns=Item:item|Amount:amount; formats=|currency; total=Amount}}
+
+Please pay by {{date: due; default=+7d; format=D MMM YYYY}} to secure your seat. Classes begin on {{date: start; label=Classes begin; default=+30d; format=D MMMM}}.
+
+Welcome to {{me.company}}! 🎉`
+  }
+], cn = [
   {
     id: "lib-email-signature",
     name: "Email signature",
@@ -2110,26 +2818,26 @@ Plan: {{customer.plan}}
 Please reply if anything needs to be updated.
 {{me.name}}`
   }
-], an = () => Date.now();
-function on() {
-  const e = an(), t = [
+], dn = [...cn, ...ln], un = () => Date.now();
+function pn() {
+  const e = un(), t = [
     { id: "fld_personal", name: "Personal", parentId: null, order: 0, createdAt: e, updatedAt: e, color: "#6366f1" },
     { id: "fld_work", name: "Work", parentId: null, order: 1, createdAt: e, updatedAt: e, color: "#0ea5e9" },
     { id: "fld_billing", name: "Billing", parentId: "fld_work", order: 0, createdAt: e, updatedAt: e, color: "#f59e0b" },
     { id: "fld_trading", name: "Trading", parentId: null, order: 2, createdAt: e, updatedAt: e, color: "#10b981" }
-  ], n = (s, c, u = {}) => {
-    const l = rn.find((D) => D.id === s);
+  ], n = (s, l, u = {}) => {
+    const c = dn.find((D) => D.id === s);
     return {
       id: "snp_" + s.replace(/^lib-/, "").replace(/-/g, "_"),
-      name: l.name,
-      shortcut: l.shortcut,
-      content: l.content,
-      contentType: l.contentType,
-      folderId: c,
+      name: c.name,
+      shortcut: c.shortcut,
+      content: c.content,
+      contentType: c.contentType,
+      folderId: l,
       enabled: !0,
       favorite: !1,
       pinned: !1,
-      description: l.description,
+      description: c.description,
       tags: [],
       trigger: "default",
       source: { kind: "template", ref: s },
@@ -2137,7 +2845,7 @@ function on() {
       updatedAt: e,
       ...u
     };
-  }, r = [
+  }, a = [
     n("lib-email-signature", "fld_personal", { pinned: !0, favorite: !0 }),
     n("lib-pay-reminder", "fld_billing", { favorite: !0 }),
     n("lib-trade-update", "fld_trading", { pinned: !0 }),
@@ -2176,7 +2884,7 @@ function on() {
       updatedAt: e
     }
   ];
-  return { folders: t, snippets: r, tables: [
+  return { folders: t, snippets: a, tables: [
     {
       id: "tbl_customers",
       name: "Customers",
@@ -2231,38 +2939,38 @@ function on() {
     }
   ] };
 }
-async function sn(e = !1) {
-  if (!e && await jt("seeded")) return !1;
-  if ((await Le("snippets", !0)).length && !e)
-    return await ot("seeded", !0), !1;
-  const n = on();
-  return await ke("folders", n.folders), await ke("snippets", n.snippets), await ke("tables", n.tables), await ke("workflows", n.workflows), await ot("seeded", !0), !0;
+async function mn(e = !1) {
+  if (!e && await Xt("seeded")) return !1;
+  if ((await Pe("snippets", !0)).length && !e)
+    return await st("seeded", !0), !1;
+  const n = pn();
+  return await ve("folders", n.folders), await ve("snippets", n.snippets), await ve("tables", n.tables), await ve("workflows", n.workflows), await st("seeded", !0), !0;
 }
-const pe = /* @__PURE__ */ new Map();
-function $t() {
+const fe = /* @__PURE__ */ new Map();
+function Ct() {
   const e = Date.now();
-  for (const [t, n] of pe) e - n.at > 600 * 1e3 && pe.delete(t);
+  for (const [t, n] of fe) e - n.at > 600 * 1e3 && fe.delete(t);
 }
-function _t() {
+function Rt() {
   const e = new Uint8Array(16);
   return crypto.getRandomValues(e), Array.from(e, (t) => t.toString(16).padStart(2, "0")).join("");
 }
-const ae = /* @__PURE__ */ new Map();
-S.windows?.onRemoved.addListener((e) => {
-  const t = ae.get(e);
-  t && (ae.delete(e), !t.done && t.tabId !== void 0 && S.tabs.sendMessage(t.tabId, { type: "qth/overlayResult", nonce: t.nonce, result: { type: "cancel" } }, { frameId: t.frameId }).catch?.(() => {
+const oe = /* @__PURE__ */ new Map();
+k.windows?.onRemoved.addListener((e) => {
+  const t = oe.get(e);
+  t && (oe.delete(e), !t.done && t.tabId !== void 0 && k.tabs.sendMessage(t.tabId, { type: "qth/overlayResult", nonce: t.nonce, result: { type: "cancel" } }, { frameId: t.frameId }).catch?.(() => {
   }));
 });
-async function Ie() {
-  const [e, t, n] = await Promise.all([zt(), Le("snippets"), Le("tables")]);
+async function _e() {
+  const [e, t, n] = await Promise.all([Mt(), Pe("snippets"), Pe("tables")]);
   return { settings: e, snippets: t, tables: n };
 }
-async function cn(e) {
-  const { settings: t, snippets: n } = await Ie(), r = Vt(t, e);
+async function fn(e) {
+  const { settings: t, snippets: n } = await _e(), a = Qt(t, e);
   return {
     settings: {
-      expansionEnabled: t.expansionEnabled && !r,
-      blocked: r,
+      expansionEnabled: t.expansionEnabled && !a,
+      blocked: a,
       triggerMode: t.triggerMode,
       delimiters: t.delimiters,
       keepDelimiter: t.keepDelimiter,
@@ -2274,118 +2982,139 @@ async function cn(e) {
       googleDocsExperimental: t.googleDocsExperimental
     },
     // Only shortcut metadata is sent to pages; content stays in the extension.
-    shortcuts: n.filter((a) => a.enabled && a.shortcut).map((a) => ({ id: a.id, shortcut: a.shortcut, trigger: a.trigger || "default" }))
+    shortcuts: n.filter((r) => r.enabled && r.shortcut).map((r) => ({ id: r.id, shortcut: r.shortcut, trigger: r.trigger || "default" }))
   };
 }
-async function ln(e, t, n) {
-  const { settings: r, snippets: a, tables: o } = await Ie(), s = a.find((l) => l.id === e);
+async function hn(e, t, n) {
+  const { settings: a, snippets: r, tables: o } = await _e(), s = r.find((c) => c.id === e);
   if (!s) return { kind: "error", message: "Snippet not found" };
-  const c = It({ settings: r, snippets: a, tables: o, page: t }), u = qt(s.content, s.contentType, c);
+  const l = Yt({ settings: a, snippets: r, tables: o, page: t }), u = _t(s.content, s.contentType, l);
   if (u.errors.length && !u.needsForm) return { kind: "error", message: u.errors[0] };
   if (u.needsForm) {
-    $t();
-    const l = _t();
-    return pe.set(l, { snippetId: e, page: t, tabId: n, at: Date.now(), mode: "form" }), { kind: "form", nonce: l, name: s.name };
+    Ct();
+    const c = Rt();
+    return fe.set(c, { snippetId: e, page: t, tabId: n, at: Date.now(), mode: "form" }), { kind: "form", nonce: c, name: s.name };
   }
-  return !u.text.trim() && !u.html.replace(/<[^>]*>/g, "").trim() ? { kind: "error", message: /\{\{\s*me\./.test(s.content) ? `“${s.name}” is empty because your profile isn't filled in yet. Open the QuickText dashboard → Settings → Profile and add your details (e.g. your signature).` : `“${s.name}” has no text yet. Add content to it in the QuickText dashboard.` } : (await bt(e), { kind: "insert", text: u.text, html: u.html, isRich: u.isRich, cursor: u.cursor === null ? null : u.text.length - u.cursor, name: s.name });
+  return !u.text.trim() && !u.html.replace(/<[^>]*>/g, "").trim() ? { kind: "error", message: /\{\{\s*me\./.test(s.content) ? `“${s.name}” is empty because your profile isn't filled in yet. Open the QuickText dashboard → Settings → Profile and add your details (e.g. your signature).` : `“${s.name}” has no text yet. Add content to it in the QuickText dashboard.` } : (await kt(e), { kind: "insert", text: u.text, html: u.html, isRich: u.isRich, cursor: u.cursor === null ? null : u.text.length - u.cursor, name: s.name });
 }
-S.runtime.onMessage.addListener((e, t, n) => {
-  if (!e || typeof e.type != "string" || !e.type.startsWith("qth/") || t.id !== S.runtime.id) return !1;
-  const r = t.tab?.id;
+k.runtime.onMessage.addListener((e, t, n) => {
+  if (!e || typeof e.type != "string" || !e.type.startsWith("qth/") || t.id !== k.runtime.id) return !1;
+  const a = t.tab?.id;
   return (async () => {
     switch (e.type) {
-      case W.getIndex:
-        return cn(String(e.host || ""));
-      case W.expand:
-        return ln(String(e.snippetId), e.page, r);
-      case W.claimForm: {
-        const a = pe.get(String(e.nonce));
-        return a ? (pe.delete(String(e.nonce)), { ok: !0, snippetId: a.snippetId, page: a.page, mode: a.mode, payload: a.payload }) : { ok: !1 };
+      case j.getIndex:
+        return fn(String(e.host || ""));
+      case j.expand:
+        return hn(String(e.snippetId), e.page, a);
+      case j.claimForm: {
+        const r = fe.get(String(e.nonce));
+        return r ? (fe.delete(String(e.nonce)), { ok: !0, snippetId: r.snippetId, page: r.page, mode: r.mode, payload: r.payload }) : { ok: !1 };
       }
       case "qth/openOverlay": {
-        $t();
-        const a = _t();
-        return pe.set(a, { snippetId: String(e.snippetId || ""), page: e.page, tabId: r, at: Date.now(), mode: String(e.mode || "picker"), payload: e.payload }), { nonce: a };
+        Ct();
+        const r = Rt();
+        return fe.set(r, { snippetId: String(e.snippetId || ""), page: e.page, tabId: a, at: Date.now(), mode: String(e.mode || "picker"), payload: e.payload }), { nonce: r };
       }
       case "qth/renderText": {
-        const { settings: a, snippets: o, tables: s } = await Ie(), c = qt(String(e.content || ""), "text", It({ settings: a, snippets: o, tables: s, page: e.page }));
-        return c.errors.length ? { error: c.errors[0] } : c.needsForm ? { error: 'Autopilot text cannot contain form fields — use an "Insert snippet" step instead' } : { text: c.text };
+        const { settings: r, snippets: o, tables: s } = await _e(), l = _t(String(e.content || ""), "text", Yt({ settings: r, snippets: o, tables: s, page: e.page }));
+        return l.errors.length ? { error: l.errors[0] } : l.needsForm ? { error: 'Autopilot text cannot contain form fields — use an "Insert snippet" step instead' } : { text: l.text };
       }
       case "qth/openOverlayWindow": {
-        const a = String(e.nonce), o = e.mode === "picker" ? 460 : 500, s = e.mode === "picker" ? 470 : e.mode === "confirm" ? 300 : 620;
-        let c, u;
+        const r = String(e.nonce), o = e.mode === "picker" ? 460 : 500, s = e.mode === "picker" ? 470 : e.mode === "confirm" ? 300 : 620;
+        let l, u;
         try {
-          const D = t.tab?.windowId !== void 0 ? await S.windows.get(t.tab.windowId) : null;
-          D && D.left !== void 0 && D.width !== void 0 && D.top !== void 0 && D.height !== void 0 && (c = Math.round(D.left + (D.width - o) / 2), u = Math.round(D.top + Math.max(40, (D.height - s) / 2)));
+          const D = t.tab?.windowId !== void 0 ? await k.windows.get(t.tab.windowId) : null;
+          D && D.left !== void 0 && D.width !== void 0 && D.top !== void 0 && D.height !== void 0 && (l = Math.round(D.left + (D.width - o) / 2), u = Math.round(D.top + Math.max(40, (D.height - s) / 2)));
         } catch {
         }
-        const l = await S.windows.create({ url: S.runtime.getURL("overlay/index.html") + `#nonce=${a}&window=1`, type: "popup", width: o, height: s, left: c, top: u, focused: !0 });
-        return l?.id === void 0 ? { ok: !1 } : (ae.set(l.id, { nonce: a, tabId: t.tab?.id, frameId: t.frameId ?? 0, done: !1 }), { ok: !0 });
+        const c = await k.windows.create({ url: k.runtime.getURL("overlay/index.html") + `#nonce=${r}&window=1`, type: "popup", width: o, height: s, left: l, top: u, focused: !0 });
+        return c?.id === void 0 ? { ok: !1 } : (oe.set(c.id, { nonce: r, tabId: t.tab?.id, frameId: t.frameId ?? 0, done: !1 }), { ok: !0 });
       }
       case "qth/overlayResult": {
-        for (const [a, o] of ae)
+        for (const [r, o] of oe)
           if (o.nonce === e.nonce) {
             if (o.done = !0, o.tabId !== void 0) {
               try {
-                await S.windows.update((await S.tabs.get(o.tabId)).windowId, { focused: !0 });
+                await k.windows.update((await k.tabs.get(o.tabId)).windowId, { focused: !0 });
               } catch {
               }
-              S.tabs.sendMessage(o.tabId, { type: "qth/overlayResult", nonce: o.nonce, result: e.result }, { frameId: o.frameId }).catch?.(() => {
+              k.tabs.sendMessage(o.tabId, { type: "qth/overlayResult", nonce: o.nonce, result: e.result }, { frameId: o.frameId }).catch?.(() => {
               });
             }
-            S.windows.remove(a).catch?.(() => {
-            }), ae.delete(a);
+            k.windows.remove(r).catch?.(() => {
+            }), oe.delete(r);
           }
         return { ok: !0 };
       }
       case "qth/closeOverlayWindow": {
-        for (const [a, o] of ae) o.nonce === e.nonce && (o.done = !0, S.windows.remove(a).catch?.(() => {
-        }), ae.delete(a));
+        for (const [r, o] of oe) o.nonce === e.nonce && (o.done = !0, k.windows.remove(r).catch?.(() => {
+        }), oe.delete(r));
         return { ok: !0 };
       }
-      case W.recordUsage:
-        return await bt(String(e.snippetId)), { ok: !0 };
-      case W.listForAssistant: {
-        const { snippets: a } = await Ie(), o = await ht("usage"), s = new Map(o.map((c) => [c.snippetId, c]));
-        return a.filter((c) => c.enabled).map((c) => ({ id: c.id, name: c.name, shortcut: c.shortcut, preview: c.content.slice(0, 160), contentType: c.contentType, favorite: c.favorite, pinned: c.pinned, lastUsedAt: s.get(c.id)?.lastUsedAt || 0, count: s.get(c.id)?.count || 0 }));
+      case j.recordUsage:
+        return await kt(String(e.snippetId)), { ok: !0 };
+      case j.listForAssistant: {
+        const { snippets: r } = await _e(), o = await gt("usage"), s = new Map(o.map((l) => [l.snippetId, l]));
+        return r.filter((l) => l.enabled).map((l) => ({ id: l.id, name: l.name, shortcut: l.shortcut, preview: l.content.slice(0, 160), contentType: l.contentType, favorite: l.favorite, pinned: l.pinned, lastUsedAt: s.get(l.id)?.lastUsedAt || 0, count: s.get(l.id)?.count || 0 }));
       }
-      case W.listWorkflows:
-        return (await Le("workflows")).filter((a) => a.enabled);
-      case W.getWorkflow:
-        return Ge("workflows", String(e.id));
-      case W.openDashboard:
-        return await S.tabs.create({ url: S.runtime.getURL("dashboard/index.html" + (e.hash ? "#" + e.hash : "")) }), { ok: !0 };
-      case W.picked:
-        return await new Promise((a) => S.storage.local.set({ [Ae.picked]: { ...e.element, at: Date.now() } }, () => a())), { ok: !0 };
+      case j.listWorkflows:
+        return (await Pe("workflows")).filter((r) => r.enabled);
+      case j.getWorkflow:
+        return Qe("workflows", String(e.id));
+      case j.openDashboard:
+        return await k.tabs.create({ url: k.runtime.getURL("dashboard/index.html" + (e.hash ? "#" + e.hash : "")) }), { ok: !0 };
+      case j.picked:
+        return await new Promise((r) => k.storage.local.set({ [we.picked]: { ...e.element, at: Date.now() } }, () => r())), { ok: !0 };
       default:
         return { error: "unknown message" };
     }
-  })().then(n, (a) => n({ kind: "error", error: String(a?.message || a), message: String(a?.message || a) })), !0;
+  })().then(n, (r) => n({ kind: "error", error: String(r?.message || r), message: String(r?.message || r) })), !0;
 });
-S.commands?.onCommand.addListener((e, t) => {
-  e === "open-assistant" && t?.id !== void 0 && S.tabs.sendMessage(t.id, { type: W.openAssistant }).catch?.(() => {
+async function Ft() {
+  const e = await Mt(), t = k.sidePanel;
+  if (!t?.setPanelBehavior) return;
+  const n = e.actionOpens === "sidepanel";
+  await t.setPanelBehavior({ openPanelOnActionClick: n }).catch(() => {
+  }), await k.action.setPopup({ popup: n ? "" : "popup/index.html" });
+}
+function $t(e) {
+  const t = k.sidePanel;
+  if (t?.open && e !== void 0) return t.open({ windowId: e }).catch(() => {
+  });
+  if (k.sidebarAction?.open) return k.sidebarAction.open();
+}
+k.storage.onChanged.addListener((e, t) => {
+  t === "local" && e[we.settings] && Ft();
+});
+Ft();
+k.commands?.onCommand.addListener((e, t) => {
+  e === "open-side-panel" && $t(t?.windowId), e === "open-assistant" && t?.id !== void 0 && k.tabs.sendMessage(t.id, { type: j.openAssistant }).catch?.(() => {
   });
 });
-function Ft() {
-  S.contextMenus.removeAll(() => {
-    S.contextMenus.create({ id: "qth-insert", title: "Insert QuickText snippet…", contexts: ["editable"] }), S.contextMenus.create({ id: "qth-new-from-selection", title: "Create QuickText snippet from selection", contexts: ["selection"] });
+function Ut() {
+  k.contextMenus.removeAll(() => {
+    k.contextMenus.create({ id: "qth-insert", title: "Insert QuickText snippet…", contexts: ["editable"] }), k.sidePanel?.open && k.contextMenus.create({ id: "qth-sidepanel", title: "Open QuickText side panel", contexts: ["all"] }), k.contextMenus.create({ id: "qth-new-from-selection", title: "Create QuickText snippet from selection", contexts: ["selection"] });
   });
 }
-S.contextMenus.onClicked.addListener((e, t) => {
-  if (t?.id && (e.menuItemId === "qth-insert" && S.tabs.sendMessage(t.id, { type: W.openAssistant }, { frameId: e.frameId }).catch?.(() => {
+k.contextMenus.onClicked.addListener((e, t) => {
+  if (e.menuItemId === "qth-sidepanel") {
+    $t(t?.windowId);
+    return;
+  }
+  if (t?.id && (e.menuItemId === "qth-insert" && k.tabs.sendMessage(t.id, { type: j.openAssistant }, { frameId: e.frameId }).catch?.(() => {
   }), e.menuItemId === "qth-new-from-selection")) {
     const n = (e.selectionText || "").slice(0, 2e4);
-    S.tabs.create({ url: S.runtime.getURL("dashboard/index.html#/new?text=" + encodeURIComponent(n)) });
+    k.tabs.create({ url: k.runtime.getURL("dashboard/index.html#/new?text=" + encodeURIComponent(n)) });
   }
 });
-async function dn() {
-  if (!S.scripting?.executeScript) return;
-  const e = await S.tabs.query({});
+async function yn() {
+  if (!k.scripting?.executeScript) return;
+  const e = await k.tabs.query({});
   for (const t of e)
-    t.id === void 0 || !/^(https?|file):/.test(t.url || "") || S.scripting.executeScript({ target: { tabId: t.id, allFrames: !0 }, files: ["content.js"] }).catch(() => {
+    t.id === void 0 || !/^(https?|file):/.test(t.url || "") || k.scripting.executeScript({ target: { tabId: t.id, allFrames: !0 }, files: ["content.js"] }).catch(() => {
     });
 }
-S.runtime.onInstalled.addListener(async (e) => {
-  Ft(), dn(), e.reason === "install" && (await sn(), S.tabs.create({ url: S.runtime.getURL("dashboard/index.html#/welcome") }));
+k.runtime.onInstalled.addListener(async (e) => {
+  Ut(), yn(), e.reason === "install" && (await mn(), k.tabs.create({ url: k.runtime.getURL("dashboard/index.html#/welcome") }));
 });
-S.runtime.onStartup?.addListener(Ft);
+k.runtime.onStartup?.addListener(Ut);

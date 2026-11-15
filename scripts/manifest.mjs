@@ -20,7 +20,8 @@ export function buildManifest({ target = 'chrome', version, key }) {
     //  contextMenus - right-click "Insert QuickText snippet" in editable fields
     //  identity     - Google Sign-In through launchWebAuthFlow (only used if cloud is configured)
     //  scripting    - activate expansion in tabs that were already open at install/update time
-    permissions: ['storage', 'contextMenus', 'identity', 'scripting'],
+    //  sidePanel    - QuickText side panel (Chrome 114+)
+    permissions: ['storage', 'contextMenus', 'identity', 'scripting', ...(target === 'chrome' ? ['sidePanel'] : [])],
     // Content script must run on pages where the user types; it never reads page content
     // except the few characters before the caret inside the focused editable field.
     host_permissions: ['<all_urls>'],
@@ -41,6 +42,10 @@ export function buildManifest({ target = 'chrome', version, key }) {
       },
     ],
     commands: {
+      'open-side-panel': {
+        suggested_key: { default: 'Alt+Shift+S', mac: 'Alt+Shift+S' },
+        description: 'Open the QuickText side panel',
+      },
       'open-assistant': {
         suggested_key: { default: 'Alt+Shift+Q', mac: 'Alt+Shift+Q' },
         description: 'Open the QuickText snippet assistant in the focused field',
@@ -52,12 +57,14 @@ export function buildManifest({ target = 'chrome', version, key }) {
   };
   if (target === 'firefox') {
     manifest.background = { scripts: ['background.js'], type: 'module' };
+    manifest.sidebar_action = { default_panel: 'sidepanel/index.html', default_title: 'QuickText Hub', default_icon: 'icons/icon32.png' };
     manifest.browser_specific_settings = {
       gecko: { id: 'quicktext-hub@quicktext.local', strict_min_version: '115.0' },
     };
   } else {
     manifest.background = { service_worker: 'background.js', type: 'module' };
-    manifest.minimum_chrome_version = '109';
+    manifest.minimum_chrome_version = '114';
+    manifest.side_panel = { default_path: 'sidepanel/index.html' };
     if (key) manifest.key = key;
   }
   return manifest;

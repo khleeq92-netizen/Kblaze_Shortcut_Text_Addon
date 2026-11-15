@@ -18,12 +18,24 @@ const TABS = [['general', 'General'], ['expansion', 'Text expansion'], ['profile
 function General() {
   const { settings: s, setSettings } = useStore();
   return (
+    <>
     <Section title="Appearance">
       <div className="field"><label className="label">Theme</label>
         <select className="select" style={{ maxWidth: 240 }} value={s.theme} onChange={(e) => setSettings({ theme: e.target.value as any })}><option value="system">Match system</option><option value="light">Light</option><option value="dark">Dark</option></select>
       </div>
       <Switch checked={s.showToasts} onChange={(v) => setSettings({ showToasts: v })} label="Show notifications on web pages (errors, autopilot progress)" />
     </Section>
+    <Section title="Side panel" desc="Keep your snippets open beside any website. Fill in forms right in the panel and press Insert — ideal for WhatsApp Web and long working sessions.">
+      <div className="field"><label className="label">Clicking the QuickText toolbar icon opens</label>
+        <label className="check"><input type="radio" checked={s.actionOpens !== 'sidepanel'} onChange={() => setSettings({ actionOpens: 'popup' })} /> The quick popup</label><br />
+        <label className="check"><input type="radio" checked={s.actionOpens === 'sidepanel'} onChange={() => setSettings({ actionOpens: 'sidepanel' })} /> The side panel</label>
+      </div>
+      <div className="row">
+        {(api as any).sidePanel?.open && <button className="btn primary" onClick={async () => { const w = await api.windows.getCurrent(); await (api as any).sidePanel.open({ windowId: w.id }); }}>Open side panel now</button>}
+        <span className="hint">Also: <span className="kbd">Alt+Shift+S</span>, right-click → “Open QuickText side panel”, or the panel button in the popup.</span>
+      </div>
+    </Section>
+    </>
   );
 }
 

@@ -241,6 +241,16 @@ declare global { interface Window { __qthLoaded?: boolean } }
         expandInto(t, String(msg.snippetId), 0, '', '').then((ok) => sendResponse({ ok }));
         return true;
       }
+      case MSG.insertText: {
+        // From the side panel: insert already-rendered text into the focused field.
+        if (window !== window.top && !document.hasFocus()) return false;
+        const t = getEditTarget(deepActiveElement());
+        if (!t) { sendResponse({ ok: false, error: 'no-field' }); return false; }
+        const p = msg.payload || {};
+        replaceBeforeCaret(t, 0, { text: String(p.text || ''), html: String(p.html || ''), isRich: !!p.isRich, cursorBack: p.cursorBack ?? null })
+          .then((r) => sendResponse({ ok: r === 'ok' }));
+        return true;
+      }
       case MSG.runWorkflow:
         if (window !== window.top) return false;
         startWorkflow(String(msg.id));

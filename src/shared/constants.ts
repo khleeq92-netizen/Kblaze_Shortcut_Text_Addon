@@ -27,6 +27,7 @@ export const MSG = {
   startPicker: 'qth/startPicker',
   insertSnippet: 'qth/insertSnippet',
   ping: 'qth/ping',
+  insertText: 'qth/insertText',
 } as const;
 export const OVERLAY_MSG = 'qth-overlay';
 export const FIREBASE_APP_NAME = 'quicktext-hub';

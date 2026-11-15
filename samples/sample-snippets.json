@@ -1,7 +1,7 @@
 {
   "format": "quicktext-hub",
   "version": 1,
-  "exportedAt": 1794775260748,
+  "exportedAt": 1794777593090,
   "snippets": [
     {
       "id": "snp_email_signature",
@@ -20,8 +20,8 @@
         "kind": "template",
         "ref": "lib-email-signature"
       },
-      "createdAt": 1794775260747,
-      "updatedAt": 1794775260747
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "snp_pay_reminder",
@@ -40,8 +40,8 @@
         "kind": "template",
         "ref": "lib-pay-reminder"
       },
-      "createdAt": 1794775260747,
-      "updatedAt": 1794775260747
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "snp_trade_update",
@@ -60,8 +60,8 @@
         "kind": "template",
         "ref": "lib-trade-update"
       },
-      "createdAt": 1794775260747,
-      "updatedAt": 1794775260747
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "snp_trade_recap",
@@ -80,8 +80,8 @@
         "kind": "template",
         "ref": "lib-trade-recap"
       },
-      "createdAt": 1794775260747,
-      "updatedAt": 1794775260747
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "snp_meeting_notes",
@@ -100,8 +100,8 @@
         "kind": "template",
         "ref": "lib-meeting-notes"
       },
-      "createdAt": 1794775260747,
-      "updatedAt": 1794775260747
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "snp_wa_greeting",
@@ -120,8 +120,8 @@
         "kind": "template",
         "ref": "lib-wa-greeting"
       },
-      "createdAt": 1794775260747,
-      "updatedAt": 1794775260747
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "snp_datahub_customer",
@@ -140,8 +140,8 @@
         "kind": "template",
         "ref": "lib-datahub-customer"
       },
-      "createdAt": 1794775260747,
-      "updatedAt": 1794775260747
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "snp_quick_thanks",
@@ -157,8 +157,8 @@
         "quick"
       ],
       "trigger": "default",
-      "createdAt": 1794775260747,
-      "updatedAt": 1794775260747
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "snp_today",
@@ -174,8 +174,8 @@
         "date"
       ],
       "trigger": "default",
-      "createdAt": 1794775260747,
-      "updatedAt": 1794775260747
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     }
   ],
   "folders": [
@@ -184,8 +184,8 @@
       "name": "Personal",
       "parentId": null,
       "order": 0,
-      "createdAt": 1794775260747,
-      "updatedAt": 1794775260747,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090,
       "color": "#6366f1"
     },
     {
@@ -193,8 +193,8 @@
       "name": "Work",
       "parentId": null,
       "order": 1,
-      "createdAt": 1794775260747,
-      "updatedAt": 1794775260747,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090,
       "color": "#0ea5e9"
     },
     {
@@ -202,8 +202,8 @@
       "name": "Billing",
       "parentId": "fld_work",
       "order": 0,
-      "createdAt": 1794775260747,
-      "updatedAt": 1794775260747,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090,
       "color": "#f59e0b"
     },
     {
@@ -211,8 +211,8 @@
       "name": "Trading",
       "parentId": null,
       "order": 2,
-      "createdAt": 1794775260747,
-      "updatedAt": 1794775260747,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090,
       "color": "#10b981"
     }
   ],
@@ -282,8 +282,8 @@
           }
         }
       ],
-      "createdAt": 1794775260747,
-      "updatedAt": 1794775260747
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tbl_students",
@@ -341,8 +341,8 @@
           }
         }
       ],
-      "createdAt": 1794775260747,
-      "updatedAt": 1794775260747
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     }
   ],
   "workflows": [
@@ -393,8 +393,8 @@
           "note": "Submit the form"
         }
       ],
-      "createdAt": 1794775260747,
-      "updatedAt": 1794775260747
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     }
   ]
 }

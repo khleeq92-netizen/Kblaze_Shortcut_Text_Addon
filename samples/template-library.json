@@ -1,7 +1,7 @@
 {
   "format": "quicktext-hub",
   "version": 1,
-  "exportedAt": 1794775260748,
+  "exportedAt": 1794777593090,
   "snippets": [
     {
       "id": "tpl_email_signature",
@@ -17,8 +17,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_email_intro",
@@ -34,8 +34,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_email_ooo",
@@ -51,8 +51,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_email_thanks",
@@ -68,8 +68,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_wa_greeting",
@@ -85,8 +85,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_wa_order",
@@ -102,8 +102,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_pay_reminder",
@@ -119,8 +119,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_pay_receipt",
@@ -136,8 +136,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_pay_invoice",
@@ -153,8 +153,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_support_ack",
@@ -170,8 +170,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_support_refund",
@@ -187,8 +187,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_support_close",
@@ -204,8 +204,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_office_leave",
@@ -221,8 +221,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_office_announce",
@@ -238,8 +238,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_college_notice",
@@ -255,8 +255,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_college_fee",
@@ -272,8 +272,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_admission_ack",
@@ -289,8 +289,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_admission_offer",
@@ -306,8 +306,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_attendance_absent",
@@ -323,8 +323,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_attendance_low",
@@ -340,8 +340,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_trade_update",
@@ -357,8 +357,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_trade_recap",
@@ -374,8 +374,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_social_launch",
@@ -391,8 +391,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_social_event",
@@ -408,8 +408,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_meeting_notes",
@@ -425,8 +425,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_meeting_invite",
@@ -442,8 +442,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_followup_gentle",
@@ -459,8 +459,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_followup_sales",
@@ -476,8 +476,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_proposal",
@@ -493,8 +493,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_quote",
@@ -510,8 +510,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_personal_birthday",
@@ -527,8 +527,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_personal_running_late",
@@ -544,8 +544,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_personal_address",
@@ -561,8 +561,8 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     },
     {
       "id": "tpl_datahub_customer",
@@ -578,8 +578,756 @@
       "enabled": true,
       "favorite": false,
       "pinned": false,
-      "createdAt": 1794775260748,
-      "updatedAt": 1794775260748
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_xau_weekly",
+      "name": "Gold weekly outlook (high timeframe)",
+      "shortcut": "/xauw",
+      "content": "🟡 *{{text: symbol; default=XAUUSD}} Weekly Outlook*\n*High Timeframe Analysis*\n━━━━━━━━━━━━━━━\n\n*📊 Context*\n{{textarea: context; label=Last week recap; required; rows=4; placeholder=Gold saw strong selling pressure last week…}}\n\n*🔑 Key level: {{number: key_level; label=Key level; required; format=number}}*\n{{textarea: key_note; label=Why this level matters; default=This is the level that decides the next leg. Everything depends on how the daily and weekly candles close around it.}}\n━━━━━━━━━━━━━━━\n\n*🔻 Scenario 1 — Breakdown*\n• Bearish daily candle close below *{{key_level}}*\n• Look for sell setups after the close is confirmed\n• Target zone: *{{text: bear_targets; label=Bearish target zone; required; placeholder=3,600 – 3,350}}*\n\n*🔺 Scenario 2 — Hold & bounce*\n• Rejection / daily close back above *{{key_level}}*\n• Look for buy setups on lower-timeframe confirmation\n• Target zone: *{{text: bull_targets; label=Bullish target zone; required; placeholder=3,950 – 4,050}}*\n{{section: extra; label=Add extra notes?}}\n*📝 Notes*\n{{textarea: notes}}\n{{endsection}}\n━━━━━━━━━━━━━━━\n📅 Week of {{today; format=D MMM YYYY}}{{section: credit; label=Add credit line?}}\nCredits: {{text: credit_name; label=Credit to}}{{endsection}}\n\n⚠️ _Not financial advice. Trade at your own risk and always use a stop loss._",
+      "contentType": "text",
+      "description": "Weekly HTF post: context, key level, bearish & bullish scenarios with targets.",
+      "folderId": null,
+      "tags": [
+        "Market analysis"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_xau_daily",
+      "name": "Gold daily trading plan",
+      "shortcut": "/xaud",
+      "content": "🟡 *{{text: symbol; default=XAUUSD}} Daily Plan — {{today; format=ddd, D MMM}}*\n\n*Bias:* {{select: bias; options=🔺 Bullish,🔻 Bearish,➖ Neutral / range; required}}\n*Asian range:* {{number: asia_low; label=Asian low; format=number}} – {{number: asia_high; label=Asian high; format=number}}  ({{= round(abs(asia_high - asia_low) * pip_factor)}} pips)\n\n*Resistance:* {{text: resistance; required; placeholder=3,860 / 3,885}}\n*Support:* {{text: support; required; placeholder=3,810 / 3,790}}\n\n*Plan*\n{{textarea: plan; required; rows=3; placeholder=Wait for London to sweep the Asian high, then look for sells back into the range…}}\n{{checkbox: news_day; label=High-impact news today?; hidden}}{{if: news_day}}\n📰 *News:* {{text: news_event; label=News event & time}} — avoid entries 15 min before/after.\n{{endif}}\n{{number: pip_factor; label=Pips per 1.00 move (Gold 10 · EURUSD 10000 · JPY pairs 100); default=10; hidden}}⚠️ _Not financial advice. Trade at your own risk and always use a stop loss._",
+      "contentType": "text",
+      "description": "Intraday plan with bias, Asian range, levels and session notes.",
+      "folderId": null,
+      "tags": [
+        "Market analysis"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_levels",
+      "name": "Key levels update",
+      "shortcut": "/levels",
+      "content": "📍 *{{text: symbol; default=XAUUSD}} key levels* — {{now; format=D MMM, HH:mm}}\n\nCurrent price: *{{number: price; required; format=number}}*\n\n🔴 Resistance\n{{repeat: res; label=Resistance; min=1}}  R{{index}}: {{number: level; format=number}}\n{{endrepeat}}\n🟢 Support\n{{repeat: sup; label=Support; min=1}}  S{{index}}: {{number: level; format=number}}\n{{endrepeat}}\n{{textarea: comment; label=Comment (optional)}}",
+      "contentType": "text",
+      "description": "Quick support/resistance list with current price.",
+      "folderId": null,
+      "tags": [
+        "Market analysis"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_news_alert",
+      "name": "High-impact news alert",
+      "shortcut": "/news",
+      "content": "📰 *NEWS ALERT — {{select: event; options=NFP (Non-Farm Payrolls),CPI (Inflation),FOMC Rate Decision,Fed Chair Speech,GDP,Unemployment Claims,PPI,Retail Sales; required}}*\n\n🕒 Time: *{{time: at; label=Release time; required}}* ({{date: on; default=today; format=ddd D MMM}})\nForecast: {{text: forecast; placeholder=e.g. 180K}} | Previous: {{text: previous; placeholder=e.g. 150K}}\n\nExpect high volatility on {{text: pairs; label=Affected pairs; default=XAUUSD and USD pairs}}.\n✅ Close or protect open trades\n✅ No new entries 15 minutes before and after\n✅ Wait for the first candle to close before reacting\n\nStay safe, traders 🙏",
+      "contentType": "text",
+      "description": "NFP / CPI / FOMC warning with time and forecast.",
+      "folderId": null,
+      "tags": [
+        "Market analysis"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_gm_traders",
+      "name": "Good morning / market open",
+      "shortcut": "/gm",
+      "content": "{{= greeting()}} traders ☀️\n\nHappy {{= weekday(today())}}! {{select: focus; options=Patience is a position — wait for your setup.,Protect your capital first — profits follow.,Plan the trade and trade the plan.,No setup = no trade. Stay disciplined.}}\n\nToday we're watching *{{text: symbol; default=XAUUSD}}*{{text: watch_note; label=What are you watching? (optional); hidden}}{{if: watch_note}} — {{watch_note}}{{endif}}.\nAnalysis coming before the {{select: session; options=London,New York,Asian}} session. 📊",
+      "contentType": "text",
+      "description": "Daily greeting with day name and focus for the session.",
+      "folderId": null,
+      "tags": [
+        "Market analysis"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_session",
+      "name": "Session update",
+      "shortcut": "/session",
+      "content": "⏱ *{{select: session; options=London,New York,Asian}} session update — {{text: symbol; default=XAUUSD}}*\n\nOpen: {{number: open; required; format=number}} → Now: {{number: now_price; label=Current price; required; format=number}}\nMove: *{{= now_price - open > 0 ? \"+\" : \"\"}}{{= round((now_price - open) * pip_factor)}} pips* {{= now_price >= open ? \"🟢\" : \"🔴\"}}\n\n{{textarea: summary; label=What happened; required}}\n{{number: pip_factor; label=Pips per 1.00 move (Gold 10 · EURUSD 10000 · JPY pairs 100); default=10; hidden}}",
+      "contentType": "text",
+      "description": "London / New York session recap with price move.",
+      "folderId": null,
+      "tags": [
+        "Market analysis"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_signal",
+      "name": "Trade signal (entry, SL, TPs, R:R)",
+      "shortcut": "/entry",
+      "content": "🚨 *{{select: side; options=BUY,SELL; required}} {{text: symbol; default=XAUUSD}}* {{select: kind; label=Order type; options=NOW,LIMIT,STOP; default=NOW}}\n\n📍 Entry: *{{number: entry; required; format=number}}*\n🛑 SL: *{{number: sl; label=Stop loss; required; format=number}}*  ({{= round(abs(entry - sl) * pip_factor)}} pips)\n🎯 TP1: *{{number: tp1; required; format=number}}*  (+{{= round(abs(tp1 - entry) * pip_factor)}} pips · R:R 1:{{= round(abs(tp1 - entry) / abs(entry - sl), 1)}})\n{{number: tp2; label=TP2 (optional); format=number; hidden}}{{if: tp2}}🎯 TP2: *{{tp2}}*  (+{{= round(abs(tp2 - entry) * pip_factor)}} pips)\n{{endif}}{{number: tp3; label=TP3 (optional); format=number; hidden}}{{if: tp3}}🎯 TP3: *{{tp3}}*  (+{{= round(abs(tp3 - entry) * pip_factor)}} pips)\n{{endif}}\nRisk: {{select: risk; label=Suggested risk; options=1%,0.5%,2%; default=1%}} per trade · Move SL to entry after TP1 ✅\n{{validate: if(side = \"BUY\", sl < entry, sl > entry); message=Stop loss must be below entry for BUY and above entry for SELL}}{{number: pip_factor; label=Pips per 1.00 move (Gold 10 · EURUSD 10000 · JPY pairs 100); default=10; hidden}}\n⚠️ _Not financial advice. Trade at your own risk and always use a stop loss._",
+      "contentType": "text",
+      "description": "Full signal with pips risk and risk/reward calculated; validates SL side.",
+      "folderId": null,
+      "tags": [
+        "Trade signals"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_pending",
+      "name": "Pending order placed",
+      "shortcut": "/pending",
+      "content": "⏳ *PENDING ORDER — {{select: side; options=BUY LIMIT,SELL LIMIT,BUY STOP,SELL STOP}} {{text: symbol; default=XAUUSD}}*\n\nEntry: *{{number: entry; required; format=number}}*\nSL: {{number: sl; required; format=number}} · TP: {{number: tp; required; format=number}}\nR:R 1:{{= round(abs(tp - entry) / abs(entry - sl), 1)}}\n\nCancel if not triggered by *{{select: expiry; options=end of today,London close,New York close,end of week}}*.",
+      "contentType": "text",
+      "description": "Limit / stop order alert with expiry.",
+      "folderId": null,
+      "tags": [
+        "Trade signals"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_signal_short",
+      "name": "Quick signal (one line)",
+      "shortcut": "/qs",
+      "content": "{{select: side; options=🟢 BUY,🔴 SELL}} *{{text: symbol; default=XAUUSD}}* @ {{number: entry; required; format=number}} | SL {{number: sl; required; format=number}} | TP {{number: tp; required; format=number}} | R:R 1:{{= round(abs(tp - entry) / abs(entry - sl), 1)}}",
+      "contentType": "text",
+      "description": "Compact signal for fast-moving markets.",
+      "folderId": null,
+      "tags": [
+        "Trade signals"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_tp_hit",
+      "name": "TP hit 🎯",
+      "shortcut": "/tphit",
+      "content": "🎯 *{{select: which; options=TP1,TP2,TP3,FINAL TP}} HIT — {{text: symbol; default=XAUUSD}} {{select: side; options=BUY,SELL}}* ✅\n\n+{{= round(abs(exit - entry) * pip_factor)}} pips secured 💰 (entry {{number: entry; required; format=number}} → {{number: exit; label=Target price; required; format=number}})\n\n{{select: next; label=Next instruction; options=Move SL to entry (risk-free) and let the rest run 🚀,Close 50% and trail the stop,Trade fully closed — congratulations!}}\n{{number: pip_factor; label=Pips per 1.00 move (Gold 10 · EURUSD 10000 · JPY pairs 100); default=10; hidden}}",
+      "contentType": "text",
+      "description": "Celebrate a target hit with pips and next instruction.",
+      "folderId": null,
+      "tags": [
+        "Trade management"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_sl_hit",
+      "name": "Stop loss hit",
+      "shortcut": "/slhit",
+      "content": "🛑 *SL hit — {{text: symbol; default=XAUUSD}} {{select: side; options=BUY,SELL}}*\n\n−{{= round(abs(entry - sl) * pip_factor)}} pips (entry {{number: entry; required; format=number}}, SL {{number: sl; required; format=number}}).\n\nLosses are part of trading — the stop did its job and protected our capital. 🙏\n{{select: next; options=We wait for the next clean setup.,Re-entry plan will be shared if conditions are met.,No more trades today — protecting the week.}}\n{{number: pip_factor; label=Pips per 1.00 move (Gold 10 · EURUSD 10000 · JPY pairs 100); default=10; hidden}}",
+      "contentType": "text",
+      "description": "Professional loss update keeping the group calm.",
+      "folderId": null,
+      "tags": [
+        "Trade management"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_breakeven",
+      "name": "Move SL to breakeven",
+      "shortcut": "/beven",
+      "content": "🔒 *{{text: symbol; default=XAUUSD}} update* — price moved +{{= round(abs(price - entry) * pip_factor)}} pips in our favour.\n\nMove SL to *entry ({{number: entry; required; format=number}})* now. Trade is risk-free ✅\nCurrent price: {{number: price; required; format=number}}\n{{number: pip_factor; label=Pips per 1.00 move (Gold 10 · EURUSD 10000 · JPY pairs 100); default=10; hidden}}",
+      "contentType": "text",
+      "description": "Instruction to secure a trade at entry.",
+      "folderId": null,
+      "tags": [
+        "Trade management"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_partial",
+      "name": "Partial close",
+      "shortcut": "/partial",
+      "content": "💰 *Partial close — {{text: symbol; default=XAUUSD}}*\n\nClose *{{select: pct; options=50%,30%,70%,25%}}* at {{number: price; required; format=number}} (+{{= round(abs(price - entry) * pip_factor)}} pips from entry {{number: entry; required; format=number}}).\nTrail the remaining position with SL at {{number: new_sl; label=New stop loss; required; format=number}}.\n{{number: pip_factor; label=Pips per 1.00 move (Gold 10 · EURUSD 10000 · JPY pairs 100); default=10; hidden}}",
+      "contentType": "text",
+      "description": "Book partial profits and trail the rest.",
+      "folderId": null,
+      "tags": [
+        "Trade management"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_running",
+      "name": "Trade running in profit",
+      "shortcut": "/running",
+      "content": "📈 *{{text: symbol; default=XAUUSD}} {{select: side; options=BUY,SELL}}* running +{{= round(abs(price - entry) * pip_factor)}} pips 🔥\n\nEntry {{number: entry; required; format=number}} → now {{number: price; required; format=number}}\n{{select: tip; options=Hold — targets still valid.,Consider securing partials here.,SL already at breakeven — let it run.}}\n{{number: pip_factor; label=Pips per 1.00 move (Gold 10 · EURUSD 10000 · JPY pairs 100); default=10; hidden}}",
+      "contentType": "text",
+      "description": "Live update of an open trade.",
+      "folderId": null,
+      "tags": [
+        "Trade management"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_trade_closed",
+      "name": "Trade closed — result",
+      "shortcut": "/tclose",
+      "content": "✅ *Trade closed — {{text: symbol; default=XAUUSD}} {{select: side; options=BUY,SELL}}*\n\nEntry {{number: entry; required; format=number}} → Exit {{number: exit; required; format=number}}\n{{set: pips = round((exit - entry) * pip_factor * if(side = \"BUY\", 1, -1))}}Result: *{{= pips > 0 ? \"+\" : \"\"}}{{= pips}} pips* {{= pips > 0 ? \"🟢\" : pips < 0 ? \"🔴\" : \"⚪\"}}\n{{number: lots; label=Lot size (optional, for $ result); hidden}}{{number: pip_value; label=Pip value per lot ($); default=10; hidden}}{{if: lots}}≈ {{= pips * pip_value * lots; format=currency}} on {{lots}} lot(s)\n{{endif}}\n{{textarea: note; label=Comment (optional)}}\n{{number: pip_factor; label=Pips per 1.00 move (Gold 10 · EURUSD 10000 · JPY pairs 100); default=10; hidden}}",
+      "contentType": "text",
+      "description": "Final result with pips and money for a chosen lot size.",
+      "folderId": null,
+      "tags": [
+        "Trade management"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_cancel",
+      "name": "Signal cancelled",
+      "shortcut": "/cancel",
+      "content": "❌ *Cancel {{text: symbol; default=XAUUSD}} {{select: what; options=pending order,signal,re-entry idea}}*\n\nReason: {{select: reason; options=Price moved too far before entry,Setup invalidated on the close,High-impact news ahead,Market conditions changed}}.\nWe wait for a better opportunity. 🙏",
+      "contentType": "text",
+      "description": "Cancel a pending order / idea with reason.",
+      "folderId": null,
+      "tags": [
+        "Trade management"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_lots",
+      "name": "Position size calculator",
+      "shortcut": "/lots",
+      "content": "🧮 *Position size*\n\nBalance: {{currency: balance; required; min=1}}\nRisk: {{number: risk_pct; label=Risk %; default=1; min=0.1; max=10; step=0.1}}% = *{{= percentof(risk_pct, balance); format=currency}}*\nStop loss: {{number: sl_pips; label=Stop loss (pips); required; min=1}} pips\nPip value per 1.00 lot: {{number: pip_value; label=Pip value per lot ($) — Gold 10 (0.1 pip) · majors 10; default=10; min=0.01}} $\n\n👉 Lot size: *{{= floor(percentof(risk_pct, balance) / (sl_pips * pip_value) * 100) / 100}} lots*",
+      "contentType": "text",
+      "description": "Lot size from balance, risk % and stop loss in pips.",
+      "folderId": null,
+      "tags": [
+        "Risk & journal"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_weekly_perf",
+      "name": "Weekly performance report",
+      "shortcut": "/wkperf",
+      "content": "📊 *Weekly results — {{= formatdate(addbusinessdays(today(), -4), \"D MMM\")}} to {{today; format=D MMM YYYY}}*\n\n{{repeat: trades; label=Trade; min=1}}{{text: symbol; default=XAUUSD; hidden}}{{select: side; options=BUY,SELL; hidden}}{{number: pips; label=Result (pips, negative for loss); hidden}}{{endrepeat}}{{table: trades; columns=#:index|Pair:symbol|Side:side|Pips:pips; total=Pips}}\n\n✅ Wins: {{= countif(trades.pips, \">\", 0)}} · ❌ Losses: {{= countif(trades.pips, \"<\", 0)}} · ⚪ BE: {{= countif(trades.pips, \"=\", 0)}}\n🎯 Win rate: *{{= round(percent(countif(trades.pips, \">\", 0), count(trades.pips)))}}%*\n💰 Net: *{{= sum(trades.pips) > 0 ? \"+\" : \"\"}}{{= sum(trades.pips)}} pips*\n\nThank you for trading with us 🙏",
+      "contentType": "text",
+      "description": "Table of the week’s trades with total pips and win rate.",
+      "folderId": null,
+      "tags": [
+        "Risk & journal"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_monthly_report",
+      "name": "Monthly performance summary",
+      "shortcut": "/mreport",
+      "content": "🏆 *{{today; format=MMMM YYYY}} performance*\n\nTotal signals: {{number: total; required; min=1}}\nWins: {{number: wins; required; min=0}} · Losses: {{= total - wins}}\nWin rate: *{{= round(percent(wins, total))}}%*\nNet pips: *{{number: net_pips; label=Net pips; required}}*\n{{number: growth; label=Account growth % (optional); hidden}}{{if: growth}}Account growth: *{{growth}}%* 📈\n{{endif}}Best trade: {{text: best; label=Best trade; placeholder=XAUUSD sell +420 pips}}\n\nGrateful for this community — next month, same discipline. 💪\n⚠️ _Not financial advice. Trade at your own risk and always use a stop loss._",
+      "contentType": "text",
+      "description": "Month totals, win rate, best week and growth %.",
+      "folderId": null,
+      "tags": [
+        "Risk & journal"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_journal",
+      "name": "Trade journal entry",
+      "shortcut": "/journal",
+      "content": "📓 Journal — {{now; format=ddd D MMM YYYY, HH:mm}}\nPair: {{text: symbol; default=XAUUSD}} | {{select: side; options=BUY,SELL}} | Result: {{number: pips; label=Result (pips)}} pips\nSetup: {{select: setup; options=Break & retest,Liquidity sweep,Supply/demand zone,Trendline bounce,Breakout,Other}}\nFollowed plan? {{select: plan; options=Yes,Partly,No}}\nEmotion: {{select: emotion; options=Calm,Confident,Anxious,FOMO,Revenge,Bored}}\nWhat went well: {{textarea: good; rows=2}}\nMistake: {{textarea: mistake; rows=2}}\nLesson: {{text: lesson; required}}\nScreenshot: {{text: chart; label=Chart link (optional)}}",
+      "contentType": "text",
+      "description": "Personal journal: setup, execution, emotions, lesson.",
+      "folderId": null,
+      "tags": [
+        "Risk & journal"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_disclaimer",
+      "name": "Risk disclaimer",
+      "shortcut": "/nfa",
+      "content": "⚠️ *Disclaimer*\nAll content shared here is for educational purposes only and is not financial advice. Trading forex, gold and CFDs carries a high level of risk and may not be suitable for everyone. Never risk money you cannot afford to lose. Past performance does not guarantee future results.",
+      "contentType": "text",
+      "description": "Standard trading disclaimer.",
+      "folderId": null,
+      "tags": [
+        "Risk & journal"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_tip",
+      "name": "Trading tip of the day",
+      "shortcut": "/tip",
+      "content": "💡 *Trading tip #{{number: n; label=Tip number; default=1}}* — {{text: title; required; placeholder=Wait for the candle close}}\n\n{{textarea: body; required; rows=4}}\n\n{{select: cta; options=Save this for later 📌,Share with a trader friend 🤝,Questions? Reply below 👇}}",
+      "contentType": "text",
+      "description": "Educational post for your channel.",
+      "folderId": null,
+      "tags": [
+        "Risk & journal"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_vip_welcome",
+      "name": "Welcome new VIP member",
+      "shortcut": "/welcome",
+      "content": "🎉 Welcome to *{{text: group; label=Group name; default=Gold VIP}}*, {{text: name; required}}!\n\n✅ Plan: *{{select: plan; options=1 Month,3 Months,6 Months,12 Months; default=1 Month}}*\n📅 Valid until: *{{= formatdate(addmonths(today(), number(left(plan, 2))), \"D MMMM YYYY\")}}*\n\nWhat you get:\n• Daily gold analysis & signals with entry, SL and TPs\n• Live trade management updates\n• Weekly & monthly performance reports\n\n📌 Please read the pinned rules and set notifications to *All*.\nLet's grow together 💪",
+      "contentType": "text",
+      "description": "Onboarding message with plan and automatic expiry date.",
+      "folderId": null,
+      "tags": [
+        "VIP channel"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_vip_pay",
+      "name": "VIP subscription — payment details",
+      "shortcut": "/vippay",
+      "content": "💎 *{{text: group; label=Group name; default=Gold VIP}} — Subscription*\n\nPlan: *{{select: plan; options=1 Month,3 Months,6 Months,12 Months}}*\nPrice: {{currency: price; required; min=0}}{{number: disc; label=Discount % (optional); default=0; min=0; max=90; hidden}}{{if: disc > 0}} → *{{= discount(price, disc); format=currency}}* ({{disc}}% off 🔥){{endif}}\n\n*How to pay*\n{{textarea: methods; label=Payment details (UPI / bank / USDT); required; rows=3; placeholder=UPI: yourname@bank\nUSDT (TRC20): …}}\n\nAfter paying, send the screenshot here and you'll be added within {{select: eta; options=30 minutes,1 hour,a few hours}}. ✅",
+      "contentType": "text",
+      "description": "Price, discount and payment instructions.",
+      "folderId": null,
+      "tags": [
+        "VIP channel"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_vip_renew",
+      "name": "Subscription renewal reminder",
+      "shortcut": "/renew",
+      "content": "⏰ Hi {{name}}, your *{{text: group; label=Group name; default=Gold VIP}}* membership {{date: expiry; label=Expiry date; default=+3d; hidden}}{{if: datediff(today(), expiry) > 0}}expires in *{{= datediff(today(), expiry)}} day(s)* — on {{= formatdate(expiry, \"dddd, D MMM\")}}{{elseif: datediff(today(), expiry) = 0}}expires *today*{{else}}expired on {{= formatdate(expiry, \"D MMM\")}}{{endif}}.\n\nRenew now to keep receiving signals without interruption:\nRenewal price: {{currency: price; required}}\n{{text: pay; label=Payment details; default=Same UPI / bank as before}}\n\nThank you for being part of the community 🙏",
+      "contentType": "text",
+      "description": "Days-left countdown computed from the expiry date.",
+      "folderId": null,
+      "tags": [
+        "VIP channel"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_vip_expired",
+      "name": "Membership expired",
+      "shortcut": "/expired",
+      "content": "Hi {{name}}, your VIP membership ended on {{date: ended; default=today; format=D MMM YYYY}}, so access has been paused.\n\nRejoin any time — {{select: offer; options=renew within 48 hours and get 10% off 🎁,the same price applies,reply here and I'll share the payment details}}.\nHope to see you back soon! 🙏",
+      "contentType": "text",
+      "description": "Polite removal notice with re-join offer.",
+      "folderId": null,
+      "tags": [
+        "VIP channel"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_vip_access",
+      "name": "Payment received — access granted",
+      "shortcut": "/access",
+      "content": "✅ Payment of {{currency: amount; required}} received — thank you, {{name}}!\n\nYour *{{select: plan; options=1 Month,3 Months,6 Months,12 Months}}* access is active until *{{= formatdate(addmonths(today(), number(left(plan, 2))), \"D MMM YYYY\")}}*.\nJoin here: {{text: link; label=Group invite link; required; pattern=url}}\n\nPlease don't share the link — it's personal. Welcome aboard 🚀",
+      "contentType": "text",
+      "description": "Confirms payment and shares the joining link.",
+      "folderId": null,
+      "tags": [
+        "VIP channel"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_vip_promo",
+      "name": "Promo / offer announcement",
+      "shortcut": "/promo",
+      "content": "🔥 *{{text: title; label=Offer name; default=Limited-time VIP offer}}* 🔥\n\n{{select: plan; options=1 Month,3 Months,6 Months,12 Months}} VIP access: ~{{currency: price; required}}~ → *{{= discount(price, disc); format=currency}}*\nThat's *{{number: disc; label=Discount %; required; min=1; max=90}}% OFF* 🎁\n\n⏳ Offer ends *{{date: ends; default=+3d; format=dddd, D MMM}}* — only {{number: seats; label=Seats available; default=20}} seats.\nDM \"{{text: keyword; default=VIP}}\" to grab it 👇",
+      "contentType": "text",
+      "description": "Limited-time offer with discounted price and deadline.",
+      "folderId": null,
+      "tags": [
+        "VIP channel"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_vip_rules",
+      "name": "Group rules",
+      "shortcut": "/rules",
+      "content": "📌 *{{text: group; label=Group name; default=Gold VIP}} — Rules*\n\n1️⃣ Always use a stop loss and risk max {{number: max_risk; label=Max risk %; default=2}}% per trade.\n2️⃣ Signals are posted with entry, SL and TP — don't enter late if price has moved more than {{number: late_pips; label=Late-entry limit (pips); default=30}} pips.\n3️⃣ Follow trade-management updates (BE, partials, closes).\n4️⃣ No spam, links or promotions.\n5️⃣ Respect all members — no rude language.\n6️⃣ Membership is personal — sharing content leads to removal without refund.\n\nQuestions? Contact {{text: admin; label=Admin contact; default=@admin}}. Happy trading 📈",
+      "contentType": "text",
+      "description": "Pinned rules for a signals group.",
+      "folderId": null,
+      "tags": [
+        "VIP channel"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_vip_howjoin",
+      "name": "“How do I join?” reply",
+      "shortcut": "/howjoin",
+      "content": "Hi {{name}} 👋 Thanks for your interest!\n\nHere's how to join *{{text: group; label=Group name; default=Gold VIP}}*:\n1. Choose a plan — {{text: plans; label=Plans & prices; default=1 month / 3 months / 12 months}}\n2. Pay via {{text: methods; label=Payment methods; default=UPI, bank transfer or USDT}}\n3. Send the payment screenshot here\n4. Get your personal invite link ✅\n\n{{checkbox: free; label=Mention free channel; default=yes; hidden}}{{if: free}}Want to see our work first? Free channel: {{text: free_link; label=Free channel link}}\n{{endif}}Any questions, just ask 🙂",
+      "contentType": "text",
+      "description": "Answer to people asking how to join.",
+      "folderId": null,
+      "tags": [
+        "VIP channel"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_broker",
+      "name": "Broker account opening steps",
+      "shortcut": "/broker",
+      "content": "🏦 *Open your trading account with {{text: broker; required}}*\n\n1. Register here: {{text: link; label=Referral link; required; pattern=url}}\n2. Complete verification (ID + address proof)\n3. Choose account type: *{{select: acct; options=Standard,Raw/ECN,Cent,Pro}}*\n4. Deposit at least {{currency: min_dep; label=Minimum deposit; default=100}}\n5. Send me your account ID: {{text: idnote; label=What to send; default=your MT5 login number}}\n\n{{text: bonus; label=Bonus / benefit (optional); hidden}}{{if: bonus}}🎁 Benefit: {{bonus}}\n{{endif}}⚠️ _Not financial advice. Trade at your own risk and always use a stop loss._",
+      "contentType": "text",
+      "description": "Referral / account opening instructions.",
+      "folderId": null,
+      "tags": [
+        "VIP channel"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_emi",
+      "name": "Instalment plan (EMI schedule)",
+      "shortcut": "/emi",
+      "content": "Dear {{name}},\n\nAs discussed, your total of {{currency: total; required; min=1}} will be paid in *{{number: months; label=Number of instalments; default=3; min=1; max=24}} monthly instalments* of {{= total / months; format=currency}}:\n\n{{date: first_due; label=First due date; default=+7d; hidden}}{{repeat: schedule; count=months}}{{index}}. {{= formatdate(addmonths(first_due, index - 1), \"D MMM YYYY\")}} — {{= total / months; format=currency}}\n{{endrepeat}}\nKindly pay on or before each date. Thank you!\n{{me.name}}",
+      "contentType": "text",
+      "description": "Splits a total into monthly instalments with due dates.",
+      "folderId": null,
+      "tags": [
+        "Payments"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_bank",
+      "name": "Share payment details",
+      "shortcut": "/bank",
+      "content": "Please make the payment of *{{currency: amount; required}}* using:\n\n{{select: method; options=UPI,Bank transfer,USDT (crypto),Card link}}{{if: method = \"UPI\"}}\nUPI ID: *{{text: upi; label=UPI ID; default=yourname@bank}}*{{elseif: method = \"Bank transfer\"}}\nBank: {{text: bank_name; label=Bank name}}\nA/C name: {{text: acct_name; label=Account name}}\nA/C no: {{text: acct_no; label=Account number}}\nIFSC/SWIFT: {{text: ifsc; label=IFSC / SWIFT}}{{elseif: method = \"USDT (crypto)\"}}\nUSDT address ({{select: network; options=TRC20,ERC20,BEP20}}): {{text: wallet; label=Wallet address}}{{else}}\nPay here: {{text: card_link; label=Payment link}}{{endif}}\n\nReference: *{{text: ref; label=Reference / invoice no.; required}}*\nPlease share the screenshot once done. Thank you! 🙏",
+      "contentType": "text",
+      "description": "Bank / UPI details with amount and reference.",
+      "folderId": null,
+      "tags": [
+        "Payments"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_payment_followup",
+      "name": "Payment follow-up (2nd reminder)",
+      "shortcut": "/payfup",
+      "content": "Hi {{name}},\n\nFollowing up on the payment of *{{currency: amount; required}}* that was due on {{date: due; label=Original due date; default=-5d; format=D MMM YYYY}}{{if: datediff(due, today()) > 0}} — now *{{= datediff(due, today())}} day(s) overdue*{{endif}}.\n\nPlease clear it by {{date: final; label=New deadline; default=+2d; format=dddd, D MMM}}{{checkbox: late_fee; label=Mention late fee; hidden}}{{if: late_fee}} to avoid a late fee of {{currency: fee; label=Late fee}}{{endif}}. If already paid, kindly share the receipt.\n\nThank you,\n{{me.name}}",
+      "contentType": "text",
+      "description": "Firmer reminder with days overdue computed.",
+      "folderId": null,
+      "tags": [
+        "Payments"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_shortly",
+      "name": "Quick reply: will get back shortly",
+      "shortcut": "/shortly",
+      "content": "Hi {{name}}, thanks for your message! I'm checking this and will get back to you within {{select: eta; options=15 minutes,1 hour,a few hours,today,24 hours}}. 🙏",
+      "contentType": "text",
+      "description": "Holding reply with ETA.",
+      "folderId": null,
+      "tags": [
+        "Customer support"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_screenshot",
+      "name": "Quick reply: please share a screenshot",
+      "shortcut": "/sshot",
+      "content": "Hi {{name}}, could you please share {{select: what; options=a screenshot of the issue,your payment screenshot,your account ID,the error message}}? That will help me sort this out quickly. Thank you!",
+      "contentType": "text",
+      "description": "Ask for screenshot / details to resolve an issue.",
+      "folderId": null,
+      "tags": [
+        "Customer support"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_order_status",
+      "name": "Order / request status update",
+      "shortcut": "/status",
+      "content": "Hi {{name}}, update on your {{select: kind; options=order,request,application,refund}} *#{{text: ref; label=Reference no.; required}}*:\n\nStatus: *{{select: status; options=Received ✅,In progress ⏳,Shipped 🚚,Completed 🎉,On hold ⚠️}}*\nExpected by: {{date: eta; default=+2bd; format=ddd, D MMM}}\n{{text: note; label=Note (optional); hidden}}{{if: note}}Note: {{note}}\n{{endif}}\nThanks for your patience!",
+      "contentType": "text",
+      "description": "Status with stage and expected date.",
+      "folderId": null,
+      "tags": [
+        "Customer support"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_fee_receipt",
+      "name": "Fee receipt confirmation",
+      "shortcut": "/receipt",
+      "content": "🧾 *Fee receipt — {{me.company}}*\nReceipt no: {{text: receipt; required}}   Date: {{today; format=DD/MM/YYYY}}\n\nStudent: {{student}}   Class/Course: {{text: course; required}}\nAmount received: *{{currency: paid; required}}* via {{select: mode; options=Cash,UPI,Bank transfer,Cheque,Card}}\n{{currency: total; label=Total fee for the term; hidden}}{{if: total > paid}}Balance due: *{{= total - paid; format=currency}}* by {{date: due; default=+30d; format=D MMM YYYY}}{{else}}Fees fully paid ✅{{endif}}\n\nThank you.\nAccounts Office",
+      "contentType": "text",
+      "description": "Receipt with balance due computed.",
+      "folderId": null,
+      "tags": [
+        "College administration"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_exam_notice",
+      "name": "Exam timetable notice",
+      "shortcut": "/exam",
+      "content": "*{{select: exam; options=Mid-term,Final,Unit test,Practical,Internal}} Examination — {{text: course; label=Class / course; required}}*\n\n{{repeat: papers; label=Paper; min=1}}{{date: on; label=Date; default=+7d; hidden}}{{text: subject; hidden}}{{text: timing; label=Time; default=10:00 – 13:00; hidden}}{{endrepeat}}{{table: papers; columns=Date:formatdate(on, \"ddd D MMM\")|Subject:subject|Time:timing}}\n\nReport 30 minutes early with your ID card and admit card.\n{{me.title}}, {{me.company}}",
+      "contentType": "text",
+      "description": "Exam schedule table built from rows.",
+      "folderId": null,
+      "tags": [
+        "College administration"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_ptm",
+      "name": "Parent-teacher meeting invitation",
+      "shortcut": "/ptm",
+      "content": "Dear Parent,\n\nYou are invited to the Parent-Teacher Meeting for *{{text: class; label=Class; required}}* on *{{date: on; default=+7d; format=dddd, D MMMM}}* from {{time: from; default=10:00}} to {{time: to; default=13:00}} at {{text: venue; default=the school auditorium}}.\n\n{{checkbox: report; label=Report cards will be shared; default=yes; hidden}}{{if: report}}Report cards will be shared during the meeting. {{endif}}Your presence is important.\n\nRegards,\n{{me.name}}, {{me.company}}",
+      "contentType": "text",
+      "description": "PTM invite with date, time and venue.",
+      "folderId": null,
+      "tags": [
+        "College administration"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_holiday",
+      "name": "Holiday notice",
+      "shortcut": "/holiday",
+      "content": "📢 *Holiday Notice*\n\nThe {{select: inst; options=college,school,office,institute}} will remain closed from *{{date: from; default=+1d; format=D MMM}}* to *{{date: to; default=+2d; format=D MMM YYYY}}* ({{= datediff(from, to) + 1}} day(s)) on account of {{text: reason; required; placeholder=Diwali}}.\nClasses resume on *{{= formatdate(addbusinessdays(to, 1), \"dddd, D MMM\")}}*.\n\n{{me.company}}",
+      "contentType": "text",
+      "description": "Holiday announcement with reopening date.",
+      "folderId": null,
+      "tags": [
+        "College administration"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_result",
+      "name": "Result announcement",
+      "shortcut": "/result",
+      "content": "Dear {{student}},\n\nYour {{text: exam; default=final examination}} result: *{{number: marks; required; min=0}} / {{number: max_marks; label=Out of; default=500; min=1}}* = *{{= round(percent(marks, max_marks), 1)}}%*\nGrade: *{{= choose(true, percent(marks, max_marks) >= 90, \"A+\", percent(marks, max_marks) >= 75, \"A\", percent(marks, max_marks) >= 60, \"B\", percent(marks, max_marks) >= 45, \"C\", percent(marks, max_marks) >= 33, \"D\", \"Needs improvement\")}}*\n\n{{= percent(marks, max_marks) >= 33 ? \"Congratulations! 🎉\" : \"Please meet your class teacher to plan improvement.\"}}\n{{me.company}}",
+      "contentType": "text",
+      "description": "Individual result with percentage and grade.",
+      "folderId": null,
+      "tags": [
+        "College administration"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_docs",
+      "name": "Document submission reminder",
+      "shortcut": "/docs",
+      "content": "Dear {{applicant}},\n\nTo complete your admission for {{text: course; required}}, please submit the following by *{{date: by; default=+5d; format=dddd, D MMM}}*:\n{{repeat: docs; label=Document; min=1}}  ☐ {{text: doc; default=Photocopy of Aadhaar}}\n{{endrepeat}}\nSubmit at the admission office ({{text: hours; label=Office hours; default=10 am – 4 pm, Mon–Sat}}) or reply here with scans.\n\nAdmissions Office, {{me.company}}",
+      "contentType": "text",
+      "description": "List of pending documents with deadline.",
+      "folderId": null,
+      "tags": [
+        "Admissions"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
+    },
+    {
+      "id": "tpl_admit_confirm",
+      "name": "Admission confirmed + fee breakdown",
+      "shortcut": "/admit",
+      "content": "🎓 Dear {{applicant}}, your admission to *{{text: course; required}}* ({{text: session; default=2025-26}}) is confirmed!\n\nFee details:\n{{repeat: fees; label=Fee item; min=1}}{{text: item; default=Tuition fee; hidden}}{{currency: amount; hidden}}{{endrepeat}}{{table: fees; columns=Item:item|Amount:amount; formats=|currency; total=Amount}}\n\nPlease pay by {{date: due; default=+7d; format=D MMM YYYY}} to secure your seat. Classes begin on {{date: start; label=Classes begin; default=+30d; format=D MMMM}}.\n\nWelcome to {{me.company}}! 🎉",
+      "contentType": "text",
+      "description": "Confirmation with itemised fee table and total.",
+      "folderId": null,
+      "tags": [
+        "Admissions"
+      ],
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "createdAt": 1794777593090,
+      "updatedAt": 1794777593090
     }
   ],
   "folders": []

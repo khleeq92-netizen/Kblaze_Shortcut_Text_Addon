@@ -36,11 +36,11 @@ npm run package        # → release/quicktext-hub-chrome-<version>.zip
 ```
 
 ```bash
-npm test               # 92 unit tests (engine, templates, matching, validation)
+npm test               # 141 unit tests (engine, templates, matching, validation)
 ```
 
 ```bash
-npm run test:e2e       # builds, loads the extension in Chromium, runs 31 browser tests
+npm run test:e2e       # builds, loads the extension in Chromium, runs 35 browser tests
 ```
 
 Other scripts: `npm run dev` (watch build), `npm run build:firefox` (→ `dist-firefox/`),
@@ -109,7 +109,7 @@ filtering, CSV/JSON import & export (CSV formula-injection safe). Use rows in te
 `{{pick: customer; table=customers}}` → `{{customer.email}}`, `lookup()`, `filter()` or `{{table: data.customers}}`.
 
 ### Templates, sharing & marketplace
-* **34 built-in templates** across 14 categories (emails, WhatsApp, payments, support, office, college
+* **78 built-in templates** across 19 categories (gold & forex market analysis, trade signals, trade management, risk & journal, VIP channel business, emails, WhatsApp, payments, support, office, college
   administration, admissions, attendance, trading updates & recaps, social media, meetings, follow-ups,
   proposals, personal) — preview with a live form, then add to your folders. Save your own templates with custom categories.
 * Share a snippet, a selection or a whole folder:

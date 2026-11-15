@@ -4,8 +4,8 @@
 
 | Suite | Command | What it covers |
 |---|---|---|
-| Unit (Vitest, 92 tests) | `npm test` | template parser, formulas & functions, dates/shifts, forms & validation, conditions, sections, repeats, tables, Data Hub lookups, includes, cursor, HTML escaping, plan gating; **every built-in template** renders without errors once filled; shortcut matching (instant/delimiter, word boundary, case, prefix conflicts); import validation & sanitization; CSV parsing/export |
-| End-to-end (Playwright, 31 tests) | `npm run test:e2e` | builds, loads `dist/` as an unpacked extension in Chromium and drives a fixture page with real editors |
+| Unit (Vitest, 141 tests) | `npm test` | template parser, formulas & functions, dates/shifts, forms & validation, conditions, sections, repeats, tables, Data Hub lookups, includes, cursor, HTML escaping, plan gating; **every built-in template** renders without errors once filled; shortcut matching (instant/delimiter, word boundary, case, prefix conflicts); import validation & sanitization; CSV parsing/export |
+| End-to-end (Playwright, 35 tests) | `npm run test:e2e` | builds, loads `dist/` as an unpacked extension in Chromium and drives a fixture page with real editors |
 
 E2E cases (`tests/e2e/run-e2e.mjs`):
 
@@ -23,7 +23,8 @@ E2E cases (`tests/e2e/run-e2e.mjs`):
 12. Autopilot: label targeting, Tab, select, checkbox, confirmation **before** submit, approve → submitted; cancel → not submitted
 13. Dashboard: create snippet via UI and use it · live preview · all views render without errors · command builder output
 14. WhatsApp-style cross-origin-isolated page (COOP/COEP): form and assistant open as a popup window and insert into Lexical
-15. Popup renders
+15. Side panel: inline form + preview, insert path, toolbar-icon setting; Templates "Add all"
+16. Popup renders
 
 Results are written to `tests/e2e/output/results.json` (screenshot on failure).
 

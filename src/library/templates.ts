@@ -1,6 +1,7 @@
 // Built-in template library. Every template uses the QuickText command syntax
 // (see docs/TEMPLATE_SYNTAX.md) and is covered by tests/unit/library.test.ts.
 import type { ContentType } from '../shared/types';
+import { LIBRARY_PRO } from './templates-pro';
 
 export interface LibraryTemplate {
   id: string;
@@ -14,11 +15,12 @@ export interface LibraryTemplate {
 }
 
 export const LIBRARY_CATEGORIES = [
+  'Market analysis', 'Trade signals', 'Trade management', 'Risk & journal', 'VIP channel',
   'Professional email', 'WhatsApp', 'Payments', 'Customer support', 'Office', 'College administration',
   'Admissions', 'Attendance', 'Trading', 'Social media', 'Meetings', 'Follow-up', 'Sales & proposals', 'Personal',
 ];
 
-export const LIBRARY: LibraryTemplate[] = [
+const LIBRARY_BASE: LibraryTemplate[] = [
   {
     id: 'lib-email-signature', name: 'Email signature', category: 'Professional email', shortcut: '/sig', contentType: 'text',
     description: 'Your signature from Settings → Profile.',
@@ -343,3 +345,5 @@ Please reply if anything needs to be updated.
 {{me.name}}`,
   },
 ];
+
+export const LIBRARY: LibraryTemplate[] = [...LIBRARY_BASE, ...LIBRARY_PRO];

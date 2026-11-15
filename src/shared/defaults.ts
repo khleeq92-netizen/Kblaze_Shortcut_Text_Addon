@@ -26,6 +26,7 @@ export const DEFAULT_SETTINGS: Settings = {
   conflictStrategy: 'newest',
   syncSettings: true,
   onboarded: false,
+  actionOpens: 'popup',
 };
 
 export function mergeSettings(s: Partial<Settings> | undefined): Settings {

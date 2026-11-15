@@ -11,7 +11,7 @@ import { applyTheme } from '../../ui/theme';
 import { render } from '../../engine/render';
 import { buildRenderContext } from '../../shared/renderContext';
 import type { Snippet, DataTable, Settings, Workflow, SyncState } from '../../shared/types';
-import { Copy, ExternalLink, Play, Search, Crosshair, Power, Check, Cloud } from 'lucide-react';
+import { Copy, ExternalLink, Play, Search, Crosshair, Power, Check, Cloud, PanelRight } from 'lucide-react';
 
 const css = `
 body{width:380px;min-height:420px;background:var(--qth-bg)}
@@ -108,6 +108,7 @@ function App() {
       <div className="top">
         <b>⚡ QuickText Hub</b>
         <button className="btn sm" title={settings?.expansionEnabled ? 'Pause all expansion' : 'Resume expansion'} onClick={toggleAll}><Power size={14} /> {settings?.expansionEnabled ? 'On' : 'Off'}</button>
+        {(api as any).sidePanel?.open && <button className="btn sm" title="Open side panel (Alt+Shift+S)" onClick={async () => { const w = await api.windows.getCurrent(); await (api as any).sidePanel.open({ windowId: w.id }); window.close(); }}><PanelRight size={14} /></button>}
         <button className="btn sm" onClick={() => dash()} title="Open dashboard"><ExternalLink size={14} /></button>
       </div>
       {host && (

@@ -1,0 +1,24 @@
+body { background: var(--qth-bg); min-width: 300px; }
+.sp { display: flex; flex-direction: column; height: 100vh; }
+.sp-top { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: linear-gradient(135deg, #4f46e5, #0ea5e9); color: #fff; }
+.sp-top b { flex: 1; font-size: 15px; }
+.sp-top .btn { background: rgba(255, 255, 255, .18); border-color: transparent; color: #fff; }
+.sp-site { display: flex; align-items: center; gap: 8px; padding: 7px 12px; font-size: 12.5px; border-bottom: 1px solid var(--qth-border); background: var(--qth-surface); }
+.sp-tabs { display: flex; gap: 4px; padding: 8px 10px 0; background: var(--qth-surface); border-bottom: 1px solid var(--qth-border); }
+.sp-tabs button { all: unset; cursor: pointer; padding: 6px 10px; border-radius: 7px 7px 0 0; font-weight: 600; font-size: 12.5px; color: var(--qth-muted); border-bottom: 2px solid transparent; }
+.sp-tabs button.on { color: var(--qth-primary); border-bottom-color: var(--qth-primary); }
+.sp-body { flex: 1; overflow: auto; padding: 10px 12px 30px; }
+.sp-filter { display: flex; gap: 6px; margin-bottom: 8px; }
+.sp-chips { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+.sp-item { background: var(--qth-surface); border: 1px solid var(--qth-border); border-radius: 10px; margin-bottom: 7px; overflow: hidden; }
+.sp-item-head { display: flex; align-items: center; gap: 8px; padding: 9px 10px; cursor: pointer; }
+.sp-item-head:hover { background: var(--qth-surface-2); }
+.sp-item .nm { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-item .pv { font-size: 12px; color: var(--qth-muted); padding: 0 10px 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: -4px; }
+.sp-open { border-top: 1px solid var(--qth-border); padding: 10px; background: var(--qth-surface); }
+.sp-actions { display: flex; gap: 6px; margin-top: 10px; position: sticky; bottom: 0; background: var(--qth-surface); padding-top: 6px; }
+.sp-msg { position: fixed; left: 12px; right: 12px; bottom: 12px; background: #1e1b4b; color: #fff; padding: 9px 12px; border-radius: 9px; font-size: 13px; z-index: 10; animation: qfade .18s ease-out; }
+.sp-msg.err { background: #991b1b; }
+.search { position: relative; }
+.search input { padding-left: 32px; }
+.search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--qth-muted); }

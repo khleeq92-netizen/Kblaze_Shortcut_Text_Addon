@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useStore, useRoute, folderPath } from '../store';
+import { useStore, useRoute, folderPath, emptySnippet } from '../store';
 import { LIBRARY, LIBRARY_CATEGORIES } from '../../../library/templates';
 import { Modal, ConfirmModal } from '../common';
 import { render } from '../../../engine/render';
@@ -8,7 +8,7 @@ import { FormRenderer } from '../../../ui/FormRenderer';
 import { sanitizeHtml, htmlToText } from '../../../shared/html';
 import { uid } from '../../../shared/ids';
 import type { ContentType } from '../../../shared/types';
-import { Lock, Search, Trash2 } from 'lucide-react';
+import { Lock, Search, Trash2, FolderPlus } from 'lucide-react';
 
 interface Tpl { id: string; name: string; category: string; description?: string; shortcut: string; content: string; contentType: ContentType; mine?: boolean; locked?: boolean }
 
@@ -57,7 +57,26 @@ export function UseTemplateDialog({ tpl, onClose, onUsed }: { tpl: Tpl; onClose:
 }
 
 export function TemplatesView() {
-  const { templates, deleteTemplate, limit, toast } = useStore();
+  const { templates, deleteTemplate, limit, toast, snippets, saveFolder, saveSnippets, folders } = useStore();
+  const [, , go] = useRoute();
+  const addAll = async (category: string) => {
+    const tpls = LIBRARY.filter((t, i) => t.category === category && i < max && !snippets.some((s) => s.source?.ref === t.id));
+    if (!tpls.length) { toast('All templates in this category are already in your snippets'); return; }
+    if (snippets.length + tpls.length > limit('snippets')) { toast(`Your plan allows ${limit('snippets')} snippets`, 'error'); return; }
+    try {
+      const folder = folders.find((f) => f.name === category && !f.parentId) || (await saveFolder({ name: category }));
+      const used = new Set(snippets.map((s) => s.shortcut));
+      const list = tpls.map((t) => {
+        let sc = t.shortcut; let n = 2;
+        while (used.has(sc)) sc = t.shortcut + n++;
+        used.add(sc);
+        return { ...emptySnippet(folder.id), id: uid('snp'), name: t.name, shortcut: sc, content: t.content, contentType: t.contentType, description: t.description, source: { kind: 'template' as const, ref: t.id } };
+      });
+      await saveSnippets(list);
+      toast(`Added ${list.length} snippets to the “${category}” folder`);
+      go('/folder/' + folder.id);
+    } catch (e: any) { toast(e.message, 'error'); }
+  };
   const [cat, setCat] = useState('All');
   const [q, setQ] = useState('');
   const [open, setOpen] = useState<Tpl | null>(null);
@@ -77,6 +96,12 @@ export function TemplatesView() {
       </div>
       <p className="muted" style={{ marginTop: -6 }}>{LIBRARY.length} ready-made templates plus your own. Open one to try its form, then add it to your snippets and customise it. Save any snippet as a template from the editor.</p>
       <div className="cat-bar">{cats.map((c) => <button key={c} className={c === cat ? 'on' : ''} onClick={() => setCat(c)}>{c}</button>)}</div>
+      {LIBRARY_CATEGORIES.includes(cat) && (
+        <div className="row" style={{ marginBottom: 14 }}>
+          <button className="btn primary" onClick={() => addAll(cat)}><FolderPlus size={15} /> Add all {LIBRARY.filter((t) => t.category === cat).length} “{cat}” templates to my snippets</button>
+          <span className="muted" style={{ fontSize: 12.5 }}>Creates a “{cat}” folder; existing shortcuts are kept.</span>
+        </div>
+      )}
       <div className="tpl-grid">
         {list.map((t) => (
           <div key={t.id} className="card tpl">

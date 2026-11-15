@@ -162,6 +162,8 @@ export interface Settings {
   conflictStrategy: 'newest' | 'keep-both';
   syncSettings: boolean;
   onboarded: boolean;
+  /** What a click on the toolbar icon opens. */
+  actionOpens: 'popup' | 'sidepanel';
 }
 
 export interface CloudConfig {
