@@ -228,9 +228,11 @@ await test('snippet assistant: hotkey opens picker, search + Enter inserts', asy
   await page.keyboard.press('Control+Shift+Space');
   const of = await until(() => page.frames().find((f) => !f.isDetached() && f.url().includes('/overlay/index.html')), 4000, 'picker frame');
   await of.waitForSelector('.ov-list li');
-  await of.fill('.ov-search', 'Quick thanks');
+  await page.keyboard.type('Quick thanks', { delay: 15 });
   await sleep(150);
-  await of.press('.ov-search', 'Enter');
+  // Enter inserts and closes the picker, so its frame can vanish mid-keypress; judge by the result.
+  await of.press('.ov-search', 'Enter', { timeout: 2000 }).catch(() => {});
+  if (process.env.DEBUG) { await sleep(1500); console.log('   DBG overlay open:', await page.evaluate(() => !!document.querySelector('qth-overlay-root')), 'frame detached:', of.isDetached(), 'value:', JSON.stringify(await val('#input')), 'search:', of.isDetached() ? '-' : await of.$eval('.ov-search', (e) => e.value + ' items=' + document.querySelectorAll('.ov-list li').length).catch(() => '?')); }
   await until(async () => (await val('#input')).includes('Thank you'), 4000, 'insert from picker');
   eq(await val('#input'), 'Note: Thank you so much! 🙏');
 });
@@ -356,7 +358,7 @@ await test('WhatsApp-style isolated page: plain snippet + assistant popup window
   await win.waitForSelector('.ov-list li');
   await win.fill('.ov-search', 'Quick thanks');
   await sleep(150);
-  await win.press('.ov-search', 'Enter');
+  await win.press('.ov-search', 'Enter', { timeout: 2000 }).catch(() => {});
   await until(async () => (await iso.evaluate(() => window.lexicalText())).split('Thank you').length === 3, 6000, 'second insertion');
   await iso.close();
 });

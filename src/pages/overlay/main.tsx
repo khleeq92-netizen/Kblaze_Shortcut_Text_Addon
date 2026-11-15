@@ -77,6 +77,24 @@ function Picker() {
     if (tab === 'workflows') finish({ type: 'runWorkflow', workflowId: it.id });
     else finish({ type: 'pick', snippetId: it.id });
   };
+  const searchRef = useRef<HTMLInputElement>(null);
+  // Keys typed while focus was still on the page arrive here from the content script.
+  const fwd = useRef<(key: string) => void>(() => {});
+  fwd.current = (key: string) => {
+    searchRef.current?.focus();
+    if (key.length === 1) setQ((v) => v + key);
+    else if (key === 'Backspace') setQ((v) => v.slice(0, -1));
+    else if (key === 'ArrowDown') setSel((s) => Math.min(filtered.length - 1, s + 1));
+    else if (key === 'ArrowUp') setSel((s) => Math.max(0, s - 1));
+    else if (key === 'Enter') choose(sel);
+    else if (key === 'Tab') setTab((t) => (t === 'snippets' ? 'workflows' : 'snippets'));
+    else if (key === 'Escape') finish({ type: 'cancel' });
+  };
+  useEffect(() => {
+    const h = (e: MessageEvent) => { if (e.source === window.parent && e.data?.channel === OVERLAY_MSG && e.data.nonce === nonce && e.data.kind === 'key') fwd.current(e.data.key); };
+    window.addEventListener('message', h);
+    return () => window.removeEventListener('message', h);
+  }, []);
   const onKey = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') { e.preventDefault(); setSel((s) => Math.min(filtered.length - 1, s + 1)); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setSel((s) => Math.max(0, s - 1)); }
@@ -87,7 +105,7 @@ function Picker() {
     <>
       <div className="ov-head">
         <Search size={16} className="muted" />
-        <input className="ov-search" autoFocus placeholder={tab === 'snippets' ? 'Search snippets by name, shortcut or text…' : 'Search workflows…'} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKey} />
+        <input ref={searchRef} className="ov-search" autoFocus placeholder={tab === 'snippets' ? 'Search snippets by name, shortcut or text…' : 'Search workflows…'} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKey} />
         <button className="btn ghost icon sm" onClick={() => finish({ type: 'cancel' })} title="Close (Esc)"><X size={15} /></button>
       </div>
       <div className="ov-tabs">
@@ -187,8 +205,16 @@ function App() {
   useAutoResize(ref);
   useEffect(() => {
     loadSettings().then((s) => applyTheme(s.theme));
+    window.focus();
     api.runtime.sendMessage({ type: MSG.claimForm, nonce }).then((r: any) => (r?.ok ? setSession(r) : setInvalid(true)), () => setInvalid(true));
     const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') finish({ type: 'cancel' }); };
+    const refocus = (e: MessageEvent) => {
+      if (e.source !== window.parent || e.data?.channel !== OVERLAY_MSG || e.data.nonce !== nonce || e.data.kind !== 'key') return;
+      if (e.data.key === 'Escape') { finish({ type: 'cancel' }); return; }
+      const active = document.activeElement;
+      if (!active || active === document.body) (document.querySelector('.qform input, .qform select, .qform textarea, .ov-foot .btn') as HTMLElement | null)?.focus();
+    };
+    window.addEventListener('message', refocus);
     window.addEventListener('keydown', esc);
     return () => window.removeEventListener('keydown', esc);
   }, []);

@@ -15,7 +15,7 @@ export type OverlayResult =
   | { type: 'cancel' };
 
 type Current =
-  | { kind: 'frame'; host: HTMLElement; frame: HTMLIFrameElement; resolve: (r: OverlayResult) => void; nonce: string; listener: (e: MessageEvent) => void; win: Window }
+  | { kind: 'frame'; host: HTMLElement; frame: HTMLIFrameElement; resolve: (r: OverlayResult) => void; nonce: string; listener: (e: MessageEvent) => void; win: Window; keyGuard: (e: KeyboardEvent) => void }
   | { kind: 'window'; resolve: (r: OverlayResult) => void; nonce: string };
 let current: Current | null = null;
 
@@ -43,6 +43,7 @@ export function closeOverlay(result: OverlayResult = { type: 'cancel' }) {
   current = null;
   if (c.kind === 'frame') {
     c.win.removeEventListener('message', c.listener, true);
+    c.win.removeEventListener('keydown', c.keyGuard, true);
     c.host.remove();
   } else if (result.type === 'cancel') {
     api.runtime.sendMessage({ type: 'qth/closeOverlayWindow', nonce: c.nonce }).catch?.(() => {});
@@ -114,8 +115,22 @@ export async function openOverlay(opts: { mode: 'picker' | 'form' | 'confirm'; n
       }
       if (d.kind === 'result') closeOverlay(d.result as OverlayResult);
     };
-    current = { kind: 'frame', host, frame, resolve, nonce: nonce!, listener, win };
+    // Chrome does not always let the embedded frame take keyboard focus. While the
+    // overlay is open, keys pressed in the page are forwarded to it instead, so text
+    // can never land in the page behind the picker/form.
+    const keyGuard = (e: KeyboardEvent) => {
+      if (e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      frame.focus();
+      frame.contentWindow?.postMessage({ channel: OVERLAY_MSG, nonce, kind: 'key', key: e.key, shift: e.shiftKey }, '*');
+    };
+    current = { kind: 'frame', host, frame, resolve, nonce: nonce!, listener, win, keyGuard };
     win.addEventListener('message', listener, true);
+    win.addEventListener('keydown', keyGuard, true);
+    // Focus once now and again when the extension page has loaded (focusing too early
+    // leaves keystrokes going to the page).
     setTimeout(() => frame.focus(), 50);
+    frame.addEventListener('load', () => { frame.focus(); setTimeout(() => frame.focus(), 30); });
   });
 }
