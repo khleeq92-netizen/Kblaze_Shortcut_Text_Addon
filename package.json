@@ -1,0 +1,38 @@
+{
+  "name": "quicktext-hub",
+  "version": "1.0.0",
+  "private": true,
+  "description": "QuickText Hub - smart text expansion, dynamic templates and browser workflow automation (Manifest V3).",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/build.mjs --watch",
+    "build": "node scripts/build.mjs",
+    "build:firefox": "node scripts/build.mjs --target=firefox",
+    "package": "node scripts/build.mjs && node scripts/package.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:e2e": "node scripts/build.mjs && node tests/e2e/run-e2e.mjs",
+    "generate-key": "node scripts/generate-key.mjs"
+  },
+  "dependencies": {
+    "firebase": "^11.10.0",
+    "lucide-react": "^0.460.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "@types/node": "^22.10.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^25.0.1",
+    "lexical": "^0.21.0",
+    "@lexical/plain-text": "^0.21.0",
+    "@lexical/rich-text": "^0.21.0",
+    "quill": "^2.0.3",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3",
+    "vitest": "^2.1.8"
+  }
+}

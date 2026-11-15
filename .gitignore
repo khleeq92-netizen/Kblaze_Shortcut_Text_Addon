@@ -1,0 +1,9 @@
+node_modules/
+dist/
+dist-firefox/
+release/
+.env
+.env.local
+*.pem
+tests/e2e/.profile*/
+tests/e2e/output/
