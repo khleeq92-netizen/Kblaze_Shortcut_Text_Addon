@@ -196,3 +196,17 @@ describe('misc commands', () => {
     expect(r('{{page.host}}', {}, { page: { host: 'mail.google.com', url: '', title: '' } }).text).toBe('mail.google.com');
   });
 });
+
+describe('form registration of referenced fields', () => {
+  it('fields defined in an inactive branch still appear when referenced elsewhere', () => {
+    const src = '{{toggle: late}}{{if: late}}Pay {{currency: amount}} now{{else}}Pay {{amount}} soon{{endif}}';
+    const o = render(src, 'text', { values: { amount: 5 } });
+    expect(o.form.map((f: any) => f.name)).toEqual(['late', 'amount']);
+    expect(o.text).toBe('Pay $5.00 soon');
+  });
+  it('fields used only in formulas before their definition are registered once', () => {
+    const o = render('{{= a + 1}} {{number: a; hidden}}', 'text', { values: { a: 1 } });
+    expect(o.form.map((f: any) => f.name)).toEqual(['a']);
+    expect(o.text).toBe('2 ');
+  });
+});

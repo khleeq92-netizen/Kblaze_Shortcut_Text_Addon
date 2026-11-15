@@ -174,4 +174,4 @@ R:R 1 : {{= round(abs(target - entry) / abs(entry - sl), 2)}}
 {{if: percent(attended, total) < 75}}Below the required 75%.{{endif}}
 ```
 
-All 31 built-in templates (Templates page) are further examples and are covered by unit tests.
+All 34 built-in templates (Templates page) are further examples and are covered by unit tests.

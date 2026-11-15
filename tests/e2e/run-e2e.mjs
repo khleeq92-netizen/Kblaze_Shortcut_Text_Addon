@@ -204,7 +204,7 @@ await test('fill-in form: overlay opens, validates required field, inserts resul
   await clear(); await typeInto('#textarea', ';pay');
   const frameEl = await page.waitForSelector('qth-overlay-root', { state: 'attached', timeout: 4000 });
   assert(frameEl, 'no overlay');
-  const of = await until(() => page.frames().find((f) => f.url().includes('/overlay/index.html')), 4000, 'overlay frame');
+  const of = await until(() => page.frames().find((f) => !f.isDetached() && f.url().includes('/overlay/index.html')), 4000, 'overlay frame');
   await of.waitForSelector('.qform input');
   const inputs = await of.$$('.qform input');
   await inputs[0].fill('Ada');
@@ -221,7 +221,7 @@ await test('snippet assistant: hotkey opens picker, search + Enter inserts', asy
   await clear(); await page.click('#input');
   await page.keyboard.type('Note: ', { delay: 20 });
   await page.keyboard.press('Control+Shift+Space');
-  const of = await until(() => page.frames().find((f) => f.url().includes('/overlay/index.html')), 4000, 'picker frame');
+  const of = await until(() => page.frames().find((f) => !f.isDetached() && f.url().includes('/overlay/index.html')), 4000, 'picker frame');
   await of.waitForSelector('.ov-list li');
   await of.fill('.ov-search', 'Quick thanks');
   await sleep(150);
@@ -260,7 +260,7 @@ await test('Autopilot: fills by label, selects option, ticks box, asks before su
     const [tab] = await chrome.tabs.query({ url: 'http://127.0.0.1/*' });
     await chrome.tabs.sendMessage(tab.id, { type: 'qth/runWorkflow', id: 'wf_e2e' }, { frameId: 0 });
   });
-  const of = await until(() => page.frames().find((f) => f.url().includes('/overlay/index.html')), 8000, 'confirmation dialog');
+  const of = await until(() => page.frames().find((f) => !f.isDetached() && f.url().includes('/overlay/index.html')), 8000, 'confirmation dialog');
   await of.waitForSelector('button:has-text("Approve")');
   eq(await page.$eval('#submitted', (e) => e.textContent), '', 'must not submit before approval');
   eq(await page.$eval('#f-name', (e) => e.value), 'Test User');
@@ -275,7 +275,7 @@ await test('Autopilot: cancelling the confirmation stops the workflow', async ()
   await sleep(800); // let the previous run finish
   await page.evaluate(() => { document.getElementById('submitted').textContent = ''; });
   await dash.evaluate(async () => { const [tab] = await chrome.tabs.query({ url: 'http://127.0.0.1/*' }); await chrome.tabs.sendMessage(tab.id, { type: 'qth/runWorkflow', id: 'wf_e2e' }, { frameId: 0 }); });
-  const of = await until(() => page.frames().find((f) => f.url().includes('/overlay/index.html')), 8000, 'confirmation dialog');
+  const of = await until(() => page.frames().find((f) => !f.isDetached() && f.url().includes('/overlay/index.html')), 8000, 'confirmation dialog');
   await of.click('button:has-text("Cancel")');
   await sleep(500);
   eq(await page.$eval('#submitted', (e) => e.textContent), '');

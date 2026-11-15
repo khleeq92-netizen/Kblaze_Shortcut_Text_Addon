@@ -1,0 +1,400 @@
+{
+  "format": "quicktext-hub",
+  "version": 1,
+  "exportedAt": 1794775260748,
+  "snippets": [
+    {
+      "id": "snp_email_signature",
+      "name": "Email signature",
+      "shortcut": "/sig",
+      "content": "{{me.signature}}",
+      "contentType": "text",
+      "folderId": "fld_personal",
+      "enabled": true,
+      "favorite": true,
+      "pinned": true,
+      "description": "Your signature from Settings → Profile.",
+      "tags": [],
+      "trigger": "default",
+      "source": {
+        "kind": "template",
+        "ref": "lib-email-signature"
+      },
+      "createdAt": 1794775260747,
+      "updatedAt": 1794775260747
+    },
+    {
+      "id": "snp_pay_reminder",
+      "name": "Payment reminder",
+      "shortcut": "/payment",
+      "content": "Dear {{name}},\n\n{{toggle: overdue; label=Payment is already overdue?}}{{if: overdue}}This is a reminder that your payment of {{currency: amount; required; min=0}} for invoice {{text: invoice; label=Invoice #}} is now overdue. Kindly settle it by {{date: deadline; default=+3d}} to avoid any late fees.{{else}}Your payment of {{amount}} for invoice {{invoice}} is pending. Kindly complete it before {{deadline}}.{{endif}}\n\nIf you have already made the payment, please ignore this message.\n\nRegards,\n{{me.name}}\n{{me.company}}",
+      "contentType": "text",
+      "folderId": "fld_billing",
+      "enabled": true,
+      "favorite": true,
+      "pinned": false,
+      "description": "Polite reminder with amount and deadline; tone changes when overdue.",
+      "tags": [],
+      "trigger": "default",
+      "source": {
+        "kind": "template",
+        "ref": "lib-pay-reminder"
+      },
+      "createdAt": 1794775260747,
+      "updatedAt": 1794775260747
+    },
+    {
+      "id": "snp_trade_update",
+      "name": "Trading update",
+      "shortcut": "/trade",
+      "content": "📈 {{select: side; options=BUY,SELL}} {{text: symbol; required; label=Symbol}}\nEntry: {{number: entry; required}}\nStop loss: {{number: sl; label=Stop loss; required}}\nTarget: {{number: target; required}}\nRisk/Reward: 1 : {{= round(abs(target - entry) / abs(entry - sl), 2)}}\n{{textarea: notes; label=Notes (optional)}}\n— {{now; format=DD MMM, HH:mm}}",
+      "contentType": "text",
+      "folderId": "fld_trading",
+      "enabled": true,
+      "favorite": false,
+      "pinned": true,
+      "description": "Trade idea with risk/reward computed automatically.",
+      "tags": [],
+      "trigger": "default",
+      "source": {
+        "kind": "template",
+        "ref": "lib-trade-update"
+      },
+      "createdAt": 1794775260747,
+      "updatedAt": 1794775260747
+    },
+    {
+      "id": "snp_trade_recap",
+      "name": "Daily trade recap",
+      "shortcut": "/recap",
+      "content": "Trade recap — {{today; format=dddd, DD MMM YYYY}}\n\n{{repeat: trades; label=Trade}}{{text: symbol; hidden}}{{number: pnl; label=P&L; hidden}}{{endrepeat}}{{table: trades; columns=#:index|Symbol:symbol|P&L:pnl; formats=||currency; total=P&L}}\n\nTrades: {{= count(trades.symbol)}} | Winners: {{= countif(trades.pnl, \">\", 0)}} | Win rate: {{= percent(countif(trades.pnl, \">\", 0), count(trades.symbol)); format=number:0}}% | Net: {{= sum(trades.pnl); format=currency}}\nLesson of the day: {{textarea: lesson}}",
+      "contentType": "text",
+      "folderId": "fld_trading",
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "description": "P&L table and win-rate for the day.",
+      "tags": [],
+      "trigger": "default",
+      "source": {
+        "kind": "template",
+        "ref": "lib-trade-recap"
+      },
+      "createdAt": 1794775260747,
+      "updatedAt": 1794775260747
+    },
+    {
+      "id": "snp_meeting_notes",
+      "name": "Meeting notes",
+      "shortcut": "/notes",
+      "content": "Meeting notes — {{text: topic; required}}\nDate: {{today; format=DD MMM YYYY}}   Attendees: {{text: attendees}}\n\nDiscussion:\n{{textarea: discussion; rows=4}}\n\nAction items:\n{{repeat: actions; label=Action item}}☐ {{text: task}} — owner: {{text: owner}}, due {{date: due; default=+7d; format=D MMM}}\n{{endrepeat}}\nNext meeting: {{date: next; default=+7d; format=dddd D MMM}}",
+      "contentType": "text",
+      "folderId": "fld_work",
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "description": "Structured notes with attendees and action items.",
+      "tags": [],
+      "trigger": "default",
+      "source": {
+        "kind": "template",
+        "ref": "lib-meeting-notes"
+      },
+      "createdAt": 1794775260747,
+      "updatedAt": 1794775260747
+    },
+    {
+      "id": "snp_wa_greeting",
+      "name": "WhatsApp greeting",
+      "shortcut": "/hi",
+      "content": "{{= greeting()}} {{name}}! 👋 Hope you are doing well.",
+      "contentType": "text",
+      "folderId": "fld_personal",
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "description": "Time-aware friendly greeting.",
+      "tags": [],
+      "trigger": "default",
+      "source": {
+        "kind": "template",
+        "ref": "lib-wa-greeting"
+      },
+      "createdAt": 1794775260747,
+      "updatedAt": 1794775260747
+    },
+    {
+      "id": "snp_datahub_customer",
+      "name": "Customer details from Data Hub",
+      "shortcut": "/cust",
+      "content": "Hi {{pick: customer; table=customers; display=name}},\n\nWe have the following details on file:\nEmail: {{customer.email}}\nPhone: {{customer.phone}}\nPlan: {{customer.plan}}\n\nPlease reply if anything needs to be updated.\n{{me.name}}",
+      "contentType": "text",
+      "folderId": "fld_work",
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "description": "Pick a customer from the Data Hub \"customers\" table.",
+      "tags": [],
+      "trigger": "default",
+      "source": {
+        "kind": "template",
+        "ref": "lib-datahub-customer"
+      },
+      "createdAt": 1794775260747,
+      "updatedAt": 1794775260747
+    },
+    {
+      "id": "snp_quick_thanks",
+      "name": "Quick thanks",
+      "shortcut": "/ty",
+      "content": "Thank you so much! 🙏",
+      "contentType": "text",
+      "folderId": "fld_personal",
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "tags": [
+        "quick"
+      ],
+      "trigger": "default",
+      "createdAt": 1794775260747,
+      "updatedAt": 1794775260747
+    },
+    {
+      "id": "snp_today",
+      "name": "Today's date",
+      "shortcut": "/date",
+      "content": "{{today; format=dddd, D MMMM YYYY}}",
+      "contentType": "text",
+      "folderId": null,
+      "enabled": true,
+      "favorite": false,
+      "pinned": false,
+      "tags": [
+        "date"
+      ],
+      "trigger": "default",
+      "createdAt": 1794775260747,
+      "updatedAt": 1794775260747
+    }
+  ],
+  "folders": [
+    {
+      "id": "fld_personal",
+      "name": "Personal",
+      "parentId": null,
+      "order": 0,
+      "createdAt": 1794775260747,
+      "updatedAt": 1794775260747,
+      "color": "#6366f1"
+    },
+    {
+      "id": "fld_work",
+      "name": "Work",
+      "parentId": null,
+      "order": 1,
+      "createdAt": 1794775260747,
+      "updatedAt": 1794775260747,
+      "color": "#0ea5e9"
+    },
+    {
+      "id": "fld_billing",
+      "name": "Billing",
+      "parentId": "fld_work",
+      "order": 0,
+      "createdAt": 1794775260747,
+      "updatedAt": 1794775260747,
+      "color": "#f59e0b"
+    },
+    {
+      "id": "fld_trading",
+      "name": "Trading",
+      "parentId": null,
+      "order": 2,
+      "createdAt": 1794775260747,
+      "updatedAt": 1794775260747,
+      "color": "#10b981"
+    }
+  ],
+  "tables": [
+    {
+      "id": "tbl_customers",
+      "name": "Customers",
+      "key": "customers",
+      "description": "Sample customer list used by /cust",
+      "columns": [
+        {
+          "id": "c1",
+          "name": "Name",
+          "key": "name",
+          "type": "text"
+        },
+        {
+          "id": "c2",
+          "name": "Email",
+          "key": "email",
+          "type": "email"
+        },
+        {
+          "id": "c3",
+          "name": "Phone",
+          "key": "phone",
+          "type": "phone"
+        },
+        {
+          "id": "c4",
+          "name": "Plan",
+          "key": "plan",
+          "type": "category",
+          "options": [
+            "Basic",
+            "Pro",
+            "Enterprise"
+          ]
+        }
+      ],
+      "rows": [
+        {
+          "id": "r1",
+          "values": {
+            "name": "Aisha Khan",
+            "email": "aisha@example.com",
+            "phone": "+91 98765 43210",
+            "plan": "Pro"
+          }
+        },
+        {
+          "id": "r2",
+          "values": {
+            "name": "Daniel Brooks",
+            "email": "daniel@example.com",
+            "phone": "+1 415 555 0134",
+            "plan": "Basic"
+          }
+        },
+        {
+          "id": "r3",
+          "values": {
+            "name": "Mei Lin",
+            "email": "mei@example.com",
+            "phone": "+65 8123 4567",
+            "plan": "Enterprise"
+          }
+        }
+      ],
+      "createdAt": 1794775260747,
+      "updatedAt": 1794775260747
+    },
+    {
+      "id": "tbl_students",
+      "name": "Students",
+      "key": "students",
+      "description": "Sample student roster",
+      "columns": [
+        {
+          "id": "s1",
+          "name": "Name",
+          "key": "name",
+          "type": "text"
+        },
+        {
+          "id": "s2",
+          "name": "Roll no",
+          "key": "roll",
+          "type": "text"
+        },
+        {
+          "id": "s3",
+          "name": "Class",
+          "key": "class",
+          "type": "category",
+          "options": [
+            "10-A",
+            "10-B",
+            "11-A"
+          ]
+        },
+        {
+          "id": "s4",
+          "name": "Guardian phone",
+          "key": "guardian_phone",
+          "type": "phone"
+        }
+      ],
+      "rows": [
+        {
+          "id": "st1",
+          "values": {
+            "name": "Rohan Mehta",
+            "roll": "1012",
+            "class": "10-A",
+            "guardian_phone": "+91 90000 11111"
+          }
+        },
+        {
+          "id": "st2",
+          "values": {
+            "name": "Sara Ali",
+            "roll": "1027",
+            "class": "10-B",
+            "guardian_phone": "+91 90000 22222"
+          }
+        }
+      ],
+      "createdAt": 1794775260747,
+      "updatedAt": 1794775260747
+    }
+  ],
+  "workflows": [
+    {
+      "id": "wf_contact_form",
+      "name": "Fill a contact form (demo)",
+      "description": "Fills Name, Email and Message fields by their labels, then asks before submitting.",
+      "enabled": true,
+      "steps": [
+        {
+          "id": "w1",
+          "type": "type",
+          "target": {
+            "kind": "label",
+            "value": "Name"
+          },
+          "value": "{{me.name}}",
+          "clear": true
+        },
+        {
+          "id": "w2",
+          "type": "type",
+          "target": {
+            "kind": "label",
+            "value": "Email"
+          },
+          "value": "{{me.email}}",
+          "clear": true
+        },
+        {
+          "id": "w3",
+          "type": "type",
+          "target": {
+            "kind": "label",
+            "value": "Message"
+          },
+          "value": "Hello, I would like more information. Thanks!",
+          "clear": true
+        },
+        {
+          "id": "w4",
+          "type": "click",
+          "target": {
+            "kind": "selector",
+            "value": "button[type=submit], input[type=submit]"
+          },
+          "requireConfirm": true,
+          "note": "Submit the form"
+        }
+      ],
+      "createdAt": 1794775260747,
+      "updatedAt": 1794775260747
+    }
+  ]
+}

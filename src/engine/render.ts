@@ -259,14 +259,17 @@ export function render(source: string, contentType: 'text' | 'html', ctx: Render
       if (name in f.rowVars) return { found: true, value: f.rowVars[name] };
       if (name === 'index' || name === 'rownumber') return { found: true, value: f.index + 1 };
       const rd = defs.repeats.get(f.repeat)?.fields.get(name);
+      if (rd && rd.start >= 0 && f === dataFrame()) { try { register(name, rd.type, rd.args, frames.length, rd.start, rd.end); } catch { /* forms disabled */ } }
       if (rd) return { found: true, value: typedValue(rd.type, rawFieldValue(name, rd.type, rd.args, f), rd.args) };
     }
     if (name in vars) return { found: true, value: vars[name] };
     if (defs.sets.has(name)) return { found: true, value: '' };
     const fd = defs.fields.get(name);
+    // A field referenced before (or outside the branch of) its definition still belongs in the form.
+    if (fd) { try { register(name, fd.type, fd.args, 0, fd.start, fd.end, false, true); } catch { /* forms disabled */ } }
     if (fd) return { found: true, value: typedValue(fd.type, rawFieldValue(name, fd.type, fd.args), fd.args) };
     if (defs.implicit.has(name)) {
-      try { register(name, 'text', { main: name, opts: {}, flags: new Set() }, 0, undefined, undefined, true); } catch { /* forms disabled */ }
+      try { register(name, 'text', { main: name, opts: {}, flags: new Set() }, 0, undefined, undefined, true, true); } catch { /* forms disabled */ }
       return { found: true, value: values[name] ?? '' };
     }
     const rp = defs.repeats.get(name);
@@ -303,9 +306,9 @@ export function render(source: string, contentType: 'text' | 'html', ctx: Render
   }
 
   // ----- form registration
-  function register(name: string, type: FieldType, args: CommandArgs, depth: number, start?: number, end?: number, implicit = false) {
+  function register(name: string, type: FieldType, args: CommandArgs, depth: number, start?: number, end?: number, implicit = false, topLevel = false) {
     if (!features.forms) throw new Error('Dynamic form fields require an upgraded plan');
-    const frame = dataFrame();
+    const frame = topLevel ? undefined : dataFrame();
     const key = frame ? `${frame.repeat}#${frame.index}.${name}` : name;
     if (registered.has(key)) return;
     registered.add(key);

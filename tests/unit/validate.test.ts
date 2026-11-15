@@ -51,3 +51,13 @@ describe('html helpers', () => {
     expect(sanitizeHtml('<b>a</b><i>b</i><custom>c</custom>')).toBe('<b>a</b><i>b</i>c');
   });
 });
+
+import fs from 'node:fs';
+describe('sample files', () => {
+  it('samples/*.json import cleanly', () => {
+    for (const f of ['samples/sample-snippets.json', 'samples/template-library.json']) {
+      const b = parseImport(fs.readFileSync(f, 'utf8'));
+      expect(b.snippets.length).toBeGreaterThan(5);
+    }
+  });
+});

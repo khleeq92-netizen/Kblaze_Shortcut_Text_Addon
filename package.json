@@ -8,11 +8,13 @@
     "dev": "node scripts/build.mjs --watch",
     "build": "node scripts/build.mjs",
     "build:firefox": "node scripts/build.mjs --target=firefox",
-    "package": "node scripts/build.mjs && node scripts/package.mjs",
+    "package": "node scripts/build.mjs && node scripts/package.mjs && node scripts/package.mjs --unpacked",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "test:e2e": "node scripts/build.mjs && node tests/e2e/run-e2e.mjs",
-    "generate-key": "node scripts/generate-key.mjs"
+    "generate-key": "node scripts/generate-key.mjs",
+    "samples": "node scripts/export-samples.mjs",
+    "icons": "node scripts/make-icons.mjs"
   },
   "dependencies": {
     "firebase": "^11.10.0",

@@ -9,9 +9,17 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const target = process.argv.includes('--target=firefox') ? 'firefox' : 'chrome';
+const unpacked = process.argv.includes('--unpacked');
 const src = path.join(root, target === 'firefox' ? 'dist-firefox' : 'dist');
 const outDir = path.join(root, 'release');
 fs.mkdirSync(outDir, { recursive: true });
+if (unpacked) {
+  const dest = path.join(outDir, `quicktext-hub-unpacked${target === 'firefox' ? '-firefox' : ''}`);
+  fs.rmSync(dest, { recursive: true, force: true });
+  fs.cpSync(src, dest, { recursive: true });
+  console.log('Unpacked extension folder:', path.relative(root, dest));
+  process.exit(0);
+}
 const out = path.join(outDir, `quicktext-hub-${target}-${pkg.version}.zip`);
 fs.rmSync(out, { force: true });
 
