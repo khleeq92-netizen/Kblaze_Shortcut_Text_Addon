@@ -7,3 +7,4 @@ release/
 *.pem
 tests/e2e/.profile*/
 tests/e2e/output/
+tests/e2e/fixtures/build/

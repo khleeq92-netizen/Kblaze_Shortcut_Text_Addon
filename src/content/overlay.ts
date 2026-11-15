@@ -67,11 +67,13 @@ export async function openOverlay(opts: { mode: 'picker' | 'form' | 'confirm'; n
   shadow.append(backdrop, frame);
   hdoc.documentElement.appendChild(host);
   backdrop.addEventListener('mousedown', () => closeOverlay());
-  const frameOrigin = new URL(url).origin;
+  const allowedOrigins = new Set([new URL(url).origin, `chrome-extension://${api.runtime.id}`, `moz-extension://${api.runtime.id}`, new URL(api.runtime.getURL('/')).origin]);
 
   return new Promise<OverlayResult>((resolve) => {
     const listener = (e: MessageEvent) => {
-      if (e.source !== frame.contentWindow || e.origin !== frameOrigin) return;
+      // Only our own iframe (exact window) with the one-time nonce is accepted. With
+      // use_dynamic_url the frame URL uses a dynamic id while messages carry the static origin.
+      if (e.source !== frame.contentWindow || !allowedOrigins.has(e.origin)) return;
       const d = e.data;
       if (!d || d.channel !== OVERLAY_MSG || d.nonce !== nonce) return;
       e.stopImmediatePropagation();

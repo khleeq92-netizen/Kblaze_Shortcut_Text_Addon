@@ -1,0 +1,105 @@
+rules_version = '2';
+// QuickText Hub — Firestore security rules.
+// Deploy:  firebase deploy --only firestore:rules,firestore:indexes
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isUser(uid) { return signedIn() && request.auth.uid == uid; }
+    function myEmail() { return signedIn() && request.auth.token.email != null ? request.auth.token.email.lower() : ''; }
+    function isAdmin() { return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+    function small() { return request.resource.size() < 1000 * 1000; }
+
+    // ---------- Personal data: strictly per user ----------
+    match /users/{uid}/{coll}/{docId} {
+      allow read, delete: if isUser(uid);
+      allow create, update: if isUser(uid)
+        && coll in ['snippets', 'folders', 'tables', 'workflows', 'templates', 'meta']
+        && request.resource.data.updatedAt is number;
+    }
+
+    // ---------- Share links ----------
+    match /shares/{shareId} {
+      allow read: if resource.data.visibility == 'link'
+        || (signedIn() && resource.data.ownerUid == request.auth.uid)
+        || (resource.data.visibility == 'restricted' && myEmail() in resource.data.allowedEmails);
+      allow list: if signedIn() && resource.data.ownerUid == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.visibility in ['link', 'restricted']
+        && request.resource.data.payload is string
+        && request.resource.data.payload.size() < 900000
+        && request.resource.data.allowedEmails is list
+        && request.resource.data.allowedEmails.size() <= 100;
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+    }
+
+    // ---------- Marketplace (moderated) ----------
+    match /admins/{uid} {
+      allow read: if isUser(uid);
+      allow write: if false; // manage admins from the Firebase console only
+    }
+    match /marketplace/{id} {
+      allow read: if resource.data.status == 'approved'
+        || (signedIn() && resource.data.authorUid == request.auth.uid)
+        || isAdmin();
+      allow create: if signedIn() && small()
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.downloads == 0
+        && request.resource.data.title is string && request.resource.data.title.size() <= 120
+        && request.resource.data.content is string && request.resource.data.content.size() <= 50000;
+      // Moderators change status; anyone signed in may only increment downloads by one.
+      allow update: if (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'moderationNote', 'moderatedAt', 'moderatorUid']))
+        || (signedIn() && resource.data.status == 'approved'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['downloads'])
+            && request.resource.data.downloads == resource.data.downloads + 1);
+      allow delete: if isAdmin() || (signedIn() && resource.data.authorUid == request.auth.uid);
+    }
+
+    // ---------- Teams (Business / Enterprise) ----------
+    function team(teamId) { return get(/databases/$(database)/documents/teams/$(teamId)).data; }
+    function roleIn(teamId) { return signedIn() && request.auth.uid in team(teamId).members ? team(teamId).members[request.auth.uid] : ''; }
+    function canEdit(teamId) { return roleIn(teamId) in ['owner', 'admin', 'editor']; }
+    function canAdmin(teamId) { return roleIn(teamId) in ['owner', 'admin']; }
+
+    match /teams/{teamId} {
+      allow read: if signedIn() && (request.auth.uid in resource.data.members || myEmail() in resource.data.inviteEmails);
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.members[request.auth.uid] == 'owner'
+        && request.resource.data.members.size() == 1
+        && request.resource.data.memberUids == [request.auth.uid];
+      allow update: if
+        // admins manage members and invites, but cannot change the owner
+        (canAdmin(teamId)
+          && request.resource.data.ownerUid == resource.data.ownerUid
+          && request.resource.data.members[resource.data.ownerUid] == 'owner')
+        // an invited user may add exactly themselves with the invited role
+        || (signedIn() && myEmail() in resource.data.inviteEmails
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members', 'memberUids', 'memberEmails', 'inviteEmails', 'inviteRoles'])
+          && request.resource.data.members.diff(resource.data.members).affectedKeys().hasOnly([request.auth.uid])
+          && request.resource.data.members[request.auth.uid] == resource.data.inviteRoles[myEmail().replace('\\.', ',')])
+        // a member may leave (remove only themselves)
+        || (signedIn() && request.auth.uid in resource.data.members && resource.data.members[request.auth.uid] != 'owner'
+          && !(request.auth.uid in request.resource.data.members)
+          && request.resource.data.members.diff(resource.data.members).affectedKeys().hasOnly([request.auth.uid]));
+      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+
+      match /{coll}/{docId} {
+        allow read: if roleIn(teamId) != '' && coll in ['snippets', 'folders'];
+        allow write: if canEdit(teamId) && coll in ['snippets', 'folders'] && (request.resource == null || small());
+      }
+      match /audit/{id} {
+        allow read: if canAdmin(teamId);
+        allow create: if roleIn(teamId) != '' || (signedIn() && myEmail() in team(teamId).inviteEmails);
+        allow update, delete: if false; // append-only
+      }
+      match /usage/{uid} {
+        allow read: if canAdmin(teamId) || isUser(uid);
+        allow write: if isUser(uid) && roleIn(teamId) != '';
+      }
+    }
+  }
+}

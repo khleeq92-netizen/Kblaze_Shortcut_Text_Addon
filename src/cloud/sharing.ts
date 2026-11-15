@@ -3,35 +3,13 @@
 // restricted to specific email addresses).
 import { collection, doc, getDoc, setDoc, deleteDoc, getDocs, query, where } from 'firebase/firestore';
 import { getFirebase } from './firebase';
-import type { Snippet, Folder, ExportBundle } from '../shared/types';
+import type { ExportBundle } from '../shared/types';
 import { parseImport } from '../shared/validate';
 import { api } from '../shared/browser';
 
-const CODE_PREFIX = 'QTH1.';
+import { CODE_PREFIX, decodeShareCode, bundleOf, makeShareCode } from '../shared/shareCode';
+export { bundleOf, makeShareCode };
 const SHARE_PREFIX = 'QTHS-';
-
-function b64url(bytes: Uint8Array) {
-  let s = '';
-  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-function fromB64url(s: string) {
-  const bin = atob(s.replace(/-/g, '+').replace(/_/g, '/'));
-  return Uint8Array.from(bin, (c) => c.charCodeAt(0));
-}
-async function pipe(data: Uint8Array, stream: CompressionStream | DecompressionStream) {
-  const out = new Response(new Blob([data as BlobPart]).stream().pipeThrough(stream));
-  return new Uint8Array(await out.arrayBuffer());
-}
-
-export function bundleOf(snippets: Snippet[], folders: Folder[]): ExportBundle {
-  return { format: 'quicktext-hub', version: 1, exportedAt: Date.now(), snippets: snippets.map((s) => ({ ...s, teamId: null })), folders: folders.map((f) => ({ ...f, teamId: null })) };
-}
-
-export async function makeShareCode(bundle: ExportBundle): Promise<string> {
-  const raw = new TextEncoder().encode(JSON.stringify(bundle));
-  return CODE_PREFIX + b64url(await pipe(raw, new CompressionStream('deflate-raw')));
-}
 
 export function shareLink(shareId: string) {
   return api.runtime.getURL(`dashboard/index.html#/import?share=${shareId}`);
@@ -68,8 +46,7 @@ export async function deleteShare(id: string) {
 export async function resolveShare(input: string): Promise<{ bundle: ExportBundle; title: string; from: string }> {
   const s = input.trim();
   if (s.startsWith(CODE_PREFIX)) {
-    const json = new TextDecoder().decode(await pipe(fromB64url(s.slice(CODE_PREFIX.length)), new DecompressionStream('deflate-raw')));
-    const bundle = parseImport(json);
+    const bundle = await decodeShareCode(s);
     return { bundle, title: `${bundle.snippets.length} shared snippet(s)`, from: 'share code' };
   }
   const m = /(?:QTHS-|[?&]share=)([A-Za-z0-9]{10,40})/.exec(s);

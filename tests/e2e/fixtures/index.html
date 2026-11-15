@@ -1,0 +1,25 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>QuickText E2E fixture</title>
+<style>body{font:14px sans-serif;padding:20px} .ed{border:1px solid #999;min-height:40px;padding:6px;margin:8px 0;width:700px} input,textarea{width:700px;margin:8px 0;display:block}</style>
+</head><body>
+<h1>Fixture</h1>
+<input id="input" type="text" placeholder="input">
+<input id="password" type="password">
+<input id="controlled" type="text"><div id="controlled-state"></div>
+<textarea id="textarea" rows="4"></textarea>
+<div id="ce" class="ed" contenteditable="true"></div>
+<div id="gmail" class="ed" contenteditable="true" role="textbox" aria-label="Message Body"><div><br></div></div>
+<div id="quill" class="ed"></div>
+<div id="lexical" class="ed" contenteditable="true"></div>
+<iframe id="frame" style="width:720px;height:120px" srcdoc="<body><div id='inner' contenteditable='true' style='min-height:60px;border:1px solid #ccc'></div></body>"></iframe>
+<form id="contact" onsubmit="event.preventDefault(); document.getElementById('submitted').textContent='SUBMITTED:'+new FormData(this).get('name')+'|'+new FormData(this).get('email')+'|'+new FormData(this).get('topic')">
+  <label>Name <input name="name" id="f-name"></label>
+  <label>Email <input name="email" id="f-email"></label>
+  <label>Topic <select name="topic" id="f-topic"><option>Sales</option><option>Support</option></select></label>
+  <label><input type="checkbox" name="agree" id="f-agree"> I agree</label>
+  <button type="submit">Send message</button>
+</form>
+<div id="submitted"></div>
+<script src="./build/editors.js"></script>
+<script src="./build/react-input.js"></script>
+</body></html>
