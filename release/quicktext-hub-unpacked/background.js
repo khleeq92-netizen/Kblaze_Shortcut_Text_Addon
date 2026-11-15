@@ -1,4 +1,4 @@
-const L = typeof browser < "u" && browser?.runtime ? browser : globalThis.chrome, Pt = "quicktext-hub-db", Ot = 1, Se = {
+const S = typeof browser < "u" && browser?.runtime ? browser : globalThis.chrome, Ot = "quicktext-hub-db", Ut = 1, Ae = {
   settings: "qth.settings",
   cloud: "qth.cloudConfig",
   revision: "qth.revision",
@@ -17,83 +17,83 @@ const L = typeof browser < "u" && browser?.runtime ? browser : globalThis.chrome
   picked: "qth/picked",
   // background -> content
   openAssistant: "qth/openAssistant"
-}, Ut = ["snippets", "folders", "tables", "workflows", "templates", "usage", "meta"];
-let he = null;
-function Ve() {
-  return he || (he = new Promise((e, t) => {
-    const n = indexedDB.open(Pt, Ot);
+}, Ht = ["snippets", "folders", "tables", "workflows", "templates", "usage", "meta"];
+let ge = null;
+function Ke() {
+  return ge || (ge = new Promise((e, t) => {
+    const n = indexedDB.open(Ot, Ut);
     n.onupgradeneeded = () => {
       const r = n.result;
-      for (const a of Ut)
+      for (const a of Ht)
         r.objectStoreNames.contains(a) || (a === "usage" ? r.createObjectStore(a, { keyPath: "snippetId" }) : a === "meta" ? r.createObjectStore(a) : r.createObjectStore(a, { keyPath: "id" }).createIndex("updatedAt", "updatedAt"));
     }, n.onsuccess = () => {
       const r = n.result;
       r.onversionchange = () => {
-        r.close(), he = null;
+        r.close(), ge = null;
       }, e(r);
     }, n.onerror = () => t(n.error);
-  }), he);
+  }), ge);
 }
-function pt(e) {
+function ft(e) {
   return new Promise((t, n) => {
     e.onsuccess = () => t(e.result), e.onerror = () => n(e.error);
   });
 }
-async function ft(e) {
-  const t = await Ve();
-  return pt(t.transaction(e, "readonly").objectStore(e).getAll());
+async function ht(e) {
+  const t = await Ke();
+  return ft(t.transaction(e, "readonly").objectStore(e).getAll());
 }
-async function Ke(e, t) {
-  const n = await Ve();
-  return pt(n.transaction(e, "readonly").objectStore(e).get(t));
+async function Ge(e, t) {
+  const n = await Ke();
+  return ft(n.transaction(e, "readonly").objectStore(e).get(t));
 }
-async function ht(e, t, n) {
+async function gt(e, t, n) {
   if (!t.length) return;
-  const r = await Ve();
+  const r = await Ke();
   await new Promise((a, o) => {
     const s = r.transaction(e, "readwrite"), c = s.objectStore(e);
-    for (const d of t) n !== void 0 ? c.put(d, n) : c.put(d);
+    for (const u of t) n !== void 0 ? c.put(u, n) : c.put(u);
     s.oncomplete = () => a(), s.onerror = () => o(s.error), s.onabort = () => o(s.error);
   });
 }
-async function gt(e, t, n) {
-  return ht(e, [t], n);
+async function yt(e, t, n) {
+  return gt(e, [t], n);
 }
-const Ht = /* @__PURE__ */ new Set();
-async function yt(e, t = "local") {
-  Ht.forEach((n) => {
+const Bt = /* @__PURE__ */ new Set();
+async function wt(e, t = "local") {
+  Bt.forEach((n) => {
     try {
       n({ collections: e, origin: t });
     } catch {
     }
   });
   try {
-    L?.storage?.local && await new Promise((n) => L.storage.local.set({ [Se.revision]: { at: Date.now(), collections: e, origin: t } }, () => n()));
+    S?.storage?.local && await new Promise((n) => S.storage.local.set({ [Ae.revision]: { at: Date.now(), collections: e, origin: t } }, () => n()));
   } catch {
   }
 }
-async function Ae(e, t = !1) {
-  const n = await ft(e);
+async function Le(e, t = !1) {
+  const n = await ht(e);
   return t ? n : n.filter((r) => !r.deleted);
 }
-async function xe(e, t, n = {}) {
+async function ke(e, t, n = {}) {
   const r = Date.now(), a = t.map((o) => n.touch === !1 ? o : { ...o, createdAt: o.createdAt || r, updatedAt: r });
-  return await ht(e, a), await yt([e], n.origin || "local"), a;
+  return await gt(e, a), await wt([e], n.origin || "local"), a;
 }
-async function wt(e) {
-  const t = /* @__PURE__ */ new Date(), n = t.toISOString().slice(0, 10), r = await Ke("usage", e) || { snippetId: e, count: 0, lastUsedAt: 0, daily: {} };
+async function bt(e) {
+  const t = /* @__PURE__ */ new Date(), n = t.toISOString().slice(0, 10), r = await Ge("usage", e) || { snippetId: e, count: 0, lastUsedAt: 0, daily: {} };
   r.count++, r.lastUsedAt = t.getTime(), r.daily[n] = (r.daily[n] || 0) + 1;
   const a = Object.keys(r.daily).sort();
   for (; a.length > 90; ) delete r.daily[a.shift()];
-  await gt("usage", r), await yt(["usage"]);
+  await yt("usage", r), await wt(["usage"]);
 }
-async function Bt(e) {
-  return Ke("meta", e);
+async function jt(e) {
+  return Ge("meta", e);
 }
-async function at(e, t) {
-  return gt("meta", t, e);
+async function ot(e, t) {
+  return yt("meta", t, e);
 }
-const ot = {
+const it = {
   theme: "system",
   expansionEnabled: !0,
   triggerMode: "immediate",
@@ -121,14 +121,14 @@ const ot = {
   syncSettings: !0,
   onboarded: !1
 };
-function jt(e) {
-  return { ...ot, ...e || {}, profile: { ...ot.profile, ...e?.profile || {} } };
+function Wt(e) {
+  return { ...it, ...e || {}, profile: { ...it.profile, ...e?.profile || {} } };
 }
-async function Wt() {
-  const e = await new Promise((t) => L.storage.local.get(Se.settings, t));
-  return jt(e?.[Se.settings]);
+async function zt() {
+  const e = await new Promise((t) => S.storage.local.get(Ae.settings, t));
+  return Wt(e?.[Ae.settings]);
 }
-function zt(e, t) {
+function Vt(e, t) {
   const n = t.toLowerCase();
   return e.blockedSites.some((r) => {
     const a = r.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
@@ -138,65 +138,65 @@ function zt(e, t) {
 function ue(e) {
   return e.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
-function Oe(e) {
+function Ue(e) {
   return ue(e).replace(/\r?\n/g, "<br>");
 }
-const Vt = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", "#39": "'" };
-function je(e) {
+const Kt = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", "#39": "'" };
+function We(e) {
   return e.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+\d*);/gi, (t, n) => {
     if (n[0] === "#") {
       const r = n[1].toLowerCase() === "x" ? parseInt(n.slice(2), 16) : parseInt(n.slice(1), 10);
       return Number.isFinite(r) ? String.fromCodePoint(r) : t;
     }
-    return Vt[n.toLowerCase()] ?? t;
+    return Kt[n.toLowerCase()] ?? t;
   });
 }
-const Kt = /^(p|div|h[1-6]|li|tr|blockquote|pre|ul|ol|table|section|article|header|footer)$/i;
-function it(e) {
+const Gt = /^(p|div|h[1-6]|li|tr|blockquote|pre|ul|ol|table|section|article|header|footer)$/i;
+function st(e) {
   let t = "";
   const n = [], r = /<\/?([a-zA-Z0-9]+)([^>]*)>|([^<]+)/g;
   let a, o = null, s = "", c = !1;
-  const d = () => {
+  const u = () => {
     t && !t.endsWith(`
 `) && (t += `
 `);
   };
   for (; a = r.exec(e); ) {
     if (a[3] !== void 0) {
-      const v = je(a[3].replace(/[\r\n\t ]+/g, " "));
-      t += v, c && (s += v);
+      const T = We(a[3].replace(/[\r\n\t ]+/g, " "));
+      t += T, c && (s += T);
       continue;
     }
-    const l = a[1].toLowerCase(), A = a[0][1] === "/";
+    const l = a[1].toLowerCase(), D = a[0][1] === "/";
     if (l === "br") {
       t += `
 `;
       continue;
     }
     if (l === "a") {
-      if (A)
+      if (D)
         o && s.trim() !== o && !/^mailto:/i.test(o) && (t += ` (${o})`), c = !1, o = null;
       else {
-        const v = /href\s*=\s*["']([^"']*)["']/i.exec(a[2]);
-        o = v ? je(v[1]) : null, c = !0, s = "";
+        const T = /href\s*=\s*["']([^"']*)["']/i.exec(a[2]);
+        o = T ? We(T[1]) : null, c = !0, s = "";
       }
       continue;
     }
     if (l === "ul" || l === "ol") {
-      A ? (n.pop(), d()) : (d(), n.push({ ordered: l === "ol", n: 0 }));
+      D ? (n.pop(), u()) : (u(), n.push({ ordered: l === "ol", n: 0 }));
       continue;
     }
-    if (l === "li" && !A) {
-      d();
-      const v = n[n.length - 1];
-      t += "  ".repeat(Math.max(0, n.length - 1)) + (v?.ordered ? `${++v.n}. ` : "• ");
+    if (l === "li" && !D) {
+      u();
+      const T = n[n.length - 1];
+      t += "  ".repeat(Math.max(0, n.length - 1)) + (T?.ordered ? `${++T.n}. ` : "• ");
       continue;
     }
     if (l === "td" || l === "th") {
-      A && (t += "	");
+      D && (t += "	");
       continue;
     }
-    Kt.test(l) && d();
+    Gt.test(l) && u();
   }
   return t.replace(/\t\n/g, `
 `).replace(/[  ]+\n/g, `
@@ -209,7 +209,7 @@ class X extends Error {
     super(t), this.pos = n;
   }
 }
-function Gt(e, t = !1) {
+function Qt(e, t = !1) {
   const n = [];
   let r = 0, a = "", o = 0;
   for (; r < e.length; ) {
@@ -234,15 +234,15 @@ function Gt(e, t = !1) {
         s = l;
       }
       if (a && n.push({ type: "text", value: a, start: o, end: r }), e.slice(r + 2, s).includes("{{")) throw new X('Commands cannot be nested inside other commands. Use a formula instead, e.g. {{link: ="https://site.com/" & id}}', r);
-      let d = e.slice(r + 2, s);
-      t && (d = je(d.replace(/<[^>]*>/g, "")).replace(/\u00a0/g, " ")), n.push({ type: "cmd", value: d.trim(), start: r, end: s + 2 }), r = s + 2, a = "", o = r;
+      let u = e.slice(r + 2, s);
+      t && (u = We(u.replace(/<[^>]*>/g, "")).replace(/\u00a0/g, " ")), n.push({ type: "cmd", value: u.trim(), start: r, end: s + 2 }), r = s + 2, a = "", o = r;
       continue;
     }
     a += e[r++];
   }
   return a && n.push({ type: "text", value: a, start: o, end: e.length }), n;
 }
-function ge(e, t) {
+function ye(e, t) {
   const n = [];
   let r = "", a = null, o = 0;
   for (let s = 0; s < e.length; s++) {
@@ -263,19 +263,19 @@ function ge(e, t) {
   }
   return n.push(r), n;
 }
-function bt(e) {
+function xt(e) {
   const t = e.trim();
   return t.length >= 2 && (t[0] === '"' && t.endsWith('"') || t[0] === "'" && t.endsWith("'")) ? t.slice(1, -1).replace(/\\(["'\\])/g, "$1").replace(/\\n/g, `
 `) : t;
 }
-function Qt(e) {
+function Jt(e) {
   const t = e.trim();
   if (t.startsWith("=")) {
-    const c = ge(t.slice(1), ";");
-    return { name: "=", args: { main: c[0].trim(), ...st(c.slice(1)) } };
+    const c = ye(t.slice(1), ";");
+    return { name: "=", args: { main: c[0].trim(), ...ct(c.slice(1)) } };
   }
   if (t.startsWith("#")) return { name: "#", args: { main: t.slice(1), opts: {}, flags: /* @__PURE__ */ new Set() } };
-  const n = ge(t, ";"), r = n[0].trim(), a = /^([A-Za-z][\w-]*)\s*:\s*([\s\S]*)$/.exec(r);
+  const n = ye(t, ";"), r = n[0].trim(), a = /^([A-Za-z][\w-]*)\s*:\s*([\s\S]*)$/.exec(r);
   let o, s = "";
   if (a)
     o = a[1].toLowerCase(), s = a[2].trim();
@@ -288,69 +288,69 @@ function Qt(e) {
       o = c[1].toLowerCase(), s = c[2].trim();
     else throw new X(`Cannot understand command "{{${e}}}"`);
   }
-  return { name: o, args: { main: o === "if" || o === "elseif" || o === "set" ? s : bt(s), ...st(n.slice(1)) } };
+  return { name: o, args: { main: o === "if" || o === "elseif" || o === "set" ? s : xt(s), ...ct(n.slice(1)) } };
 }
-function st(e) {
+function ct(e) {
   const t = {}, n = /* @__PURE__ */ new Set();
   for (const r of e) {
     const a = r.trim();
     if (!a) continue;
     const o = a.indexOf("=");
-    o > 0 && /^[\w-]+$/.test(a.slice(0, o).trim()) ? t[a.slice(0, o).trim().toLowerCase()] = bt(a.slice(o + 1)) : n.add(a.toLowerCase());
+    o > 0 && /^[\w-]+$/.test(a.slice(0, o).trim()) ? t[a.slice(0, o).trim().toLowerCase()] = xt(a.slice(o + 1)) : n.add(a.toLowerCase());
   }
   return { opts: t, flags: n };
 }
-function We(e, t = !1) {
-  const n = Gt(e, t);
+function ze(e, t = !1) {
+  const n = Qt(e, t);
   let r = 0;
   function a(s) {
     const c = [];
     for (; r < n.length; ) {
-      const d = n[r++];
-      if (d.type === "text") {
-        c.push({ k: "text", text: d.value });
+      const u = n[r++];
+      if (u.type === "text") {
+        c.push({ k: "text", text: u.value });
         continue;
       }
-      if (!d.value) {
+      if (!u.value) {
         c.push({ k: "text", text: "" });
         continue;
       }
-      const { name: l, args: A } = Qt(d.value);
-      if (s.includes(l)) return { nodes: c, term: { name: l, args: A, end: d.end } };
+      const { name: l, args: D } = Jt(u.value);
+      if (s.includes(l)) return { nodes: c, term: { name: l, args: D, end: u.end } };
       if (l === "if") {
-        const v = [];
-        let w = A.main, T = null;
+        const T = [];
+        let w = D.main, A = null;
         for (; ; ) {
-          const S = a(["elseif", "else", "endif"]);
-          if (!S.term) throw new X(`{{if: ${A.main}}} is missing {{endif}}`, d.start);
-          if (v.push({ cond: w, body: S.nodes }), S.term.name === "endif") break;
-          if (S.term.name === "elseif") {
-            w = S.term.args.main;
+          const L = a(["elseif", "else", "endif"]);
+          if (!L.term) throw new X(`{{if: ${D.main}}} is missing {{endif}}`, u.start);
+          if (T.push({ cond: w, body: L.nodes }), L.term.name === "endif") break;
+          if (L.term.name === "elseif") {
+            w = L.term.args.main;
             continue;
           }
           const j = a(["endif"]);
-          if (!j.term) throw new X(`{{if: ${A.main}}} is missing {{endif}}`, d.start);
-          T = j.nodes;
+          if (!j.term) throw new X(`{{if: ${D.main}}} is missing {{endif}}`, u.start);
+          A = j.nodes;
           break;
         }
-        if (v.some((S) => !S.cond.trim())) throw new X("{{if}} / {{elseif}} needs a condition, e.g. {{if: amount > 100}}", d.start);
-        c.push({ k: "if", branches: v, elseBody: T, start: d.start });
+        if (T.some((L) => !L.cond.trim())) throw new X("{{if}} / {{elseif}} needs a condition, e.g. {{if: amount > 100}}", u.start);
+        c.push({ k: "if", branches: T, elseBody: A, start: u.start });
         continue;
       }
       if (l === "repeat" || l === "section") {
-        const v = l === "repeat" ? "endrepeat" : "endsection", w = a([v]);
-        if (!w.term) throw new X(`{{${l}: ${A.main}}} is missing {{${v}}}`, d.start);
-        c.push({ k: l, args: A, body: w.nodes, start: d.start, end: d.end, raw: d.value });
+        const T = l === "repeat" ? "endrepeat" : "endsection", w = a([T]);
+        if (!w.term) throw new X(`{{${l}: ${D.main}}} is missing {{${T}}}`, u.start);
+        c.push({ k: l, args: D, body: w.nodes, start: u.start, end: u.end, raw: u.value });
         continue;
       }
-      if (["else", "elseif", "endif", "endrepeat", "endsection"].includes(l)) throw new X(`{{${l}}} without a matching opening command`, d.start);
-      c.push({ k: "cmd", name: l, args: A, raw: d.value, start: d.start, end: d.end });
+      if (["else", "elseif", "endif", "endrepeat", "endsection"].includes(l)) throw new X(`{{${l}}} without a matching opening command`, u.start);
+      c.push({ k: "cmd", name: l, args: D, raw: u.value, start: u.start, end: u.end });
     }
     return { nodes: c, term: null };
   }
   return a([]).nodes;
 }
-const ct = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], lt = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], J = (e, t = 2) => String(e).padStart(t, "0"), Jt = (e) => {
+const lt = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"], dt = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], J = (e, t = 2) => String(e).padStart(t, "0"), Zt = (e) => {
   const t = ["th", "st", "nd", "rd"], n = e % 100;
   return e + (t[(n - 20) % 10] || t[n] || t[0]);
 };
@@ -359,15 +359,15 @@ function z(e, t) {
   const n = {
     YYYY: () => String(e.getFullYear()),
     YY: () => String(e.getFullYear()).slice(-2),
-    MMMM: () => ct[e.getMonth()],
-    MMM: () => ct[e.getMonth()].slice(0, 3),
+    MMMM: () => lt[e.getMonth()],
+    MMM: () => lt[e.getMonth()].slice(0, 3),
     MM: () => J(e.getMonth() + 1),
     M: () => String(e.getMonth() + 1),
-    Do: () => Jt(e.getDate()),
+    Do: () => Zt(e.getDate()),
     DD: () => J(e.getDate()),
     D: () => String(e.getDate()),
-    dddd: () => lt[e.getDay()],
-    ddd: () => lt[e.getDay()].slice(0, 3),
+    dddd: () => dt[e.getDay()],
+    ddd: () => dt[e.getDay()].slice(0, 3),
     HH: () => J(e.getHours()),
     H: () => String(e.getHours()),
     hh: () => J(e.getHours() % 12 || 12),
@@ -382,7 +382,7 @@ function z(e, t) {
   };
   return t.replace(/\[([^\]]*)\]|YYYY|YY|MMMM|MMM|MM|M|Do|DD|D|dddd|ddd|HH|H|hh|h|mm|m|ss|s|A|a|Q/g, (r, a) => a !== void 0 ? a : n[r]());
 }
-function de(e, t) {
+function me(e, t) {
   const n = new Date(e.getTime()), r = /([+-])\s*(\d+)\s*(y|M|w|d|h|m|s|bd)/g;
   let a, o = !1;
   for (; a = r.exec(t); ) {
@@ -393,7 +393,7 @@ function de(e, t) {
         n.setFullYear(n.getFullYear() + s);
         break;
       case "M":
-        Ge(n, s);
+        Qe(n, s);
         break;
       case "w":
         n.setDate(n.getDate() + 7 * s);
@@ -402,7 +402,7 @@ function de(e, t) {
         n.setDate(n.getDate() + s);
         break;
       case "bd":
-        xt(n, s);
+        kt(n, s);
         break;
       case "h":
         n.setHours(n.getHours() + s);
@@ -418,13 +418,13 @@ function de(e, t) {
   if (!o && t.trim()) throw new Error(`Invalid date shift "${t}". Use e.g. +3d, -1w, +1M, +2bd`);
   return n;
 }
-function Ge(e, t) {
+function Qe(e, t) {
   const n = e.getDate();
   e.setDate(1), e.setMonth(e.getMonth() + t);
   const r = new Date(e.getFullYear(), e.getMonth() + 1, 0).getDate();
   return e.setDate(Math.min(n, r)), e;
 }
-function xt(e, t) {
+function kt(e, t) {
   const n = t < 0 ? -1 : 1;
   let r = Math.abs(t);
   for (; r > 0; )
@@ -440,9 +440,9 @@ function H(e, t = /* @__PURE__ */ new Date()) {
   const r = n.toLowerCase(), a = new Date(t.getFullYear(), t.getMonth(), t.getDate());
   if (r === "now") return new Date(t.getTime());
   if (r === "today") return a;
-  if (r === "tomorrow") return de(a, "+1d");
-  if (r === "yesterday") return de(a, "-1d");
-  if (/^[+-]\s*\d/.test(n)) return de(/[hms]\b/.test(n) && !/bd/.test(n) ? t : a, n);
+  if (r === "tomorrow") return me(a, "+1d");
+  if (r === "yesterday") return me(a, "-1d");
+  if (/^[+-]\s*\d/.test(n)) return me(/[hms]\b/.test(n) && !/bd/.test(n) ? t : a, n);
   const o = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?$/.exec(n);
   if (o) return new Date(+o[1], +o[2] - 1, +o[3], +(o[4] || 0), +(o[5] || 0), +(o[6] || 0));
   const s = /^(\d{1,2}):(\d{2})(?:\s*([ap]m))?$/i.exec(n);
@@ -452,16 +452,16 @@ function H(e, t = /* @__PURE__ */ new Date()) {
   }
   const c = /^(\d{1,2})[/.](\d{1,2})[/.](\d{4})$/.exec(n);
   if (c) return new Date(+c[3], +c[2] - 1, +c[1]);
-  const d = Date.parse(n);
-  return isNaN(d) ? null : new Date(d);
+  const u = Date.parse(n);
+  return isNaN(u) ? null : new Date(u);
 }
-function Le(e) {
+function qe(e) {
   return `${e.getFullYear()}-${J(e.getMonth() + 1)}-${J(e.getDate())}`;
 }
 function ut(e) {
   return `${J(e.getHours())}:${J(e.getMinutes())}`;
 }
-function kt(e, t, n = "days") {
+function Mt(e, t, n = "days") {
   const r = t.getTime() - e.getTime();
   switch (n.toLowerCase()) {
     case "seconds":
@@ -482,7 +482,7 @@ function kt(e, t, n = "days") {
     }
   }
 }
-function _(e) {
+function $(e) {
   return Array.isArray(e);
 }
 function $e(e) {
@@ -502,10 +502,10 @@ function P(e) {
   }
   return NaN;
 }
-function ye(e) {
+function we(e) {
   return typeof e == "number" ? Number.isFinite(e) : typeof e == "string" ? e.trim() !== "" && !isNaN(P(e)) : !1;
 }
-function C(e) {
+function F(e) {
   if (e == null) return !1;
   if (typeof e == "boolean") return e;
   if (typeof e == "number") return e !== 0 && !isNaN(e);
@@ -515,7 +515,7 @@ function C(e) {
   }
   return Array.isArray(e) ? e.length > 0 : !0;
 }
-function Mt(e) {
+function vt(e) {
   if (!Number.isFinite(e)) return isNaN(e) ? "NaN" : e > 0 ? "∞" : "-∞";
   const t = Math.round(e * 1e10) / 1e10;
   return String(t);
@@ -523,7 +523,7 @@ function Mt(e) {
 function p(e, t) {
   if (e == null) return "";
   if (typeof e == "string") return e;
-  if (typeof e == "number") return Mt(e);
+  if (typeof e == "number") return vt(e);
   if (typeof e == "boolean") return e ? "yes" : "no";
   if (e instanceof Date) {
     const n = e.getHours() !== 0 || e.getMinutes() !== 0;
@@ -534,56 +534,56 @@ function p(e, t) {
 function Q(e, t, n) {
   if (!t) return p(e, n);
   const [r, ...a] = t.split(":"), o = a.join(":").trim(), s = r.trim().toLowerCase(), c = () => {
-    const d = P(e);
-    if (isNaN(d)) throw new Error(`Cannot format "${p(e)}" as a number`);
-    return d;
+    const u = P(e);
+    if (isNaN(u)) throw new Error(`Cannot format "${p(e)}" as a number`);
+    return u;
   };
   switch (s) {
     case "currency":
       return new Intl.NumberFormat(n.locale, { style: "currency", currency: (o || n.currency).toUpperCase() }).format(c());
     case "number":
     case "decimal": {
-      const d = o === "" ? void 0 : parseInt(o, 10);
-      return new Intl.NumberFormat(n.locale, d === void 0 ? { maximumFractionDigits: 10 } : { minimumFractionDigits: d, maximumFractionDigits: d }).format(c());
+      const u = o === "" ? void 0 : parseInt(o, 10);
+      return new Intl.NumberFormat(n.locale, u === void 0 ? { maximumFractionDigits: 10 } : { minimumFractionDigits: u, maximumFractionDigits: u }).format(c());
     }
     case "integer":
       return new Intl.NumberFormat(n.locale, { maximumFractionDigits: 0 }).format(c());
     case "plain":
-      return Mt(c());
+      return vt(c());
     case "percent": {
-      const d = o === "" ? 0 : parseInt(o, 10);
-      return new Intl.NumberFormat(n.locale, { style: "percent", minimumFractionDigits: d, maximumFractionDigits: d }).format(c());
+      const u = o === "" ? 0 : parseInt(o, 10);
+      return new Intl.NumberFormat(n.locale, { style: "percent", minimumFractionDigits: u, maximumFractionDigits: u }).format(c());
     }
     case "upper":
       return p(e, n).toUpperCase();
     case "lower":
       return p(e, n).toLowerCase();
     case "title":
-      return Qe(p(e, n));
+      return Je(p(e, n));
     case "date": {
-      const d = H(e);
-      return d ? z(d, o || n.dateFormat) : p(e, n);
+      const u = H(e);
+      return u ? z(u, o || n.dateFormat) : p(e, n);
     }
     case "time": {
-      const d = H(e);
-      return d ? z(d, o || n.timeFormat) : p(e, n);
+      const u = H(e);
+      return u ? z(u, o || n.timeFormat) : p(e, n);
     }
     case "datetime": {
-      const d = H(e);
-      return d ? z(d, o || `${n.dateFormat} ${n.timeFormat}`) : p(e, n);
+      const u = H(e);
+      return u ? z(u, o || `${n.dateFormat} ${n.timeFormat}`) : p(e, n);
     }
     default: {
-      const d = e instanceof Date ? e : typeof e == "string" ? H(e) : null;
-      return d ? z(d, t) : p(e, n);
+      const u = e instanceof Date ? e : typeof e == "string" ? H(e) : null;
+      return u ? z(u, t) : p(e, n);
     }
   }
 }
-function Qe(e) {
+function Je(e) {
   return e.toLowerCase().replace(/(^|[\s\-_/(])(\p{L})/gu, (t, n, r) => n + r.toUpperCase());
 }
 class Y extends Error {
 }
-function Zt(e) {
+function Xt(e) {
   const t = [];
   let n = 0;
   for (; n < e.length; ) {
@@ -602,9 +602,9 @@ function Zt(e) {
       let s = n + 1, c = "";
       for (; s < e.length && e[s] !== o && !(o === "”" && e[s] === '"'); )
         if (e[s] === "\\" && s + 1 < e.length) {
-          const d = e[s + 1];
-          c += d === "n" ? `
-` : d === "t" ? "	" : d, s += 2;
+          const u = e[s + 1];
+          c += u === "n" ? `
+` : u === "t" ? "	" : u, s += 2;
         } else c += e[s++];
       if (s >= e.length) throw new Y(`Unterminated text starting at position ${n + 1}`);
       t.push({ k: "str", v: c, pos: n }), n = s + 1;
@@ -628,7 +628,7 @@ function Zt(e) {
   }
   return t.push({ k: "eof", v: "", pos: e.length }), t;
 }
-const dt = {
+const mt = {
   or: 1,
   "||": 1,
   and: 2,
@@ -650,98 +650,98 @@ const dt = {
   "^": 8
 };
 function Dt(e) {
-  const t = Zt(e);
+  const t = Xt(e);
   let n = 0;
   const r = () => t[n], a = () => t[n++], o = (w) => {
-    const T = a();
-    if (T.v !== w) throw new Y(`Expected "${w}" at position ${T.pos + 1}${T.k === "eof" ? " (end of formula)" : ""}`);
-  }, s = (w) => w.k === "op" && w.v in dt ? w.v : w.k === "id" && (w.v.toLowerCase() === "and" || w.v.toLowerCase() === "or") ? w.v.toLowerCase() : null;
+    const A = a();
+    if (A.v !== w) throw new Y(`Expected "${w}" at position ${A.pos + 1}${A.k === "eof" ? " (end of formula)" : ""}`);
+  }, s = (w) => w.k === "op" && w.v in mt ? w.v : w.k === "id" && (w.v.toLowerCase() === "and" || w.v.toLowerCase() === "or") ? w.v.toLowerCase() : null;
   function c(w) {
-    let T = d();
+    let A = u();
     for (; ; ) {
-      const S = r();
-      if (S.k === "op" && S.v === "?" && w <= 0) {
+      const L = r();
+      if (L.k === "op" && L.v === "?" && w <= 0) {
         a();
-        const Ie = c(0);
+        const Ye = c(0);
         o(":");
-        const I = c(0);
-        T = { t: "call", fn: "if", args: [T, Ie, I] };
+        const C = c(0);
+        A = { t: "call", fn: "if", args: [A, Ye, C] };
         continue;
       }
-      const j = s(S);
+      const j = s(L);
       if (!j) break;
-      const oe = dt[j];
-      if (oe < w) break;
+      const ie = mt[j];
+      if (ie < w) break;
       a();
-      const Ce = c(j === "^" ? oe : oe + 1);
-      T = { t: "bin", op: j, left: T, right: Ce };
+      const Ce = c(j === "^" ? ie : ie + 1);
+      A = { t: "bin", op: j, left: A, right: Ce };
     }
-    return T;
+    return A;
   }
-  function d() {
+  function u() {
     const w = r();
-    return w.k === "op" && (w.v === "-" || w.v === "+" || w.v === "!") ? (a(), { t: "unary", op: w.v === "!" ? "not" : w.v, arg: d() }) : w.k === "id" && w.v.toLowerCase() === "not" ? (a(), { t: "unary", op: "not", arg: c(3) }) : l(A());
+    return w.k === "op" && (w.v === "-" || w.v === "+" || w.v === "!") ? (a(), { t: "unary", op: w.v === "!" ? "not" : w.v, arg: u() }) : w.k === "id" && w.v.toLowerCase() === "not" ? (a(), { t: "unary", op: "not", arg: c(3) }) : l(D());
   }
   function l(w) {
     for (; ; ) {
-      const T = r();
-      if (T.k === "op" && T.v === ".") {
+      const A = r();
+      if (A.k === "op" && A.v === ".") {
         a();
-        const S = a();
-        if (S.k !== "id" && S.k !== "num") throw new Y(`Expected a field name after "." at position ${S.pos + 1}`);
-        w = { t: "member", obj: w, prop: S.v };
-      } else if (T.k === "op" && T.v === "[") {
+        const L = a();
+        if (L.k !== "id" && L.k !== "num") throw new Y(`Expected a field name after "." at position ${L.pos + 1}`);
+        w = { t: "member", obj: w, prop: L.v };
+      } else if (A.k === "op" && A.v === "[") {
         a();
-        const S = c(0);
-        o("]"), w = { t: "index", obj: w, index: S };
+        const L = c(0);
+        o("]"), w = { t: "index", obj: w, index: L };
       } else return w;
     }
   }
-  function A() {
+  function D() {
     const w = a();
     if (w.k === "num") return { t: "num", v: parseFloat(w.v) };
     if (w.k === "str") return { t: "str", v: w.v };
     if (w.k === "id") {
-      const T = w.v.toLowerCase();
-      if (T === "true" || T === "yes") return { t: "bool", v: !0 };
-      if (T === "false" || T === "no") return { t: "bool", v: !1 };
-      if (T === "null") return { t: "null" };
+      const A = w.v.toLowerCase();
+      if (A === "true" || A === "yes") return { t: "bool", v: !0 };
+      if (A === "false" || A === "no") return { t: "bool", v: !1 };
+      if (A === "null") return { t: "null" };
       if (r().v === "(" && r().k === "op") {
         a();
-        const S = [];
+        const L = [];
         if (!(r().k === "op" && r().v === ")"))
           for (; ; ) {
-            if (S.push(c(0)), r().k === "op" && r().v === ",") {
+            if (L.push(c(0)), r().k === "op" && r().v === ",") {
               a();
               continue;
             }
             break;
           }
-        return o(")"), { t: "call", fn: T, args: S };
+        return o(")"), { t: "call", fn: A, args: L };
       }
       return { t: "name", name: w.v };
     }
     if (w.k === "op" && w.v === "(") {
-      const T = c(0);
-      return o(")"), T;
+      const A = c(0);
+      return o(")"), A;
     }
     if (w.k === "op" && w.v === "[") {
-      const T = [];
+      const A = [];
       if (!(r().k === "op" && r().v === "]"))
         for (; ; ) {
-          if (T.push(c(0)), r().k === "op" && r().v === ",") {
+          if (A.push(c(0)), r().k === "op" && r().v === ",") {
             a();
             continue;
           }
           break;
         }
-      return o("]"), { t: "list", items: T };
+      return o("]"), { t: "list", items: A };
     }
     throw new Y(w.k === "eof" ? "Formula ended unexpectedly" : `Unexpected "${w.v}" at position ${w.pos + 1}`);
   }
-  const v = c(0);
+  const T = c(0);
   if (r().k !== "eof") throw new Y(`Unexpected "${r().v}" at position ${r().pos + 1}`);
-  return v;
+  return T;
 }
 function Z(e, t = /* @__PURE__ */ new Set()) {
   switch (e.t) {
@@ -769,9 +769,9 @@ function Z(e, t = /* @__PURE__ */ new Set()) {
   }
   return t;
 }
-function ae(e, t) {
-  if (_(e))
-    return t === "length" || t === "count" ? e.length : e.map((n) => ae(n, t));
+function oe(e, t) {
+  if ($(e))
+    return t === "length" || t === "count" ? e.length : e.map((n) => oe(n, t));
   if ($e(e)) {
     if (t in e) return e[t];
     const n = Object.keys(e).find((r) => r.toLowerCase() === t.toLowerCase());
@@ -784,16 +784,16 @@ function k(e, t = "value") {
   if (isNaN(n)) throw new Y(`"${p(e)}" is not a number (${t})`);
   return n;
 }
-function vt(e, t, n) {
-  if (_(t) || _(n)) {
-    const o = _(t) ? t : null, s = _(n) ? n : null, c = Math.max(o?.length ?? 0, s?.length ?? 0);
-    return Array.from({ length: c }, (d, l) => vt(e, o ? o[l] ?? null : t, s ? s[l] ?? null : n));
+function Tt(e, t, n) {
+  if ($(t) || $(n)) {
+    const o = $(t) ? t : null, s = $(n) ? n : null, c = Math.max(o?.length ?? 0, s?.length ?? 0);
+    return Array.from({ length: c }, (u, l) => Tt(e, o ? o[l] ?? null : t, s ? s[l] ?? null : n));
   }
   if (t instanceof Date && (e === "+" || e === "-") && !(n instanceof Date)) {
     const o = new Date(t.getTime());
     return o.setDate(o.getDate() + (e === "+" ? 1 : -1) * k(n, "days")), o;
   }
-  if (t instanceof Date && n instanceof Date && e === "-") return kt(n, t, "days");
+  if (t instanceof Date && n instanceof Date && e === "-") return Mt(n, t, "days");
   const r = k(t, "left side of " + e), a = k(n, "right side of " + e);
   switch (e) {
     case "+":
@@ -814,12 +814,12 @@ function vt(e, t, n) {
 }
 function te(e, t) {
   if (e == null || e === "") return t == null || t === "";
-  if (typeof e == "boolean" || typeof t == "boolean") return C(e) === C(t);
+  if (typeof e == "boolean" || typeof t == "boolean") return F(e) === F(t);
   if (e instanceof Date || t instanceof Date) {
     const n = H(e), r = H(t);
-    return !!n && !!r && Le(n) === Le(r);
+    return !!n && !!r && qe(n) === qe(r);
   }
-  return ye(e) && ye(t) ? Math.abs(P(e) - P(t)) < 1e-9 : p(e).trim().toLowerCase() === p(t).trim().toLowerCase();
+  return we(e) && we(t) ? Math.abs(P(e) - P(t)) < 1e-9 : p(e).trim().toLowerCase() === p(t).trim().toLowerCase();
 }
 function ee(e, t) {
   if (e instanceof Date || t instanceof Date) {
@@ -827,10 +827,10 @@ function ee(e, t) {
     if (!n || !r) throw new Y("Cannot compare a date with a non-date");
     return n.getTime() - r.getTime();
   }
-  return ye(e) && ye(t) ? P(e) - P(t) : p(e).localeCompare(p(t));
+  return we(e) && we(t) ? P(e) - P(t) : p(e).localeCompare(p(t));
 }
 function _e(e) {
-  return e.flatMap((t) => _(t) ? _e(t) : [t]);
+  return e.flatMap((t) => $(t) ? _e(t) : [t]);
 }
 function Fe(e) {
   return _e(e).filter((t) => t !== null && t !== "").map((t) => k(t));
@@ -840,23 +840,23 @@ function E(e, t, n) {
   if (!r) throw new Y(`${n}: "${p(e)}" is not a valid date`);
   return r;
 }
-function Je(e, t) {
-  if (!_(e)) throw new Y(`${t}: first argument must be a list or table`);
+function Ze(e, t) {
+  if (!$(e)) throw new Y(`${t}: first argument must be a list or table`);
   return e.filter($e);
 }
-const Tt = {};
+const St = {};
 function m(e, t, n, r, a) {
-  Tt[e] = { fn: a, sig: n, doc: r, group: t };
+  St[e] = { fn: a, sig: n, doc: r, group: t };
 }
 m("upper", "Text", "upper(text)", "UPPERCASE text", ([e]) => p(e).toUpperCase());
 m("lower", "Text", "lower(text)", "lowercase text", ([e]) => p(e).toLowerCase());
-m("title", "Text", "title(text)", "Title Case Each Word", ([e]) => Qe(p(e)));
+m("title", "Text", "title(text)", "Title Case Each Word", ([e]) => Je(p(e)));
 m("capitalize", "Text", "capitalize(text)", "Capitalize the first letter", ([e]) => {
   const t = p(e);
   return t.charAt(0).toUpperCase() + t.slice(1);
 });
 m("trim", "Text", "trim(text)", "Remove surrounding spaces", ([e]) => p(e).trim());
-m("len", "Text", "len(text)", "Number of characters (or items in a list)", ([e]) => _(e) ? e.length : p(e).length);
+m("len", "Text", "len(text)", "Number of characters (or items in a list)", ([e]) => $(e) ? e.length : p(e).length);
 m("replace", "Text", "replace(text, find, with)", "Replace every occurrence of find", ([e, t, n]) => p(e).split(p(t)).join(p(n)));
 m("left", "Text", "left(text, n)", "First n characters", ([e, t]) => p(e).slice(0, k(t)));
 m("right", "Text", "right(text, n)", "Last n characters", ([e, t]) => {
@@ -864,11 +864,11 @@ m("right", "Text", "right(text, n)", "Last n characters", ([e, t]) => {
   return r <= 0 ? "" : n.slice(-r);
 });
 m("mid", "Text", "mid(text, start, length)", "Substring (start at 1)", ([e, t, n]) => p(e).substr(k(t) - 1, n === void 0 ? void 0 : k(n)));
-m("contains", "Text", "contains(text, part)", "True if text contains part (case-insensitive) or list contains item", ([e, t]) => _(e) ? e.some((n) => te(n, t)) : p(e).toLowerCase().includes(p(t).toLowerCase()));
+m("contains", "Text", "contains(text, part)", "True if text contains part (case-insensitive) or list contains item", ([e, t]) => $(e) ? e.some((n) => te(n, t)) : p(e).toLowerCase().includes(p(t).toLowerCase()));
 m("startswith", "Text", "startswith(text, part)", "True if text starts with part", ([e, t]) => p(e).toLowerCase().startsWith(p(t).toLowerCase()));
 m("endswith", "Text", "endswith(text, part)", "True if text ends with part", ([e, t]) => p(e).toLowerCase().endsWith(p(t).toLowerCase()));
 m("split", "Text", "split(text, separator)", "Split text into a list", ([e, t]) => p(e).split(t === void 0 ? "," : p(t)).map((n) => n.trim()));
-m("join", "Text", "join(list, separator)", "Join list items into text", ([e, t], n) => (_(e) ? e : [e]).map((r) => p(r, n.fo)).join(t === void 0 ? ", " : p(t)));
+m("join", "Text", "join(list, separator)", "Join list items into text", ([e, t], n) => ($(e) ? e : [e]).map((r) => p(r, n.fo)).join(t === void 0 ? ", " : p(t)));
 m("concat", "Text", "concat(a, b, ...)", "Join values together", (e, t) => _e(e).map((n) => p(n, t.fo)).join(""));
 m("repeat", "Text", "repeat(text, n)", "Repeat text n times", ([e, t]) => p(e).repeat(Math.max(0, Math.min(1e3, k(t)))));
 m("pad", "Text", "pad(text, length, char)", "Left-pad to a length", ([e, t, n]) => p(e).padStart(k(t), n === void 0 ? " " : p(n)));
@@ -885,11 +885,11 @@ m("lastname", "Text", "lastname(name)", "Last word of a full name", ([e]) => {
 m("urlencode", "Text", "urlencode(text)", "Encode text for use inside a link", ([e]) => encodeURIComponent(p(e)));
 m("text", "Text", "text(value)", "Convert to text", ([e], t) => p(e, t.fo));
 m("format", "Text", 'format(value, "currency:EUR")', "Format a value (currency, number:2, percent, date:DD/MM/YYYY, upper …)", ([e, t], n) => Q(e, p(t), n.fo));
-m("if", "Logic", "if(condition, then, else)", "Choose a value based on a condition", ([e, t, n]) => C(e) ? t ?? "" : n ?? "");
-m("and", "Logic", "and(a, b, ...)", "True if all are true", (e) => e.every(C));
-m("or", "Logic", "or(a, b, ...)", "True if any is true", (e) => e.some(C));
-m("not", "Logic", "not(a)", "Negate", ([e]) => !C(e));
-m("isempty", "Logic", "isempty(value)", "True if blank", ([e]) => e == null || typeof e == "string" && e.trim() === "" || _(e) && e.length === 0);
+m("if", "Logic", "if(condition, then, else)", "Choose a value based on a condition", ([e, t, n]) => F(e) ? t ?? "" : n ?? "");
+m("and", "Logic", "and(a, b, ...)", "True if all are true", (e) => e.every(F));
+m("or", "Logic", "or(a, b, ...)", "True if any is true", (e) => e.some(F));
+m("not", "Logic", "not(a)", "Negate", ([e]) => !F(e));
+m("isempty", "Logic", "isempty(value)", "True if blank", ([e]) => e == null || typeof e == "string" && e.trim() === "" || $(e) && e.length === 0);
 m("coalesce", "Logic", "coalesce(a, b, ...)", "First non-blank value", (e) => e.find((t) => !(t == null || t === "")) ?? "");
 m("choose", "Logic", 'choose(value, "a", "A", "b", "B", default)', "Map a value to a result", ([e, ...t]) => {
   for (let n = 0; n + 1 < t.length; n += 2) if (te(e, t[n])) return t[n + 1];
@@ -905,7 +905,7 @@ m("matches", "Logic", "matches(text, pattern)", "True if text matches a regular 
   }
 });
 m("isemail", "Logic", "isemail(text)", "True if text looks like an e-mail address", ([e]) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(p(e).trim()));
-m("isnumber", "Logic", "isnumber(value)", "True if value is numeric", ([e]) => ye(e));
+m("isnumber", "Logic", "isnumber(value)", "True if value is numeric", ([e]) => we(e));
 m("round", "Math", "round(n, decimals)", "Round to decimals (default 0)", ([e, t]) => {
   const n = Math.pow(10, t === void 0 ? 0 : k(t));
   return Math.round(k(e) * n + Number.EPSILON) / n;
@@ -958,11 +958,11 @@ m("addweeks", "Date", "addweeks(date, n)", "Add weeks", ([e, t], n) => {
   const r = new Date(E(e, n.now, "addweeks"));
   return r.setDate(r.getDate() + 7 * k(t)), r;
 });
-m("addmonths", "Date", "addmonths(date, n)", "Add months (clamps to month end)", ([e, t], n) => Ge(new Date(E(e, n.now, "addmonths")), k(t)));
-m("addyears", "Date", "addyears(date, n)", "Add years", ([e, t], n) => Ge(new Date(E(e, n.now, "addyears")), 12 * k(t)));
-m("addbusinessdays", "Date", "addbusinessdays(date, n)", "Add working days (skips weekends)", ([e, t], n) => xt(new Date(E(e, n.now, "addbusinessdays")), k(t)));
-m("shift", "Date", 'shift(date, "+1M +2d")', "Shift a date using shift syntax", ([e, t], n) => de(E(e, n.now, "shift"), p(t)));
-m("datediff", "Date", 'datediff(start, end, "days")', "Difference in days|weeks|months|years|hours|minutes", ([e, t, n], r) => kt(E(e, r.now, "datediff"), E(t, r.now, "datediff"), n ? p(n) : "days"));
+m("addmonths", "Date", "addmonths(date, n)", "Add months (clamps to month end)", ([e, t], n) => Qe(new Date(E(e, n.now, "addmonths")), k(t)));
+m("addyears", "Date", "addyears(date, n)", "Add years", ([e, t], n) => Qe(new Date(E(e, n.now, "addyears")), 12 * k(t)));
+m("addbusinessdays", "Date", "addbusinessdays(date, n)", "Add working days (skips weekends)", ([e, t], n) => kt(new Date(E(e, n.now, "addbusinessdays")), k(t)));
+m("shift", "Date", 'shift(date, "+1M +2d")', "Shift a date using shift syntax", ([e, t], n) => me(E(e, n.now, "shift"), p(t)));
+m("datediff", "Date", 'datediff(start, end, "days")', "Difference in days|weeks|months|years|hours|minutes", ([e, t, n], r) => Mt(E(e, r.now, "datediff"), E(t, r.now, "datediff"), n ? p(n) : "days"));
 m("formatdate", "Date", 'formatdate(date, "DD/MM/YYYY")', "Format a date", ([e, t], n) => z(E(e, n.now, "formatdate"), t === void 0 ? n.fo.dateFormat : p(t)));
 m("weekday", "Date", "weekday(date)", "Day name, e.g. Monday", ([e], t) => z(E(e ?? "today", t.now, "weekday"), "dddd"));
 m("year", "Date", "year(date)", "Year number", ([e], t) => E(e ?? "today", t.now, "year").getFullYear());
@@ -977,17 +977,17 @@ m("greeting", "Date", "greeting()", "Good morning / afternoon / evening", (e, t)
   return n < 12 ? "Good morning" : n < 17 ? "Good afternoon" : "Good evening";
 });
 m("list", "Lists", "list(a, b, ...)", "Make a list", (e) => e);
-m("first", "Lists", "first(list)", "First item", ([e]) => _(e) ? e[0] ?? null : e);
-m("last", "Lists", "last(list)", "Last item", ([e]) => _(e) ? e[e.length - 1] ?? null : e);
-m("item", "Lists", "item(list, n)", "Item number n (1-based)", ([e, t]) => _(e) ? e[k(t) - 1] ?? null : null);
-m("unique", "Lists", "unique(list)", "Remove duplicates", ([e]) => _(e) ? e.filter((t, n) => e.findIndex((r) => te(t, r)) === n) : e);
-m("sort", "Lists", "sort(list)", "Sort ascending", ([e]) => _(e) ? [...e].sort(ee) : e);
-m("filter", "Lists", 'filter(table, "column", value)', "Rows whose column equals value", ([e, t, n]) => Je(e, "filter").filter((r) => te(ae(r, p(t)), n)));
+m("first", "Lists", "first(list)", "First item", ([e]) => $(e) ? e[0] ?? null : e);
+m("last", "Lists", "last(list)", "Last item", ([e]) => $(e) ? e[e.length - 1] ?? null : e);
+m("item", "Lists", "item(list, n)", "Item number n (1-based)", ([e, t]) => $(e) ? e[k(t) - 1] ?? null : null);
+m("unique", "Lists", "unique(list)", "Remove duplicates", ([e]) => $(e) ? e.filter((t, n) => e.findIndex((r) => te(t, r)) === n) : e);
+m("sort", "Lists", "sort(list)", "Sort ascending", ([e]) => $(e) ? [...e].sort(ee) : e);
+m("filter", "Lists", 'filter(table, "column", value)', "Rows whose column equals value", ([e, t, n]) => Ze(e, "filter").filter((r) => te(oe(r, p(t)), n)));
 m("lookup", "Lists", 'lookup(table, "matchColumn", value, "resultColumn")', "Find a row and return one column", ([e, t, n, r]) => {
-  const a = Je(e, "lookup").find((o) => te(ae(o, p(t)), n));
-  return a ? r === void 0 ? a : ae(a, p(r)) : "";
+  const a = Ze(e, "lookup").find((o) => te(oe(o, p(t)), n));
+  return a ? r === void 0 ? a : oe(a, p(r)) : "";
 });
-function St(e, t, n) {
+function At(e, t, n) {
   switch (t) {
     case ">":
       return ee(e, n) > 0;
@@ -1004,9 +1004,9 @@ function St(e, t, n) {
       return te(e, n);
   }
 }
-m("countif", "Lists", 'countif(list, ">", 0)', "Count items matching a comparison (= != > >= < <=)", ([e, t, n]) => (_(e) ? e : [e]).filter((r) => St(r, p(t), n)).length);
-m("sumif", "Lists", 'sumif(list, ">", 0)', "Sum items matching a comparison", ([e, t, n]) => (_(e) ? e : [e]).filter((r) => St(r, p(t), n)).reduce((r, a) => r + k(a), 0));
-m("pluck", "Lists", 'pluck(table, "column")', "One column of a table as a list", ([e, t]) => Je(e, "pluck").map((n) => ae(n, p(t))));
+m("countif", "Lists", 'countif(list, ">", 0)', "Count items matching a comparison (= != > >= < <=)", ([e, t, n]) => ($(e) ? e : [e]).filter((r) => At(r, p(t), n)).length);
+m("sumif", "Lists", 'sumif(list, ">", 0)', "Sum items matching a comparison", ([e, t, n]) => ($(e) ? e : [e]).filter((r) => At(r, p(t), n)).reduce((r, a) => r + k(a), 0));
+m("pluck", "Lists", 'pluck(table, "column")', "One column of a table as a list", ([e, t]) => Ze(e, "pluck").map((n) => oe(n, p(t))));
 function R(e, t) {
   switch (e.t) {
     case "num":
@@ -1025,23 +1025,23 @@ function R(e, t) {
       return n.value;
     }
     case "member":
-      return ae(R(e.obj, t), e.prop);
+      return oe(R(e.obj, t), e.prop);
     case "index": {
       const n = R(e.obj, t), r = R(e.index, t);
-      return _(n) ? n[k(r) - 1] ?? null : ae(n, p(r));
+      return $(n) ? n[k(r) - 1] ?? null : oe(n, p(r));
     }
     case "unary": {
       const n = R(e.arg, t);
-      return e.op === "not" ? !C(n) : e.op === "-" ? _(n) ? n.map((r) => -k(r)) : -k(n) : k(n);
+      return e.op === "not" ? !F(n) : e.op === "-" ? $(n) ? n.map((r) => -k(r)) : -k(n) : k(n);
     }
     case "call": {
-      const n = Tt[e.fn];
+      const n = St[e.fn];
       if (!n) throw new Y(`Unknown function "${e.fn}()"`);
-      return e.fn === "if" ? C(R(e.args[0], t)) ? e.args[1] ? R(e.args[1], t) : "" : e.args[2] ? R(e.args[2], t) : "" : n.fn(e.args.map((r) => R(r, t)), t);
+      return e.fn === "if" ? F(R(e.args[0], t)) ? e.args[1] ? R(e.args[1], t) : "" : e.args[2] ? R(e.args[2], t) : "" : n.fn(e.args.map((r) => R(r, t)), t);
     }
     case "bin": {
-      if (e.op === "and" || e.op === "&&") return C(R(e.left, t)) && C(R(e.right, t));
-      if (e.op === "or" || e.op === "||") return C(R(e.left, t)) || C(R(e.right, t));
+      if (e.op === "and" || e.op === "&&") return F(R(e.left, t)) && F(R(e.right, t));
+      if (e.op === "or" || e.op === "||") return F(R(e.left, t)) || F(R(e.right, t));
       const n = R(e.left, t), r = R(e.right, t);
       switch (e.op) {
         case "&":
@@ -1061,17 +1061,17 @@ function R(e, t) {
         case ">=":
           return ee(n, r) >= 0;
         default:
-          return vt(e.op, n, r);
+          return Tt(e.op, n, r);
       }
     }
   }
 }
-const ke = /* @__PURE__ */ new Map();
-function le(e, t) {
-  let n = ke.get(e);
-  return n || (n = Dt(e), ke.size > 500 && ke.clear(), ke.set(e, n)), R(n, t);
+const Me = /* @__PURE__ */ new Map();
+function de(e, t) {
+  let n = Me.get(e);
+  return n || (n = Dt(e), Me.size > 500 && Me.clear(), Me.set(e, n)), R(n, t);
 }
-function Me(e) {
+function ve(e) {
   if (!e) return [];
   try {
     return [...Z(Dt(e.startsWith("=") ? e.slice(1) : e))];
@@ -1079,7 +1079,7 @@ function Me(e) {
     return [];
   }
 }
-const De = "⁣⁣QTHCURSOR⁣⁣", At = {
+const De = "⁣⁣QTHCURSOR⁣⁣", Lt = {
   text: "text",
   input: "text",
   textarea: "textarea",
@@ -1098,79 +1098,79 @@ const De = "⁣⁣QTHCURSOR⁣⁣", At = {
   currency: "currency",
   money: "currency",
   pick: "pick"
-}, Xt = /* @__PURE__ */ new Set(["me", "data", "page", "index", "rownumber"]), ve = /^[\p{L}_][\p{L}\p{N}_]*$/u;
-function Ue(e) {
+}, en = /* @__PURE__ */ new Set(["me", "data", "page", "index", "rownumber"]), Te = /^[\p{L}_][\p{L}\p{N}_]*$/u;
+function He(e) {
   const t = e.replace(/[_-]+/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").trim();
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
-function He(e) {
+function Be(e) {
   const t = e.includes("|") ? "|" : ",";
-  return ge(e, t).map((n) => n.trim().replace(/^["']|["']$/g, "")).filter((n) => n !== "");
+  return ye(e, t).map((n) => n.trim().replace(/^["']|["']$/g, "")).filter((n) => n !== "");
 }
-function ze(e, t, n, r, a, o) {
-  const s = () => r ? n.repeats.get(r) : n, c = (d) => {
-    for (const l of d)
+function Ve(e, t, n, r, a, o) {
+  const s = () => r ? n.repeats.get(r) : n, c = (u) => {
+    for (const l of u)
       if (l.k === "cmd") {
-        const A = At[l.name];
-        if (A && l.args.main) s().fields.has(l.args.main) || s().fields.set(l.args.main, { type: A, args: l.args, start: l.start, end: l.end });
+        const D = Lt[l.name];
+        if (D && l.args.main) s().fields.has(l.args.main) || s().fields.set(l.args.main, { type: D, args: l.args, start: l.start, end: l.end });
         else if (l.name === "set") {
-          const v = l.args.main.split("=")[0].trim();
-          v && s().sets.add(v);
+          const T = l.args.main.split("=")[0].trim();
+          T && s().sets.add(T);
         } else l.name === "ref" && n.pendingRefs.push({ name: l.args.main.split(".")[0], repeat: r });
-        (l.name === "=" || l.name === "validate" || ["upper", "lower", "title", "capitalize", "trim", "replace"].includes(l.name)) && Me(l.args.main).forEach((v) => n.pendingRefs.push({ name: v, repeat: r })), l.name === "set" && Me(l.args.main.split("=").slice(1).join("=")).forEach((v) => n.pendingRefs.push({ name: v, repeat: r }));
-        for (const v of [l.args.main, ...Object.values(l.args.opts)]) if (l.name !== "=" && v.startsWith("=")) Me(v).forEach((w) => n.pendingRefs.push({ name: w, repeat: r }));
+        (l.name === "=" || l.name === "validate" || ["upper", "lower", "title", "capitalize", "trim", "replace"].includes(l.name)) && ve(l.args.main).forEach((T) => n.pendingRefs.push({ name: T, repeat: r })), l.name === "set" && ve(l.args.main.split("=").slice(1).join("=")).forEach((T) => n.pendingRefs.push({ name: T, repeat: r }));
+        for (const T of [l.args.main, ...Object.values(l.args.opts)]) if (l.name !== "=" && T.startsWith("=")) ve(T).forEach((w) => n.pendingRefs.push({ name: w, repeat: r }));
         else if ((l.name === "snippet" || l.name === "include") && t.resolveSnippet && a < 5 && !o.has(l.args.main)) {
           const w = t.resolveSnippet(l.args.main);
           if (w) {
             o.add(l.args.main);
             try {
-              ze(We(w.content, w.contentType === "html"), t, n, r, a + 1, o);
+              Ve(ze(w.content, w.contentType === "html"), t, n, r, a + 1, o);
             } catch {
             }
             o.delete(l.args.main);
           }
         }
-      } else l.k === "if" ? (l.branches.forEach((A) => {
-        Me(A.cond).forEach((v) => n.pendingRefs.push({ name: v, repeat: r })), c(A.body);
-      }), l.elseBody && c(l.elseBody)) : l.k === "section" ? (n.fields.has(l.args.main) || s().fields.set(l.args.main, { type: "section", args: l.args, start: l.start, end: l.end }), c(l.body)) : l.k === "repeat" && (/^\d+$/.test(l.args.main) || l.args.opts.count ? c(l.body) : (n.repeats.has(l.args.main) || n.repeats.set(l.args.main, { fields: /* @__PURE__ */ new Map(), sets: /* @__PURE__ */ new Set() }), ze(l.body, t, n, l.args.main, a, o)));
+      } else l.k === "if" ? (l.branches.forEach((D) => {
+        ve(D.cond).forEach((T) => n.pendingRefs.push({ name: T, repeat: r })), c(D.body);
+      }), l.elseBody && c(l.elseBody)) : l.k === "section" ? (n.fields.has(l.args.main) || s().fields.set(l.args.main, { type: "section", args: l.args, start: l.start, end: l.end }), c(l.body)) : l.k === "repeat" && (/^\d+$/.test(l.args.main) || l.args.opts.count ? c(l.body) : (n.repeats.has(l.args.main) || n.repeats.set(l.args.main, { fields: /* @__PURE__ */ new Map(), sets: /* @__PURE__ */ new Set() }), Ve(l.body, t, n, l.args.main, a, o)));
   };
   c(e);
 }
-function en(e) {
+function tn(e) {
   for (const { name: t, repeat: n } of e.pendingRefs)
-    if (!(e.fields.has(t) || e.sets.has(t) || e.repeats.has(t) || e.implicit.has(t) || Xt.has(t)))
+    if (!(e.fields.has(t) || e.sets.has(t) || e.repeats.has(t) || e.implicit.has(t) || en.has(t)))
       if (n) {
         const r = e.repeats.get(n);
         !r.fields.has(t) && !r.sets.has(t) && r.fields.set(t, { type: "text", args: { main: t, opts: {}, flags: /* @__PURE__ */ new Set() }, start: -1, end: -1 });
       } else e.implicit.add(t);
 }
-function Lt(e, t, n = {}) {
+function qt(e, t, n = {}) {
   const r = t === "html";
   let a = r;
-  const o = { locale: "en-US", currency: "USD", dateFormat: "DD MMM YYYY", timeFormat: "h:mm A", ...n.fo || {} }, s = n.now || /* @__PURE__ */ new Date(), c = n.values || {}, d = { forms: !0, formulas: !0, conditionals: !0, ...n.features || {} }, l = [], A = [], v = [], w = /* @__PURE__ */ new Set();
-  let T;
+  const o = { locale: "en-US", currency: "USD", dateFormat: "DD MMM YYYY", timeFormat: "h:mm A", ...n.fo || {} }, s = n.now || /* @__PURE__ */ new Date(), c = n.values || {}, u = { forms: !0, formulas: !0, conditionals: !0, ...n.features || {} }, l = [], D = [], T = [], w = /* @__PURE__ */ new Set();
+  let A;
   try {
-    T = We(e, r);
+    A = ze(e, r);
   } catch (i) {
     return { text: "", html: "", cursor: null, form: [], errors: [i.message], validation: [], needsForm: !1, isRich: !1 };
   }
-  const S = { fields: /* @__PURE__ */ new Map(), sets: /* @__PURE__ */ new Set(), repeats: /* @__PURE__ */ new Map(), implicit: /* @__PURE__ */ new Set(), pendingRefs: [] };
-  ze(T, n, S, null, 0, /* @__PURE__ */ new Set()), en(S);
-  const j = {}, oe = {};
-  for (const [i, u] of Object.entries(n.data || {})) oe[i] = u.rows.map((y) => ({ ...y }));
-  const Ce = n.profile || {}, Ie = n.page || { url: "", title: "", host: "" }, I = [], Ye = () => {
-    for (let i = I.length - 1; i >= 0; i--) if (!I[i].repeat.startsWith("__")) return I[i];
+  const L = { fields: /* @__PURE__ */ new Map(), sets: /* @__PURE__ */ new Set(), repeats: /* @__PURE__ */ new Map(), implicit: /* @__PURE__ */ new Set(), pendingRefs: [] };
+  Ve(A, n, L, null, 0, /* @__PURE__ */ new Set()), tn(L);
+  const j = {}, ie = {};
+  for (const [i, d] of Object.entries(n.data || {})) ie[i] = d.rows.map((y) => ({ ...y }));
+  const Ce = n.profile || {}, Ye = n.page || { url: "", title: "", host: "" }, C = [], Ee = () => {
+    for (let i = C.length - 1; i >= 0; i--) if (!C[i].repeat.startsWith("__")) return C[i];
   };
-  function Ze(i, u) {
-    const y = u.opts.default ?? u.opts.value_default;
+  function Xe(i, d) {
+    const y = d.opts.default ?? d.opts.value_default;
     switch (i) {
       case "checkbox":
       case "toggle":
       case "section":
-        return y !== void 0 ? C(y) : u.flags.has("checked") || u.flags.has("on");
+        return y !== void 0 ? F(y) : d.flags.has("checked") || d.flags.has("on");
       case "date": {
         const h = H(y ?? "", s);
-        return h ? Le(h) : "";
+        return h ? qe(h) : "";
       }
       case "time": {
         if (y === void 0) return "";
@@ -1179,152 +1179,152 @@ function Lt(e, t, n = {}) {
       }
       case "datetime": {
         const h = y ? H(y, s) : null;
-        return h ? `${Le(h)}T${ut(h)}` : "";
+        return h ? `${qe(h)}T${ut(h)}` : "";
       }
       case "select":
-        return u.flags.has("multiple") ? y ? He(y) : [] : y ?? (u.flags.has("required") || u.opts.required ? "" : He(u.opts.options || "")[0] ?? "");
+        return d.flags.has("multiple") ? y ? Be(y) : [] : y ?? (d.flags.has("required") || d.opts.required ? "" : Be(d.opts.options || "")[0] ?? "");
       default:
         return y ?? "";
     }
   }
-  function we(i, u, y) {
+  function be(i, d, y) {
     switch (i) {
       case "checkbox":
       case "toggle":
       case "section":
-        return !!u && u !== "false";
+        return !!d && d !== "false";
       case "number":
       case "currency": {
-        if (u === "" || u === null || u === void 0) return null;
-        const h = P(u);
-        return isNaN(h) ? String(u) : h;
+        if (d === "" || d === null || d === void 0) return null;
+        const h = P(d);
+        return isNaN(h) ? String(d) : h;
       }
       case "date":
       case "datetime": {
-        const h = u ? H(u, s) : null;
+        const h = d ? H(d, s) : null;
         return h && i === "datetime" && (h.__time = !0), h;
       }
       case "time": {
-        const h = u ? H(u, s) : null;
+        const h = d ? H(d, s) : null;
         return h && (h.__time = !0), h;
       }
       case "pick": {
-        const h = n.data?.[y.opts.table || ""], x = h?.rows.find((N) => N.__id === u || N.id === u);
+        const h = n.data?.[y.opts.table || ""], x = h?.rows.find((N) => N.__id === d || N.id === d);
         if (!x) return null;
         const g = y.opts.display || h?.columns?.[0] || Object.keys(x)[0];
         return { ...x, __label: x[g] ?? "" };
       }
       case "select":
-        return Array.isArray(u) ? u : u ?? "";
+        return Array.isArray(d) ? d : d ?? "";
       default:
-        return u ?? "";
+        return d ?? "";
     }
   }
-  function be(i, u, y, h) {
+  function xe(i, d, y, h) {
     const x = h ? h.row : c;
-    return x[i] !== void 0 ? x[i] : Ze(u, y);
+    return x[i] !== void 0 ? x[i] : Xe(d, y);
   }
-  function Ee(i) {
-    for (let h = I.length - 1; h >= 0; h--) {
-      const x = I[h];
+  function Ne(i) {
+    for (let h = C.length - 1; h >= 0; h--) {
+      const x = C[h];
       if (i in x.rowVars) return { found: !0, value: x.rowVars[i] };
       if (i === "index" || i === "rownumber") return { found: !0, value: x.index + 1 };
-      const g = S.repeats.get(x.repeat)?.fields.get(i);
-      if (g && g.start >= 0 && x === Ye())
+      const g = L.repeats.get(x.repeat)?.fields.get(i);
+      if (g && g.start >= 0 && x === Ee())
         try {
-          se(i, g.type, g.args, I.length, g.start, g.end);
+          ce(i, g.type, g.args, C.length, g.start, g.end);
         } catch {
         }
-      if (g) return { found: !0, value: we(g.type, be(i, g.type, g.args, x), g.args) };
+      if (g) return { found: !0, value: be(g.type, xe(i, g.type, g.args, x), g.args) };
     }
     if (i in j) return { found: !0, value: j[i] };
-    if (S.sets.has(i)) return { found: !0, value: "" };
-    const u = S.fields.get(i);
-    if (u)
+    if (L.sets.has(i)) return { found: !0, value: "" };
+    const d = L.fields.get(i);
+    if (d)
       try {
-        se(i, u.type, u.args, 0, u.start, u.end, !1, !0);
+        ce(i, d.type, d.args, 0, d.start, d.end, !1, !0);
       } catch {
       }
-    if (u) return { found: !0, value: we(u.type, be(i, u.type, u.args), u.args) };
-    if (S.implicit.has(i)) {
+    if (d) return { found: !0, value: be(d.type, xe(i, d.type, d.args), d.args) };
+    if (L.implicit.has(i)) {
       try {
-        se(i, "text", { main: i, opts: {}, flags: /* @__PURE__ */ new Set() }, 0, void 0, void 0, !0, !0);
+        ce(i, "text", { main: i, opts: {}, flags: /* @__PURE__ */ new Set() }, 0, void 0, void 0, !0, !0);
       } catch {
       }
       return { found: !0, value: c[i] ?? "" };
     }
-    const y = S.repeats.get(i);
+    const y = L.repeats.get(i);
     return y ? {
       found: !0,
-      value: Xe(i, { opts: {} }).map((x, g) => {
+      value: et(i, { opts: {} }).map((x, g) => {
         const N = { index: g + 1 };
-        for (const [f, b] of y.fields) N[f] = we(b.type, x[f] !== void 0 ? x[f] : Ze(b.type, b.args), b.args);
+        for (const [f, b] of y.fields) N[f] = be(b.type, x[f] !== void 0 ? x[f] : Xe(b.type, b.args), b.args);
         return N;
       })
-    } : i === "me" ? { found: !0, value: Ce } : i === "data" ? { found: !0, value: oe } : i === "page" ? { found: !0, value: Ie } : { found: !1, value: null };
+    } : i === "me" ? { found: !0, value: Ce } : i === "data" ? { found: !0, value: ie } : i === "page" ? { found: !0, value: Ye } : { found: !1, value: null };
   }
-  const ie = { lookup: Ee, fo: o, now: s }, ne = (i) => {
-    if (!d.formulas) throw new Error("Formulas require the Pro plan");
-    return le(i, ie);
-  }, pe = (i) => i === void 0 ? "" : i.startsWith("=") ? p(ne(i.slice(1)), o) : i;
-  function Xe(i, u) {
-    const y = Math.max(0, parseInt(u.opts.min ?? "1", 10) || 0), h = c[i];
+  const se = { lookup: Ne, fo: o, now: s }, ne = (i) => {
+    if (!u.formulas) throw new Error("Formulas require the Pro plan");
+    return de(i, se);
+  }, fe = (i) => i === void 0 ? "" : i.startsWith("=") ? p(ne(i.slice(1)), o) : i;
+  function et(i, d) {
+    const y = Math.max(0, parseInt(d.opts.min ?? "1", 10) || 0), h = c[i];
     return Array.isArray(h) ? h : Array.from({ length: Math.max(y, 1) }, () => ({}));
   }
-  function se(i, u, y, h, x, g, N = !1, f = !1) {
-    if (!d.forms) throw new Error("Dynamic form fields require an upgraded plan");
-    const b = f ? void 0 : Ye(), $ = b ? `${b.repeat}#${b.index}.${i}` : i;
-    if (w.has($)) return;
-    w.add($);
-    const O = be(i, u, y, b), D = y.opts, q = {
+  function ce(i, d, y, h, x, g, N = !1, f = !1) {
+    if (!u.forms) throw new Error("Dynamic form fields require an upgraded plan");
+    const b = f ? void 0 : Ee(), I = b ? `${b.repeat}#${b.index}.${i}` : i;
+    if (w.has(I)) return;
+    w.add(I);
+    const O = xe(i, d, y, b), v = y.opts, q = {
       name: i,
-      type: u,
+      type: d,
       depth: h,
       value: O,
       implicit: N,
       start: x,
       end: g,
-      label: D.label || Ue(i),
-      required: y.flags.has("required") || C(D.required ?? ""),
-      defaultRaw: D.default,
-      options: u === "select" ? He(pe(D.options) || "") : void 0,
+      label: v.label || He(i),
+      required: y.flags.has("required") || F(v.required ?? ""),
+      defaultRaw: v.default,
+      options: d === "select" ? Be(fe(v.options) || "") : void 0,
       multiple: y.flags.has("multiple"),
-      placeholder: D.placeholder,
-      min: D.min !== void 0 ? P(D.min) : void 0,
-      max: D.max !== void 0 ? P(D.max) : void 0,
-      step: D.step !== void 0 ? P(D.step) : void 0,
-      minLength: D.minlength !== void 0 ? parseInt(D.minlength, 10) : void 0,
-      maxLength: D.maxlength !== void 0 ? parseInt(D.maxlength, 10) : void 0,
-      pattern: D.pattern,
-      message: D.message,
-      rows: D.rows ? parseInt(D.rows, 10) : void 0,
-      currency: D.currency,
-      table: D.table,
-      display: D.display,
-      hint: D.hint || D.help
+      placeholder: v.placeholder,
+      min: v.min !== void 0 ? P(v.min) : void 0,
+      max: v.max !== void 0 ? P(v.max) : void 0,
+      step: v.step !== void 0 ? P(v.step) : void 0,
+      minLength: v.minlength !== void 0 ? parseInt(v.minlength, 10) : void 0,
+      maxLength: v.maxlength !== void 0 ? parseInt(v.maxlength, 10) : void 0,
+      pattern: v.pattern,
+      message: v.message,
+      rows: v.rows ? parseInt(v.rows, 10) : void 0,
+      currency: v.currency,
+      table: v.table,
+      display: v.display,
+      hint: v.hint || v.help
     };
-    if (u === "pick") {
-      const K = n.data?.[D.table || ""];
-      if (!K) throw new Error(`Data Hub table "${D.table}" was not found`);
-      const Ne = D.display || K.columns?.[0] || "name";
-      q.options = K.rows.map((M) => `${M.__id}\0${p(M[Ne] ?? "")}`);
+    if (d === "pick") {
+      const K = n.data?.[v.table || ""];
+      if (!K) throw new Error(`Data Hub table "${v.table}" was not found`);
+      const Re = v.display || K.columns?.[0] || "name";
+      q.options = K.rows.map((M) => `${M.__id}\0${p(M[Re] ?? "")}`);
     }
     const U = Ct(q);
-    U && (q.error = U, A.push(`${q.label}: ${U}`)), b ? b.formRow.push(q) : v.push(q);
+    U && (q.error = U, D.push(`${q.label}: ${U}`)), b ? b.formRow.push(q) : T.push(q);
   }
   function Ct(i) {
-    const u = i.value, y = u === "" || u === null || u === void 0 || Array.isArray(u) && u.length === 0 || (i.type === "checkbox" || i.type === "toggle") && i.required && !u;
+    const d = i.value, y = d === "" || d === null || d === void 0 || Array.isArray(d) && d.length === 0 || (i.type === "checkbox" || i.type === "toggle") && i.required && !d;
     if (i.required && y) return i.message || "This field is required";
     if (!y) {
       if (i.type === "number" || i.type === "currency") {
-        const h = P(u);
+        const h = P(d);
         if (isNaN(h)) return "Enter a valid number";
         if (i.min !== void 0 && h < i.min) return i.message || `Must be at least ${i.min}`;
         if (i.max !== void 0 && h > i.max) return i.message || `Must be at most ${i.max}`;
       }
-      if (typeof u == "string") {
-        if (i.minLength !== void 0 && u.length < i.minLength) return i.message || `Use at least ${i.minLength} characters`;
-        if (i.maxLength !== void 0 && u.length > i.maxLength) return i.message || `Use at most ${i.maxLength} characters`;
+      if (typeof d == "string") {
+        if (i.minLength !== void 0 && d.length < i.minLength) return i.message || `Use at least ${i.minLength} characters`;
+        if (i.maxLength !== void 0 && d.length > i.maxLength) return i.message || `Use at most ${i.maxLength} characters`;
         if (i.pattern) {
           const h = { email: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/, phone: /^\+?[\d\s().-]{6,20}$/, url: /^https?:\/\/\S+$/i, digits: /^\d+$/ };
           let x = h[i.pattern.toLowerCase()];
@@ -1334,141 +1334,141 @@ function Lt(e, t, n = {}) {
             } catch {
               return "Invalid validation pattern";
             }
-          if (!x.test(u.trim())) return i.message || `Invalid format${h[i.pattern.toLowerCase()] ? ` (${i.pattern})` : ""}`;
+          if (!x.test(d.trim())) return i.message || `Invalid format${h[i.pattern.toLowerCase()] ? ` (${i.pattern})` : ""}`;
         }
       }
     }
   }
   let B = "";
   const V = (i) => {
-    B += a ? Oe(i) : i;
-  }, et = (i, u) => {
-    a ? B += i : B += u;
+    B += a ? Ue(i) : i;
+  }, tt = (i, d) => {
+    a ? B += i : B += d;
   };
-  function tt(i, u, y) {
+  function nt(i, d, y) {
     const h = y.opts.format;
     switch (i) {
       case "checkbox":
       case "toggle":
-        return C(u) ? pe(y.opts.value ?? y.opts.on ?? "") : pe(y.opts.off ?? "");
+        return F(d) ? fe(y.opts.value ?? y.opts.on ?? "") : fe(y.opts.off ?? "");
       case "currency":
-        return u === null || u === "" ? "" : typeof u == "number" ? Q(u, h || `currency:${y.opts.currency || o.currency}`, o) : p(u, o);
+        return d === null || d === "" ? "" : typeof d == "number" ? Q(d, h || `currency:${y.opts.currency || o.currency}`, o) : p(d, o);
       case "number":
-        return u === null ? "" : Q(u, h, o);
+        return d === null ? "" : Q(d, h, o);
       case "date":
-        return u ? z(u, h || o.dateFormat) : "";
+        return d ? z(d, h || o.dateFormat) : "";
       case "time":
-        return u ? z(u, h || o.timeFormat) : "";
+        return d ? z(d, h || o.timeFormat) : "";
       case "datetime":
-        return u ? z(u, h || `${o.dateFormat} ${o.timeFormat}`) : "";
+        return d ? z(d, h || `${o.dateFormat} ${o.timeFormat}`) : "";
       case "select":
-        return Array.isArray(u) ? u.join(y.opts.separator ?? ", ") : Q(u, h, o);
+        return Array.isArray(d) ? d.join(y.opts.separator ?? ", ") : Q(d, h, o);
       default:
-        return Q(u, h, o);
+        return Q(d, h, o);
     }
   }
-  function It(i) {
-    const u = ne(i.main);
-    if (!_(u)) throw new Error("{{table}} source must be a list (a repeat section or data.<table>)");
-    let y = u.filter((M) => $e(M));
-    const x = (i.opts.columns ? ge(i.opts.columns, "|").map((M) => M.trim()).filter(Boolean) : Object.keys(y[0] || {}).filter((M) => !M.startsWith("__") && M !== "index")).map((M) => {
-      const F = M.indexOf(":");
-      return F > 0 ? { header: M.slice(0, F).trim(), expr: M.slice(F + 1).trim() } : { header: Ue(M), expr: M };
-    }), g = (M, F, G) => {
-      I.push({ repeat: "__table", row: {}, rowVars: { ...M, index: F + 1 }, index: F, formRow: [] });
+  function Yt(i) {
+    const d = ne(i.main);
+    if (!$(d)) throw new Error("{{table}} source must be a list (a repeat section or data.<table>)");
+    let y = d.filter((M) => $e(M));
+    const x = (i.opts.columns ? ye(i.opts.columns, "|").map((M) => M.trim()).filter(Boolean) : Object.keys(y[0] || {}).filter((M) => !M.startsWith("__") && M !== "index")).map((M) => {
+      const _ = M.indexOf(":");
+      return _ > 0 ? { header: M.slice(0, _).trim(), expr: M.slice(_ + 1).trim() } : { header: He(M), expr: M };
+    }), g = (M, _, G) => {
+      C.push({ repeat: "__table", row: {}, rowVars: { ...M, index: _ + 1 }, index: _, formRow: [] });
       try {
         return G();
       } finally {
-        I.pop();
+        C.pop();
       }
     };
-    i.opts.where && (y = y.filter((M, F) => g(M, F, () => C(ne(i.opts.where))))), i.opts.limit && (y = y.slice(0, parseInt(i.opts.limit, 10) || y.length));
-    const N = (i.opts.formats || "").split("|").map((M) => M.trim()), f = y.map((M, F) => x.map((G, Re) => g(M, F, () => Q(ne(G.expr), N[Re] || void 0, o)))), b = i.opts.total ? x.map((M, F) => {
-      const G = ge(i.opts.total, "|").map((Pe) => Pe.trim().toLowerCase());
-      if (F === 0 && !G.includes(M.header.toLowerCase())) return i.opts.totallabel || "Total";
+    i.opts.where && (y = y.filter((M, _) => g(M, _, () => F(ne(i.opts.where))))), i.opts.limit && (y = y.slice(0, parseInt(i.opts.limit, 10) || y.length));
+    const N = (i.opts.formats || "").split("|").map((M) => M.trim()), f = y.map((M, _) => x.map((G, Pe) => g(M, _, () => Q(ne(G.expr), N[Pe] || void 0, o)))), b = i.opts.total ? x.map((M, _) => {
+      const G = ye(i.opts.total, "|").map((Oe) => Oe.trim().toLowerCase());
+      if (_ === 0 && !G.includes(M.header.toLowerCase())) return i.opts.totallabel || "Total";
       if (!G.includes(M.header.toLowerCase())) return "";
-      const Re = y.reduce((Pe, Nt, Rt) => Pe + (P(g(Nt, Rt, () => ne(M.expr))) || 0), 0);
-      return Q(Re, N[F] || void 0, o);
-    }) : null, $ = x.map((M) => M.header), O = [$, ...f, ...b ? [b] : []], D = $.map((M, F) => Math.max(...O.map((G) => (G[F] || "").length))), q = (M) => "| " + M.map((F, G) => (F || "").padEnd(D[G])).join(" | ") + " |", U = [q($), "|" + D.map((M) => "-".repeat(M + 2)).join("|") + "|", ...f.map(q), ...b ? [q(b)] : []].join(`
-`), K = 'style="border:1px solid #bbb;padding:4px 8px"', Ne = `<table style="border-collapse:collapse"><thead><tr>${$.map((M) => `<th ${K}>${ue(M)}</th>`).join("")}</tr></thead><tbody>${f.map((M) => `<tr>${M.map((F) => `<td ${K}>${ue(F)}</td>`).join("")}</tr>`).join("")}${b ? `<tr>${b.map((M) => `<td ${K}><b>${ue(M)}</b></td>`).join("")}</tr>` : ""}</tbody></table>`;
-    et(Ne, U);
+      const Pe = y.reduce((Oe, Rt, Pt) => Oe + (P(g(Rt, Pt, () => ne(M.expr))) || 0), 0);
+      return Q(Pe, N[_] || void 0, o);
+    }) : null, I = x.map((M) => M.header), O = [I, ...f, ...b ? [b] : []], v = I.map((M, _) => Math.max(...O.map((G) => (G[_] || "").length))), q = (M) => "| " + M.map((_, G) => (_ || "").padEnd(v[G])).join(" | ") + " |", U = [q(I), "|" + v.map((M) => "-".repeat(M + 2)).join("|") + "|", ...f.map(q), ...b ? [q(b)] : []].join(`
+`), K = 'style="border:1px solid #bbb;padding:4px 8px"', Re = `<table style="border-collapse:collapse"><thead><tr>${I.map((M) => `<th ${K}>${ue(M)}</th>`).join("")}</tr></thead><tbody>${f.map((M) => `<tr>${M.map((_) => `<td ${K}>${ue(_)}</td>`).join("")}</tr>`).join("")}${b ? `<tr>${b.map((M) => `<td ${K}><b>${ue(M)}</b></td>`).join("")}</tr>` : ""}</tbody></table>`;
+    tt(Re, U);
   }
-  function re(i, u, y) {
+  function re(i, d, y) {
     for (const h of i)
       try {
-        Yt(h, u, y);
+        Et(h, d, y);
       } catch (x) {
         const g = x instanceof X || x instanceof Error ? x.message : String(x), N = h.k === "cmd" ? `{{${h.raw}}}` : h.k === "if" ? "{{if}}" : `{{${h.k}}}`;
         l.push(`${N}: ${g}`);
       }
   }
-  function Yt(i, u, y) {
-    const h = Ye();
+  function Et(i, d, y) {
+    const h = Ee();
     switch (i.k) {
       case "text":
         B += i.text;
         return;
       case "if": {
-        if (!d.conditionals) throw new Error("Conditional rules require the Pro plan");
+        if (!u.conditionals) throw new Error("Conditional rules require the Pro plan");
         for (const f of i.branches)
-          if (C(le(f.cond, ie))) {
-            re(f.body, u, y);
+          if (F(de(f.cond, se))) {
+            re(f.body, d, y);
             return;
           }
-        i.elseBody && re(i.elseBody, u, y);
+        i.elseBody && re(i.elseBody, d, y);
         return;
       }
       case "section": {
         const f = i.args.main;
-        if (!ve.test(f)) throw new Error("Section needs a name, e.g. {{section: extras; label=Add extras?}}");
-        se(f, "section", i.args, u, i.start, i.end), C(we("section", be(f, "section", i.args, h), i.args)) && re(i.body, u + 1, y);
+        if (!Te.test(f)) throw new Error("Section needs a name, e.g. {{section: extras; label=Add extras?}}");
+        ce(f, "section", i.args, d, i.start, i.end), F(be("section", xe(f, "section", i.args, h), i.args)) && re(i.body, d + 1, y);
         return;
       }
       case "repeat": {
-        const f = i.args.main, b = i.args.opts.separator ?? "", $ = /^\d+$/.test(f) ? parseInt(f, 10) : i.args.opts.count ? Math.round(P(ne(i.args.opts.count))) : null;
-        if ($ !== null) {
-          const q = Math.max(0, Math.min(500, isNaN($) ? 0 : $));
+        const f = i.args.main, b = i.args.opts.separator ?? "", I = /^\d+$/.test(f) ? parseInt(f, 10) : i.args.opts.count ? Math.round(P(ne(i.args.opts.count))) : null;
+        if (I !== null) {
+          const q = Math.max(0, Math.min(500, isNaN(I) ? 0 : I));
           for (let U = 0; U < q; U++) {
-            U && b && V(b), I.push({ repeat: "__static", row: {}, rowVars: { index: U + 1 }, index: U, formRow: [] });
+            U && b && V(b), C.push({ repeat: "__static", row: {}, rowVars: { index: U + 1 }, index: U, formRow: [] });
             try {
-              re(i.body, u, y);
+              re(i.body, d, y);
             } finally {
-              I.pop();
+              C.pop();
             }
           }
           return;
         }
-        if (!ve.test(f)) throw new Error("Repeat needs a name, e.g. {{repeat: items; label=Item}}");
-        if (!d.forms) throw new Error("Repeating sections require an upgraded plan");
-        const O = Xe(f, i.args), D = {
+        if (!Te.test(f)) throw new Error("Repeat needs a name, e.g. {{repeat: items; label=Item}}");
+        if (!u.forms) throw new Error("Repeating sections require an upgraded plan");
+        const O = et(f, i.args), v = {
           type: "repeat",
           name: f,
-          label: i.args.opts.label || Ue(f),
+          label: i.args.opts.label || He(f),
           min: parseInt(i.args.opts.min ?? "1", 10) || 0,
           max: parseInt(i.args.opts.max ?? "50", 10) || 50,
-          depth: u,
+          depth: d,
           rows: []
         };
-        v.push(D), O.forEach((q, U) => {
+        T.push(v), O.forEach((q, U) => {
           U && b && V(b);
           const K = { repeat: f, row: q || {}, rowVars: {}, index: U, formRow: [] };
-          I.push(K);
+          C.push(K);
           try {
-            re(i.body, u + 1, y);
+            re(i.body, d + 1, y);
           } finally {
-            I.pop(), D.rows.push(K.formRow);
+            C.pop(), v.rows.push(K.formRow);
           }
         });
         return;
       }
     }
-    const { name: x, args: g } = i, N = At[x];
+    const { name: x, args: g } = i, N = Lt[x];
     if (N && (g.main || !["date", "time"].includes(x))) {
       const f = g.main;
-      if (!f || !ve.test(f)) throw new Error(`Field name "${f}" may only contain letters, numbers and _ (use label=… for display text)`);
-      if (se(f, N, g, u, i.start, i.end), g.flags.has("hidden") || g.opts.show === "no" || g.opts.show === "false") return;
-      const b = Ee(f).value;
-      V(tt(N, b, g));
+      if (!f || !Te.test(f)) throw new Error(`Field name "${f}" may only contain letters, numbers and _ (use label=… for display text)`);
+      if (ce(f, N, g, d, i.start, i.end), g.flags.has("hidden") || g.opts.show === "no" || g.opts.show === "false") return;
+      const b = Ne(f).value;
+      V(nt(N, b, g));
       return;
     }
     switch (x) {
@@ -1476,16 +1476,16 @@ function Lt(e, t, n = {}) {
         return;
       case "ref": {
         const f = g.main, b = f.split(".")[0];
-        (S.implicit.has(b) || h && S.repeats.get(h.repeat)?.fields.get(b)?.start === -1) && !f.includes(".") && se(b, "text", g, u, i.start, i.end, !0);
+        (L.implicit.has(b) || h && L.repeats.get(h.repeat)?.fields.get(b)?.start === -1) && !f.includes(".") && ce(b, "text", g, d, i.start, i.end, !0);
         let O;
-        if (f.includes(".")) O = le(f, ie);
+        if (f.includes(".")) O = de(f, se);
         else {
-          const D = Ee(b);
-          if (!D.found) throw new Error(`Unknown name "${b}"`);
-          O = D.value;
-          const q = S.fields.get(b) || (h ? S.repeats.get(h.repeat)?.fields.get(b) : void 0);
+          const v = Ne(b);
+          if (!v.found) throw new Error(`Unknown name "${b}"`);
+          O = v.value;
+          const q = L.fields.get(b) || (h ? L.repeats.get(h.repeat)?.fields.get(b) : void 0);
           if (q && !g.opts.format) {
-            V(tt(q.type, O, { ...q.args, opts: { ...q.args.opts } }));
+            V(nt(q.type, O, { ...q.args, opts: { ...q.args.opts } }));
             return;
           }
         }
@@ -1501,9 +1501,9 @@ function Lt(e, t, n = {}) {
         const f = g.main.indexOf("=");
         if (f < 1) throw new Error("Use {{set: name = formula}}");
         const b = g.main.slice(0, f).trim();
-        if (!ve.test(b)) throw new Error(`Invalid variable name "${b}"`);
-        const $ = ne(g.main.slice(f + 1));
-        h ? h.rowVars[b] = $ : j[b] = $;
+        if (!Te.test(b)) throw new Error(`Invalid variable name "${b}"`);
+        const I = ne(g.main.slice(f + 1));
+        h ? h.rowVars[b] = I : j[b] = I;
         return;
       }
       case "upper":
@@ -1511,12 +1511,12 @@ function Lt(e, t, n = {}) {
       case "title":
       case "capitalize":
       case "trim": {
-        const f = p(le(g.main, ie), o);
-        V(x === "upper" ? f.toUpperCase() : x === "lower" ? f.toLowerCase() : x === "title" ? Qe(f) : x === "trim" ? f.trim() : f.charAt(0).toUpperCase() + f.slice(1));
+        const f = p(de(g.main, se), o);
+        V(x === "upper" ? f.toUpperCase() : x === "lower" ? f.toLowerCase() : x === "title" ? Je(f) : x === "trim" ? f.trim() : f.charAt(0).toUpperCase() + f.slice(1));
         return;
       }
       case "replace": {
-        const f = p(le(g.main, ie), o);
+        const f = p(de(g.main, se), o);
         V(f.split(g.opts.find ?? "").join(g.opts.with ?? g.opts.by ?? ""));
         return;
       }
@@ -1525,7 +1525,7 @@ function Lt(e, t, n = {}) {
       case "now":
       case "time": {
         let f = new Date(s.getTime());
-        (x === "today" || x === "date") && (f = new Date(s.getFullYear(), s.getMonth(), s.getDate())), g.opts.shift && (f = de(f, g.opts.shift)), g.main && x !== "date" && (f = de(f, g.main));
+        (x === "today" || x === "date") && (f = new Date(s.getFullYear(), s.getMonth(), s.getDate())), g.opts.shift && (f = me(f, g.opts.shift)), g.main && x !== "date" && (f = me(f, g.main));
         const b = g.opts.format || (x === "time" ? o.timeFormat : x === "now" ? `${o.dateFormat} ${o.timeFormat}` : o.dateFormat);
         V(z(f, b));
         return;
@@ -1534,43 +1534,43 @@ function Lt(e, t, n = {}) {
         B += De;
         return;
       case "link": {
-        const f = pe(g.opts.url ?? (g.main.startsWith("="), g.main)), b = pe(g.opts.text ?? "") || f;
+        const f = fe(g.opts.url ?? (g.main.startsWith("="), g.main)), b = fe(g.opts.text ?? "") || f;
         if (!/^(https?:|mailto:|tel:)/i.test(f)) throw new Error(`Links must start with https://, http://, mailto: or tel: (got "${f}")`);
-        const $ = g.opts.plain || "both", O = b === f || $ === "url" ? f : $ === "text" ? b : `${b} (${f})`;
-        et(`<a href="${ue(f)}">${ue(b)}</a>`, O);
+        const I = g.opts.plain || "both", O = b === f || I === "url" ? f : I === "text" ? b : `${b} (${f})`;
+        tt(`<a href="${ue(f)}">${ue(b)}</a>`, O);
         return;
       }
       case "table":
-        It(g);
+        Yt(g);
         return;
       case "snippet":
       case "include": {
         if (y >= 5) throw new Error("Snippets are nested too deeply (max 5)");
         const f = n.resolveSnippet?.(g.main);
         if (!f) throw new Error(`No snippet with shortcut "${g.main}"`);
-        const b = f.contentType === "html", $ = We(f.content, b);
+        const b = f.contentType === "html", I = ze(f.content, b);
         if (b === a) {
-          re($, u, y + 1);
+          re(I, d, y + 1);
           return;
         }
-        const O = B, D = a;
+        const O = B, v = a;
         B = "", a = b;
         try {
-          re($, u, y + 1);
+          re(I, d, y + 1);
         } finally {
-          a = D;
+          a = v;
         }
         const q = B;
-        B = O + (b ? it(q) : Oe(q));
+        B = O + (b ? st(q) : Ue(q));
         return;
       }
       case "validate": {
-        C(le(g.main, ie)) || A.push(g.opts.message || `Check failed: ${g.main}`);
+        F(de(g.main, se)) || D.push(g.opts.message || `Check failed: ${g.main}`);
         return;
       }
       case "index": {
-        if (!I.length) throw new Error("{{index}} can only be used inside {{repeat}}");
-        V(String(I[I.length - 1].index + 1));
+        if (!C.length) throw new Error("{{index}} can only be used inside {{repeat}}");
+        V(String(C[C.length - 1].index + 1));
         return;
       }
       case "else":
@@ -1583,16 +1583,16 @@ function Lt(e, t, n = {}) {
         throw new Error(`Unknown command "${x}". See the syntax guide for available commands.`);
     }
   }
-  re(T, 0, 0);
-  let ce, fe;
-  r ? (fe = B, ce = it(B)) : (ce = B, fe = Oe(B));
-  let nt = null;
-  const rt = ce.indexOf(De);
-  rt >= 0 && (nt = rt), ce = ce.split(De).join(""), fe = fe.split(De).join("");
-  const Et = v.length > 0;
-  return { text: ce, html: fe, cursor: nt, form: v, errors: l, validation: A, needsForm: Et, isRich: r };
+  re(A, 0, 0);
+  let le, he;
+  r ? (he = B, le = st(B)) : (le = B, he = Ue(B));
+  let rt = null;
+  const at = le.indexOf(De);
+  at >= 0 && (rt = at), le = le.split(De).join(""), he = he.split(De).join("");
+  const Nt = T.length > 0;
+  return { text: le, html: he, cursor: rt, form: T, errors: l, validation: D, needsForm: Nt, isRich: r };
 }
-const Be = ["dynamicForms", "formulas", "conditionals", "richText", "dataHub", "autopilot", "analytics", "sharing", "marketplaceSubmit", "cloudSync"], mt = {
+const je = ["dynamicForms", "formulas", "conditionals", "richText", "dataHub", "autopilot", "analytics", "sharing", "marketplaceSubmit", "cloudSync"], pt = {
   free: {
     id: "free",
     name: "Free",
@@ -1605,30 +1605,30 @@ const Be = ["dynamicForms", "formulas", "conditionals", "richText", "dataHub", "
     name: "Pro",
     tagline: "Advanced forms, formulas, rich content and analytics",
     limits: { snippets: 5e3, folders: 500, tables: 50, workflows: 100, libraryTemplates: 1 / 0, teamMembers: 0 },
-    features: Be
+    features: je
   },
   business: {
     id: "business",
     name: "Business",
     tagline: "Teams, shared folders, roles and team analytics",
     limits: { snippets: 2e4, folders: 2e3, tables: 200, workflows: 500, libraryTemplates: 1 / 0, teamMembers: 250 },
-    features: [...Be, "teams", "teamAnalytics", "roles"]
+    features: [...je, "teams", "teamAnalytics", "roles"]
   },
   enterprise: {
     id: "enterprise",
     name: "Enterprise",
     tagline: "Custom limits, access management and audit logs",
     limits: { snippets: 1 / 0, folders: 1 / 0, tables: 1 / 0, workflows: 1 / 0, libraryTemplates: 1 / 0, teamMembers: 1 / 0 },
-    features: [...Be, "teams", "teamAnalytics", "roles", "auditLogs"]
+    features: [...je, "teams", "teamAnalytics", "roles", "auditLogs"]
   }
 };
-function tn(e) {
-  return mt[e || "pro"] || mt.pro;
+function nn(e) {
+  return pt[e || "pro"] || pt.pro;
 }
-function Te(e, t, n = !0) {
-  return !n || tn(e).features.includes(t);
+function Se(e, t, n = !0) {
+  return !n || nn(e).features.includes(t);
 }
-function qt(e) {
+function It(e) {
   const { settings: t } = e, n = new Map(e.snippets.filter((o) => !o.deleted).map((o) => [o.shortcut, o])), r = {};
   for (const o of e.tables)
     o.deleted || (r[o.key] = { label: o.name, columns: o.columns.map((s) => s.key), rows: o.rows.map((s) => ({ __id: s.id, ...s.values })) });
@@ -1636,7 +1636,7 @@ function qt(e) {
   return {
     values: e.values || {},
     profile: { ...t.profile },
-    data: Te(t.plan, "dataHub", a) ? r : {},
+    data: Se(t.plan, "dataHub", a) ? r : {},
     page: e.page,
     resolveSnippet: (o) => {
       const s = n.get(o);
@@ -1644,13 +1644,13 @@ function qt(e) {
     },
     fo: { locale: t.locale, currency: t.currency, dateFormat: t.dateFormat, timeFormat: t.timeFormat },
     features: {
-      forms: Te(t.plan, "dynamicForms", a),
-      formulas: Te(t.plan, "formulas", a),
-      conditionals: Te(t.plan, "conditionals", a)
+      forms: Se(t.plan, "dynamicForms", a),
+      formulas: Se(t.plan, "formulas", a),
+      conditionals: Se(t.plan, "conditionals", a)
     }
   };
 }
-const nn = [
+const rn = [
   {
     id: "lib-email-signature",
     name: "Email signature",
@@ -2110,15 +2110,15 @@ Plan: {{customer.plan}}
 Please reply if anything needs to be updated.
 {{me.name}}`
   }
-], rn = () => Date.now();
-function an() {
-  const e = rn(), t = [
+], an = () => Date.now();
+function on() {
+  const e = an(), t = [
     { id: "fld_personal", name: "Personal", parentId: null, order: 0, createdAt: e, updatedAt: e, color: "#6366f1" },
     { id: "fld_work", name: "Work", parentId: null, order: 1, createdAt: e, updatedAt: e, color: "#0ea5e9" },
     { id: "fld_billing", name: "Billing", parentId: "fld_work", order: 0, createdAt: e, updatedAt: e, color: "#f59e0b" },
     { id: "fld_trading", name: "Trading", parentId: null, order: 2, createdAt: e, updatedAt: e, color: "#10b981" }
-  ], n = (s, c, d = {}) => {
-    const l = nn.find((A) => A.id === s);
+  ], n = (s, c, u = {}) => {
+    const l = rn.find((D) => D.id === s);
     return {
       id: "snp_" + s.replace(/^lib-/, "").replace(/-/g, "_"),
       name: l.name,
@@ -2135,7 +2135,7 @@ function an() {
       source: { kind: "template", ref: s },
       createdAt: e,
       updatedAt: e,
-      ...d
+      ...u
     };
   }, r = [
     n("lib-email-signature", "fld_personal", { pinned: !0, favorite: !0 }),
@@ -2231,28 +2231,34 @@ function an() {
     }
   ] };
 }
-async function on(e = !1) {
-  if (!e && await Bt("seeded")) return !1;
-  if ((await Ae("snippets", !0)).length && !e)
-    return await at("seeded", !0), !1;
-  const n = an();
-  return await xe("folders", n.folders), await xe("snippets", n.snippets), await xe("tables", n.tables), await xe("workflows", n.workflows), await at("seeded", !0), !0;
+async function sn(e = !1) {
+  if (!e && await jt("seeded")) return !1;
+  if ((await Le("snippets", !0)).length && !e)
+    return await ot("seeded", !0), !1;
+  const n = on();
+  return await ke("folders", n.folders), await ke("snippets", n.snippets), await ke("tables", n.tables), await ke("workflows", n.workflows), await ot("seeded", !0), !0;
 }
-const me = /* @__PURE__ */ new Map();
+const pe = /* @__PURE__ */ new Map();
 function $t() {
   const e = Date.now();
-  for (const [t, n] of me) e - n.at > 600 * 1e3 && me.delete(t);
+  for (const [t, n] of pe) e - n.at > 600 * 1e3 && pe.delete(t);
 }
 function _t() {
   const e = new Uint8Array(16);
   return crypto.getRandomValues(e), Array.from(e, (t) => t.toString(16).padStart(2, "0")).join("");
 }
-async function qe() {
-  const [e, t, n] = await Promise.all([Wt(), Ae("snippets"), Ae("tables")]);
+const ae = /* @__PURE__ */ new Map();
+S.windows?.onRemoved.addListener((e) => {
+  const t = ae.get(e);
+  t && (ae.delete(e), !t.done && t.tabId !== void 0 && S.tabs.sendMessage(t.tabId, { type: "qth/overlayResult", nonce: t.nonce, result: { type: "cancel" } }, { frameId: t.frameId }).catch?.(() => {
+  }));
+});
+async function Ie() {
+  const [e, t, n] = await Promise.all([zt(), Le("snippets"), Le("tables")]);
   return { settings: e, snippets: t, tables: n };
 }
-async function sn(e) {
-  const { settings: t, snippets: n } = await qe(), r = zt(t, e);
+async function cn(e) {
+  const { settings: t, snippets: n } = await Ie(), r = Vt(t, e);
   return {
     settings: {
       expansionEnabled: t.expansionEnabled && !r,
@@ -2271,83 +2277,115 @@ async function sn(e) {
     shortcuts: n.filter((a) => a.enabled && a.shortcut).map((a) => ({ id: a.id, shortcut: a.shortcut, trigger: a.trigger || "default" }))
   };
 }
-async function cn(e, t, n) {
-  const { settings: r, snippets: a, tables: o } = await qe(), s = a.find((l) => l.id === e);
+async function ln(e, t, n) {
+  const { settings: r, snippets: a, tables: o } = await Ie(), s = a.find((l) => l.id === e);
   if (!s) return { kind: "error", message: "Snippet not found" };
-  const c = qt({ settings: r, snippets: a, tables: o, page: t }), d = Lt(s.content, s.contentType, c);
-  if (d.errors.length && !d.needsForm) return { kind: "error", message: d.errors[0] };
-  if (d.needsForm) {
+  const c = It({ settings: r, snippets: a, tables: o, page: t }), u = qt(s.content, s.contentType, c);
+  if (u.errors.length && !u.needsForm) return { kind: "error", message: u.errors[0] };
+  if (u.needsForm) {
     $t();
     const l = _t();
-    return me.set(l, { snippetId: e, page: t, tabId: n, at: Date.now(), mode: "form" }), { kind: "form", nonce: l, name: s.name };
+    return pe.set(l, { snippetId: e, page: t, tabId: n, at: Date.now(), mode: "form" }), { kind: "form", nonce: l, name: s.name };
   }
-  return !d.text.trim() && !d.html.replace(/<[^>]*>/g, "").trim() ? { kind: "error", message: /\{\{\s*me\./.test(s.content) ? `“${s.name}” is empty because your profile isn't filled in yet. Open the QuickText dashboard → Settings → Profile and add your details (e.g. your signature).` : `“${s.name}” has no text yet. Add content to it in the QuickText dashboard.` } : (await wt(e), { kind: "insert", text: d.text, html: d.html, isRich: d.isRich, cursor: d.cursor === null ? null : d.text.length - d.cursor, name: s.name });
+  return !u.text.trim() && !u.html.replace(/<[^>]*>/g, "").trim() ? { kind: "error", message: /\{\{\s*me\./.test(s.content) ? `“${s.name}” is empty because your profile isn't filled in yet. Open the QuickText dashboard → Settings → Profile and add your details (e.g. your signature).` : `“${s.name}” has no text yet. Add content to it in the QuickText dashboard.` } : (await bt(e), { kind: "insert", text: u.text, html: u.html, isRich: u.isRich, cursor: u.cursor === null ? null : u.text.length - u.cursor, name: s.name });
 }
-L.runtime.onMessage.addListener((e, t, n) => {
-  if (!e || typeof e.type != "string" || !e.type.startsWith("qth/") || t.id !== L.runtime.id) return !1;
+S.runtime.onMessage.addListener((e, t, n) => {
+  if (!e || typeof e.type != "string" || !e.type.startsWith("qth/") || t.id !== S.runtime.id) return !1;
   const r = t.tab?.id;
   return (async () => {
     switch (e.type) {
       case W.getIndex:
-        return sn(String(e.host || ""));
+        return cn(String(e.host || ""));
       case W.expand:
-        return cn(String(e.snippetId), e.page, r);
+        return ln(String(e.snippetId), e.page, r);
       case W.claimForm: {
-        const a = me.get(String(e.nonce));
-        return a ? (me.delete(String(e.nonce)), { ok: !0, snippetId: a.snippetId, page: a.page, mode: a.mode, payload: a.payload }) : { ok: !1 };
+        const a = pe.get(String(e.nonce));
+        return a ? (pe.delete(String(e.nonce)), { ok: !0, snippetId: a.snippetId, page: a.page, mode: a.mode, payload: a.payload }) : { ok: !1 };
       }
       case "qth/openOverlay": {
         $t();
         const a = _t();
-        return me.set(a, { snippetId: String(e.snippetId || ""), page: e.page, tabId: r, at: Date.now(), mode: String(e.mode || "picker"), payload: e.payload }), { nonce: a };
+        return pe.set(a, { snippetId: String(e.snippetId || ""), page: e.page, tabId: r, at: Date.now(), mode: String(e.mode || "picker"), payload: e.payload }), { nonce: a };
       }
       case "qth/renderText": {
-        const { settings: a, snippets: o, tables: s } = await qe(), c = Lt(String(e.content || ""), "text", qt({ settings: a, snippets: o, tables: s, page: e.page }));
+        const { settings: a, snippets: o, tables: s } = await Ie(), c = qt(String(e.content || ""), "text", It({ settings: a, snippets: o, tables: s, page: e.page }));
         return c.errors.length ? { error: c.errors[0] } : c.needsForm ? { error: 'Autopilot text cannot contain form fields — use an "Insert snippet" step instead' } : { text: c.text };
       }
+      case "qth/openOverlayWindow": {
+        const a = String(e.nonce), o = e.mode === "picker" ? 460 : 500, s = e.mode === "picker" ? 470 : e.mode === "confirm" ? 300 : 620;
+        let c, u;
+        try {
+          const D = t.tab?.windowId !== void 0 ? await S.windows.get(t.tab.windowId) : null;
+          D && D.left !== void 0 && D.width !== void 0 && D.top !== void 0 && D.height !== void 0 && (c = Math.round(D.left + (D.width - o) / 2), u = Math.round(D.top + Math.max(40, (D.height - s) / 2)));
+        } catch {
+        }
+        const l = await S.windows.create({ url: S.runtime.getURL("overlay/index.html") + `#nonce=${a}&window=1`, type: "popup", width: o, height: s, left: c, top: u, focused: !0 });
+        return l?.id === void 0 ? { ok: !1 } : (ae.set(l.id, { nonce: a, tabId: t.tab?.id, frameId: t.frameId ?? 0, done: !1 }), { ok: !0 });
+      }
+      case "qth/overlayResult": {
+        for (const [a, o] of ae)
+          if (o.nonce === e.nonce) {
+            if (o.done = !0, o.tabId !== void 0) {
+              try {
+                await S.windows.update((await S.tabs.get(o.tabId)).windowId, { focused: !0 });
+              } catch {
+              }
+              S.tabs.sendMessage(o.tabId, { type: "qth/overlayResult", nonce: o.nonce, result: e.result }, { frameId: o.frameId }).catch?.(() => {
+              });
+            }
+            S.windows.remove(a).catch?.(() => {
+            }), ae.delete(a);
+          }
+        return { ok: !0 };
+      }
+      case "qth/closeOverlayWindow": {
+        for (const [a, o] of ae) o.nonce === e.nonce && (o.done = !0, S.windows.remove(a).catch?.(() => {
+        }), ae.delete(a));
+        return { ok: !0 };
+      }
       case W.recordUsage:
-        return await wt(String(e.snippetId)), { ok: !0 };
+        return await bt(String(e.snippetId)), { ok: !0 };
       case W.listForAssistant: {
-        const { snippets: a } = await qe(), o = await ft("usage"), s = new Map(o.map((c) => [c.snippetId, c]));
+        const { snippets: a } = await Ie(), o = await ht("usage"), s = new Map(o.map((c) => [c.snippetId, c]));
         return a.filter((c) => c.enabled).map((c) => ({ id: c.id, name: c.name, shortcut: c.shortcut, preview: c.content.slice(0, 160), contentType: c.contentType, favorite: c.favorite, pinned: c.pinned, lastUsedAt: s.get(c.id)?.lastUsedAt || 0, count: s.get(c.id)?.count || 0 }));
       }
       case W.listWorkflows:
-        return (await Ae("workflows")).filter((a) => a.enabled);
+        return (await Le("workflows")).filter((a) => a.enabled);
       case W.getWorkflow:
-        return Ke("workflows", String(e.id));
+        return Ge("workflows", String(e.id));
       case W.openDashboard:
-        return await L.tabs.create({ url: L.runtime.getURL("dashboard/index.html" + (e.hash ? "#" + e.hash : "")) }), { ok: !0 };
+        return await S.tabs.create({ url: S.runtime.getURL("dashboard/index.html" + (e.hash ? "#" + e.hash : "")) }), { ok: !0 };
       case W.picked:
-        return await new Promise((a) => L.storage.local.set({ [Se.picked]: { ...e.element, at: Date.now() } }, () => a())), { ok: !0 };
+        return await new Promise((a) => S.storage.local.set({ [Ae.picked]: { ...e.element, at: Date.now() } }, () => a())), { ok: !0 };
       default:
         return { error: "unknown message" };
     }
   })().then(n, (a) => n({ kind: "error", error: String(a?.message || a), message: String(a?.message || a) })), !0;
 });
-L.commands?.onCommand.addListener((e, t) => {
-  e === "open-assistant" && t?.id !== void 0 && L.tabs.sendMessage(t.id, { type: W.openAssistant }).catch?.(() => {
+S.commands?.onCommand.addListener((e, t) => {
+  e === "open-assistant" && t?.id !== void 0 && S.tabs.sendMessage(t.id, { type: W.openAssistant }).catch?.(() => {
   });
 });
 function Ft() {
-  L.contextMenus.removeAll(() => {
-    L.contextMenus.create({ id: "qth-insert", title: "Insert QuickText snippet…", contexts: ["editable"] }), L.contextMenus.create({ id: "qth-new-from-selection", title: "Create QuickText snippet from selection", contexts: ["selection"] });
+  S.contextMenus.removeAll(() => {
+    S.contextMenus.create({ id: "qth-insert", title: "Insert QuickText snippet…", contexts: ["editable"] }), S.contextMenus.create({ id: "qth-new-from-selection", title: "Create QuickText snippet from selection", contexts: ["selection"] });
   });
 }
-L.contextMenus.onClicked.addListener((e, t) => {
-  if (t?.id && (e.menuItemId === "qth-insert" && L.tabs.sendMessage(t.id, { type: W.openAssistant }, { frameId: e.frameId }).catch?.(() => {
+S.contextMenus.onClicked.addListener((e, t) => {
+  if (t?.id && (e.menuItemId === "qth-insert" && S.tabs.sendMessage(t.id, { type: W.openAssistant }, { frameId: e.frameId }).catch?.(() => {
   }), e.menuItemId === "qth-new-from-selection")) {
     const n = (e.selectionText || "").slice(0, 2e4);
-    L.tabs.create({ url: L.runtime.getURL("dashboard/index.html#/new?text=" + encodeURIComponent(n)) });
+    S.tabs.create({ url: S.runtime.getURL("dashboard/index.html#/new?text=" + encodeURIComponent(n)) });
   }
 });
-async function ln() {
-  if (!L.scripting?.executeScript) return;
-  const e = await L.tabs.query({});
+async function dn() {
+  if (!S.scripting?.executeScript) return;
+  const e = await S.tabs.query({});
   for (const t of e)
-    t.id === void 0 || !/^(https?|file):/.test(t.url || "") || L.scripting.executeScript({ target: { tabId: t.id, allFrames: !0 }, files: ["content.js"] }).catch(() => {
+    t.id === void 0 || !/^(https?|file):/.test(t.url || "") || S.scripting.executeScript({ target: { tabId: t.id, allFrames: !0 }, files: ["content.js"] }).catch(() => {
     });
 }
-L.runtime.onInstalled.addListener(async (e) => {
-  Ft(), ln(), e.reason === "install" && (await on(), L.tabs.create({ url: L.runtime.getURL("dashboard/index.html#/welcome") }));
+S.runtime.onInstalled.addListener(async (e) => {
+  Ft(), dn(), e.reason === "install" && (await sn(), S.tabs.create({ url: S.runtime.getURL("dashboard/index.html#/welcome") }));
 });
-L.runtime.onStartup?.addListener(Ft);
+S.runtime.onStartup?.addListener(Ft);

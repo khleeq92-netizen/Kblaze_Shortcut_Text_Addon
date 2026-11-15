@@ -18,6 +18,11 @@ execFileSync(process.execPath, [path.join(here, 'build-fixtures.mjs')], { stdio:
 
 // ---------- static server for fixture pages
 const server = http.createServer((req, res) => {
+  // /isolated.html = fixture page with WhatsApp Web's cross-origin isolation headers
+  if (req.url.startsWith('/isolated')) {
+    res.writeHead(200, { 'content-type': 'text/html', 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'require-corp' });
+    res.end(fs.readFileSync(path.join(here, 'fixtures/index.html'))); return;
+  }
   const p = path.join(here, 'fixtures', decodeURIComponent(new URL(req.url, 'http://x').pathname));
   if (!p.startsWith(path.join(here, 'fixtures')) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) {
     const idx = path.join(here, 'fixtures/index.html');
@@ -322,6 +327,38 @@ await test('dashboard: command builder inserts a dropdown command', async () => 
   await dash.click('.modal-foot button:has-text("Insert")');
   const v = await dash.$eval('.code-wrap textarea', (e) => e.value);
   assert(v.includes('{{select: plan; options=Basic, Pro}}'), v);
+});
+await test('WhatsApp-style isolated page (COOP/COEP): form opens as popup window and inserts into Lexical', async () => {
+  const iso = await ctx.newPage();
+  await iso.goto(base.replace('index.html', 'isolated.html'));
+  await iso.waitForFunction(() => window.lexicalText && crossOriginIsolated);
+  await sleep(400);
+  await iso.click('#lexical');
+  await iso.keyboard.type('Hello ;pay', { delay: 25 });
+  const win = await until(() => ctx.pages().find((x) => x.url().includes('/overlay/index.html') && x.url().includes('window=1')), 6000, 'popup window');
+  await win.waitForSelector('.qform input');
+  await win.locator('.qform input[type=text]').first().fill('Numan');
+  await win.locator('.qform input[type=number]').first().fill('750');
+  await win.click('button:has-text("Insert")');
+  await until(async () => (await iso.evaluate(() => window.lexicalText())).includes('Numan'), 6000, 'insertion into Lexical');
+  eq((await iso.evaluate(() => window.lexicalText())).trim(), 'Hello Dear Numan, pay $750.00 by 31/01/2030.');
+  await iso.close();
+});
+await test('WhatsApp-style isolated page: plain snippet + assistant popup window', async () => {
+  const iso = await ctx.newPage();
+  await iso.goto(base.replace('index.html', 'isolated.html'));
+  await iso.waitForFunction(() => window.lexicalText);
+  await sleep(400);
+  await iso.click('#lexical');
+  await iso.keyboard.type('A /ty ', { delay: 25 });
+  await iso.keyboard.press('Control+Shift+Space');
+  const win = await until(() => ctx.pages().find((x) => x.url().includes('/overlay/index.html') && x.url().includes('window=1')), 6000, 'assistant window');
+  await win.waitForSelector('.ov-list li');
+  await win.fill('.ov-search', 'Quick thanks');
+  await sleep(150);
+  await win.press('.ov-search', 'Enter');
+  await until(async () => (await iso.evaluate(() => window.lexicalText())).split('Thank you').length === 3, 6000, 'second insertion');
+  await iso.close();
 });
 await test('popup renders snippet list', async () => {
   const p = await ctx.newPage();

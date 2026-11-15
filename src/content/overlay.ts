@@ -1,5 +1,8 @@
 // Hosts extension UI (snippet picker, fill-in form, confirmations) in an
 // isolated extension-origin iframe. The page cannot read or script it.
+// Cross-origin-isolated pages (COEP require-corp, e.g. WhatsApp Web) refuse to
+// embed extension frames, so there the same UI opens in a small popup window and
+// the result is relayed through the background worker.
 import { api } from '../shared/browser';
 import { OVERLAY_MSG } from '../shared/constants';
 import { toTopRect } from './editable';
@@ -11,7 +14,21 @@ export type OverlayResult =
   | { type: 'runWorkflow'; workflowId: string }
   | { type: 'cancel' };
 
-let current: { host: HTMLElement; frame: HTMLIFrameElement; resolve: (r: OverlayResult) => void; nonce: string; listener: (e: MessageEvent) => void; win: Window } | null = null;
+type Current =
+  | { kind: 'frame'; host: HTMLElement; frame: HTMLIFrameElement; resolve: (r: OverlayResult) => void; nonce: string; listener: (e: MessageEvent) => void; win: Window }
+  | { kind: 'window'; resolve: (r: OverlayResult) => void; nonce: string };
+let current: Current | null = null;
+
+function needsWindow(): boolean {
+  try { return (window as any).crossOriginIsolated === true || (window.top as any)?.crossOriginIsolated === true; } catch { return !!(window as any).crossOriginIsolated; }
+}
+
+// Results from the popup-window overlay arrive via the background worker.
+api.runtime.onMessage.addListener((msg: any, sender) => {
+  if (sender.id !== api.runtime.id || msg?.type !== 'qth/overlayResult') return false;
+  if (current && current.kind === 'window' && current.nonce === msg.nonce) closeOverlay(msg.result || { type: 'cancel' });
+  return false;
+});
 
 /** Small same-origin iframes (e.g. TinyMCE) host the overlay in the top document instead. */
 function hostWindow(): Window {
@@ -24,8 +41,12 @@ export function closeOverlay(result: OverlayResult = { type: 'cancel' }) {
   if (!current) return;
   const c = current;
   current = null;
-  c.win.removeEventListener('message', c.listener, true);
-  c.host.remove();
+  if (c.kind === 'frame') {
+    c.win.removeEventListener('message', c.listener, true);
+    c.host.remove();
+  } else if (result.type === 'cancel') {
+    api.runtime.sendMessage({ type: 'qth/closeOverlayWindow', nonce: c.nonce }).catch?.(() => {});
+  }
   c.resolve(result);
 }
 
@@ -41,6 +62,13 @@ export async function openOverlay(opts: { mode: 'picker' | 'form' | 'confirm'; n
     nonce = r?.nonce;
   }
   if (!nonce) return { type: 'cancel' };
+  if (needsWindow()) {
+    const n = nonce;
+    return new Promise<OverlayResult>((resolve) => {
+      current = { kind: 'window', resolve, nonce: n };
+      api.runtime.sendMessage({ type: 'qth/openOverlayWindow', nonce: n, mode: opts.mode }).then((r: any) => { if (!r?.ok) closeOverlay(); }, () => closeOverlay());
+    });
+  }
   // The overlay must live in the top document of this frame; position near the anchor.
   const win = hostWindow();
   const hdoc = win.document;
@@ -86,7 +114,7 @@ export async function openOverlay(opts: { mode: 'picker' | 'form' | 'confirm'; n
       }
       if (d.kind === 'result') closeOverlay(d.result as OverlayResult);
     };
-    current = { host, frame, resolve, nonce: nonce!, listener, win };
+    current = { kind: 'frame', host, frame, resolve, nonce: nonce!, listener, win };
     win.addEventListener('message', listener, true);
     setTimeout(() => frame.focus(), 50);
   });

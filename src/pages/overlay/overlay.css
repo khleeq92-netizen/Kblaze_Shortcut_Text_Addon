@@ -18,3 +18,7 @@ html, body.overlay-body { background: transparent; }
 .ov-errors { background: var(--qth-danger-soft); color: var(--qth-danger); border-radius: 8px; padding: 8px 10px; font-size: 12.5px; margin-bottom: 10px; }
 .ov-confirm .warn { display: flex; gap: 10px; align-items: flex-start; }
 .ov-confirm .warn .ic { color: var(--qth-warning); flex: none; margin-top: 2px; }
+
+body.in-window { background: var(--qth-bg); }
+body.in-window .ov { border: 0; border-radius: 0; min-height: 100vh; max-height: none; }
+body.in-window .ov-list { max-height: calc(100vh - 150px); }

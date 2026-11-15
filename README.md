@@ -40,7 +40,7 @@ npm test               # 92 unit tests (engine, templates, matching, validation)
 ```
 
 ```bash
-npm run test:e2e       # builds, loads the extension in Chromium, runs 29 browser tests
+npm run test:e2e       # builds, loads the extension in Chromium, runs 31 browser tests
 ```
 
 Other scripts: `npm run dev` (watch build), `npm run build:firefox` (→ `dist-firefox/`),
@@ -71,7 +71,8 @@ Other scripts: `npm run dev` (watch build), `npm run build:firefox` (→ `dist-f
 |---|---|---|
 | `<input>`, `<textarea>` (incl. React-style controlled fields) | `insertText` → `setRangeText` + input events | ✅ |
 | `contenteditable` (Gmail-style compose, CRMs, help-desks) | selection + `insertText` / `insertHTML` | ✅ |
-| Lexical (**WhatsApp Web**, Facebook/Meta apps) | synthetic paste over the selected shortcut | ✅ (real Lexical) |
+| Lexical (**WhatsApp Web**, Facebook/Meta apps) | synthetic paste over the selected shortcut | ✅ (real Lexical, incl. WhatsApp-style isolated page) |
+| Cross-origin-isolated sites (WhatsApp Web) | fill-in form / assistant open as a small popup window, because such pages block embedded extension frames | ✅ |
 | Quill | synthetic paste | ✅ (real Quill) |
 | ProseMirror / TipTap, Draft.js, Slate, CKEditor 5 | same paste adapter (framework detection) | detection only — not separately tested |
 | Same-origin iframes (TinyMCE-style) | content script in all frames | ✅ |

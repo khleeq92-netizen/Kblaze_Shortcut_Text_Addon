@@ -22,6 +22,14 @@ function nonce() {
   return Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
 }
 
+const overlayWindows = new Map<number, { nonce: string; tabId?: number; frameId: number; done: boolean }>();
+api.windows?.onRemoved.addListener((winId) => {
+  const o = overlayWindows.get(winId);
+  if (!o) return;
+  overlayWindows.delete(winId);
+  if (!o.done && o.tabId !== undefined) api.tabs.sendMessage(o.tabId, { type: 'qth/overlayResult', nonce: o.nonce, result: { type: 'cancel' } }, { frameId: o.frameId }).catch?.(() => {});
+});
+
 async function loadAll() {
   const [settings, snippets, tables] = await Promise.all([loadSettings(), listRecords<Snippet>('snippets'), listRecords<DataTable>('tables')]);
   return { settings, snippets, tables };
@@ -102,6 +110,42 @@ api.runtime.onMessage.addListener((msg: any, sender, sendResponse) => {
         if (out.errors.length) return { error: out.errors[0] };
         if (out.needsForm) return { error: 'Autopilot text cannot contain form fields — use an "Insert snippet" step instead' };
         return { text: out.text };
+      }
+      case 'qth/openOverlayWindow': {
+        // Popup-window variant of the overlay for cross-origin-isolated pages.
+        const n = String(msg.nonce);
+        const width = msg.mode === 'picker' ? 460 : 500;
+        const height = msg.mode === 'picker' ? 470 : msg.mode === 'confirm' ? 300 : 620;
+        let left: number | undefined, top: number | undefined;
+        try {
+          const w = sender.tab?.windowId !== undefined ? await api.windows.get(sender.tab.windowId) : null;
+          if (w && w.left !== undefined && w.width !== undefined && w.top !== undefined && w.height !== undefined) {
+            left = Math.round(w.left + (w.width - width) / 2);
+            top = Math.round(w.top + Math.max(40, (w.height - height) / 2));
+          }
+        } catch { /* default placement */ }
+        const win = await api.windows.create({ url: api.runtime.getURL('overlay/index.html') + `#nonce=${n}&window=1`, type: 'popup', width, height, left, top, focused: true });
+        if (win?.id === undefined) return { ok: false };
+        overlayWindows.set(win.id, { nonce: n, tabId: sender.tab?.id, frameId: sender.frameId ?? 0, done: false });
+        return { ok: true };
+      }
+      case 'qth/overlayResult': {
+        // From the popup-window overlay: relay to the content script that asked, then close.
+        for (const [winId, o] of overlayWindows) {
+          if (o.nonce !== msg.nonce) continue;
+          o.done = true;
+          if (o.tabId !== undefined) {
+            try { await api.windows.update((await api.tabs.get(o.tabId)).windowId, { focused: true }); } catch { /* ignore */ }
+            api.tabs.sendMessage(o.tabId, { type: 'qth/overlayResult', nonce: o.nonce, result: msg.result }, { frameId: o.frameId }).catch?.(() => {});
+          }
+          api.windows.remove(winId).catch?.(() => {});
+          overlayWindows.delete(winId);
+        }
+        return { ok: true };
+      }
+      case 'qth/closeOverlayWindow': {
+        for (const [winId, o] of overlayWindows) if (o.nonce === msg.nonce) { o.done = true; api.windows.remove(winId).catch?.(() => {}); overlayWindows.delete(winId); }
+        return { ok: true };
       }
       case MSG.recordUsage:
         await recordUsage(String(msg.snippetId));

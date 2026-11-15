@@ -19,8 +19,14 @@ import { AlertTriangle, Search, Zap, X } from 'lucide-react';
 const hash = new URLSearchParams(location.hash.slice(1));
 const nonce = hash.get('nonce') || '';
 const parentOrigin = hash.get('origin') || '*';
+/** Opened as a popup window (cross-origin-isolated pages such as WhatsApp Web). */
+const inWindow = hash.get('window') === '1';
 
 function post(kind: string, data: any = {}) {
+  if (inWindow) {
+    if (kind === 'result') api.runtime.sendMessage({ type: 'qth/overlayResult', nonce, result: data.result });
+    return;
+  }
   window.parent.postMessage({ channel: OVERLAY_MSG, nonce, kind, ...data }, parentOrigin);
 }
 const finish = (result: any) => post('result', { result });
@@ -137,7 +143,7 @@ function Form({ snippetId, page }: { snippetId: string; page: any }) {
   return (
     <>
       <Header title={`${data.snippet.name}  ·  ${data.snippet.shortcut}`} onClose={() => finish({ type: 'cancel' })} />
-      <div className="ov-body" style={{ maxHeight: '58vh' }}>
+      <div className="ov-body" style={{ maxHeight: inWindow ? 'calc(100vh - 110px)' : '58vh' }}>
         {blockingMsgs.length > 0 && <div className="ov-errors">{blockingMsgs.map((m, i) => <div key={i}>{m}</div>)}</div>}
         <FormRenderer items={out.form} values={values} onChange={setValues} showErrors={showErrors} autoFocus onSubmitShortcut={submit} />
         <div className="label" style={{ marginTop: 6 }}>Preview</div>
@@ -197,4 +203,5 @@ function App() {
   );
 }
 
+if (inWindow) document.body.classList.add('in-window');
 createRoot(document.getElementById('root')!).render(<App />);
