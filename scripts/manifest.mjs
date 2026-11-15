@@ -19,7 +19,8 @@ export function buildManifest({ target = 'chrome', version, key }) {
     //  storage      - settings + change notifications (chrome.storage.local, namespaced "qth.")
     //  contextMenus - right-click "Insert QuickText snippet" in editable fields
     //  identity     - Google Sign-In through launchWebAuthFlow (only used if cloud is configured)
-    permissions: ['storage', 'contextMenus', 'identity'],
+    //  scripting    - activate expansion in tabs that were already open at install/update time
+    permissions: ['storage', 'contextMenus', 'identity', 'scripting'],
     // Content script must run on pages where the user types; it never reads page content
     // except the few characters before the caret inside the focused editable field.
     host_permissions: ['<all_urls>'],

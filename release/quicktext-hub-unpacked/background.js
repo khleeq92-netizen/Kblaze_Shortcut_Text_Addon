@@ -1,4 +1,4 @@
-const _ = typeof browser < "u" && browser?.runtime ? browser : globalThis.chrome, Pt = "quicktext-hub-db", Ot = 1, Se = {
+const L = typeof browser < "u" && browser?.runtime ? browser : globalThis.chrome, Pt = "quicktext-hub-db", Ot = 1, Se = {
   settings: "qth.settings",
   cloud: "qth.cloudConfig",
   revision: "qth.revision",
@@ -68,7 +68,7 @@ async function yt(e, t = "local") {
     }
   });
   try {
-    _?.storage?.local && await new Promise((n) => _.storage.local.set({ [Se.revision]: { at: Date.now(), collections: e, origin: t } }, () => n()));
+    L?.storage?.local && await new Promise((n) => L.storage.local.set({ [Se.revision]: { at: Date.now(), collections: e, origin: t } }, () => n()));
   } catch {
   }
 }
@@ -125,7 +125,7 @@ function jt(e) {
   return { ...ot, ...e || {}, profile: { ...ot.profile, ...e?.profile || {} } };
 }
 async function Wt() {
-  const e = await new Promise((t) => _.storage.local.get(Se.settings, t));
+  const e = await new Promise((t) => L.storage.local.get(Se.settings, t));
   return jt(e?.[Se.settings]);
 }
 function zt(e, t) {
@@ -482,10 +482,10 @@ function kt(e, t, n = "days") {
     }
   }
 }
-function $(e) {
+function _(e) {
   return Array.isArray(e);
 }
-function _e(e) {
+function $e(e) {
   return !!e && typeof e == "object" && !Array.isArray(e) && !(e instanceof Date);
 }
 function P(e) {
@@ -505,7 +505,7 @@ function P(e) {
 function ye(e) {
   return typeof e == "number" ? Number.isFinite(e) : typeof e == "string" ? e.trim() !== "" && !isNaN(P(e)) : !1;
 }
-function F(e) {
+function C(e) {
   if (e == null) return !1;
   if (typeof e == "boolean") return e;
   if (typeof e == "number") return e !== 0 && !isNaN(e);
@@ -529,7 +529,7 @@ function p(e, t) {
     const n = e.getHours() !== 0 || e.getMinutes() !== 0;
     return z(e, t ? n && e.__time ? `${t.dateFormat} ${t.timeFormat}` : t.dateFormat : "YYYY-MM-DD");
   }
-  return Array.isArray(e) ? e.map((n) => p(n, t)).join(", ") : _e(e) ? "__label" in e ? p(e.__label, t) : Object.values(e).filter((n) => typeof n != "object").map((n) => p(n, t)).join(", ") : String(e);
+  return Array.isArray(e) ? e.map((n) => p(n, t)).join(", ") : $e(e) ? "__label" in e ? p(e.__label, t) : Object.values(e).filter((n) => typeof n != "object").map((n) => p(n, t)).join(", ") : String(e);
 }
 function Q(e, t, n) {
   if (!t) return p(e, n);
@@ -673,8 +673,8 @@ function Dt(e) {
       const oe = dt[j];
       if (oe < w) break;
       a();
-      const Fe = c(j === "^" ? oe : oe + 1);
-      T = { t: "bin", op: j, left: T, right: Fe };
+      const Ce = c(j === "^" ? oe : oe + 1);
+      T = { t: "bin", op: j, left: T, right: Ce };
     }
     return T;
   }
@@ -770,9 +770,9 @@ function Z(e, t = /* @__PURE__ */ new Set()) {
   return t;
 }
 function ae(e, t) {
-  if ($(e))
+  if (_(e))
     return t === "length" || t === "count" ? e.length : e.map((n) => ae(n, t));
-  if (_e(e)) {
+  if ($e(e)) {
     if (t in e) return e[t];
     const n = Object.keys(e).find((r) => r.toLowerCase() === t.toLowerCase());
     return n ? e[n] : null;
@@ -785,8 +785,8 @@ function k(e, t = "value") {
   return n;
 }
 function vt(e, t, n) {
-  if ($(t) || $(n)) {
-    const o = $(t) ? t : null, s = $(n) ? n : null, c = Math.max(o?.length ?? 0, s?.length ?? 0);
+  if (_(t) || _(n)) {
+    const o = _(t) ? t : null, s = _(n) ? n : null, c = Math.max(o?.length ?? 0, s?.length ?? 0);
     return Array.from({ length: c }, (d, l) => vt(e, o ? o[l] ?? null : t, s ? s[l] ?? null : n));
   }
   if (t instanceof Date && (e === "+" || e === "-") && !(n instanceof Date)) {
@@ -814,7 +814,7 @@ function vt(e, t, n) {
 }
 function te(e, t) {
   if (e == null || e === "") return t == null || t === "";
-  if (typeof e == "boolean" || typeof t == "boolean") return F(e) === F(t);
+  if (typeof e == "boolean" || typeof t == "boolean") return C(e) === C(t);
   if (e instanceof Date || t instanceof Date) {
     const n = H(e), r = H(t);
     return !!n && !!r && Le(n) === Le(r);
@@ -829,11 +829,11 @@ function ee(e, t) {
   }
   return ye(e) && ye(t) ? P(e) - P(t) : p(e).localeCompare(p(t));
 }
-function $e(e) {
-  return e.flatMap((t) => $(t) ? $e(t) : [t]);
+function _e(e) {
+  return e.flatMap((t) => _(t) ? _e(t) : [t]);
 }
-function Ce(e) {
-  return $e(e).filter((t) => t !== null && t !== "").map((t) => k(t));
+function Fe(e) {
+  return _e(e).filter((t) => t !== null && t !== "").map((t) => k(t));
 }
 function E(e, t, n) {
   const r = H(e, t);
@@ -841,8 +841,8 @@ function E(e, t, n) {
   return r;
 }
 function Je(e, t) {
-  if (!$(e)) throw new Y(`${t}: first argument must be a list or table`);
-  return e.filter(_e);
+  if (!_(e)) throw new Y(`${t}: first argument must be a list or table`);
+  return e.filter($e);
 }
 const Tt = {};
 function m(e, t, n, r, a) {
@@ -856,7 +856,7 @@ m("capitalize", "Text", "capitalize(text)", "Capitalize the first letter", ([e])
   return t.charAt(0).toUpperCase() + t.slice(1);
 });
 m("trim", "Text", "trim(text)", "Remove surrounding spaces", ([e]) => p(e).trim());
-m("len", "Text", "len(text)", "Number of characters (or items in a list)", ([e]) => $(e) ? e.length : p(e).length);
+m("len", "Text", "len(text)", "Number of characters (or items in a list)", ([e]) => _(e) ? e.length : p(e).length);
 m("replace", "Text", "replace(text, find, with)", "Replace every occurrence of find", ([e, t, n]) => p(e).split(p(t)).join(p(n)));
 m("left", "Text", "left(text, n)", "First n characters", ([e, t]) => p(e).slice(0, k(t)));
 m("right", "Text", "right(text, n)", "Last n characters", ([e, t]) => {
@@ -864,12 +864,12 @@ m("right", "Text", "right(text, n)", "Last n characters", ([e, t]) => {
   return r <= 0 ? "" : n.slice(-r);
 });
 m("mid", "Text", "mid(text, start, length)", "Substring (start at 1)", ([e, t, n]) => p(e).substr(k(t) - 1, n === void 0 ? void 0 : k(n)));
-m("contains", "Text", "contains(text, part)", "True if text contains part (case-insensitive) or list contains item", ([e, t]) => $(e) ? e.some((n) => te(n, t)) : p(e).toLowerCase().includes(p(t).toLowerCase()));
+m("contains", "Text", "contains(text, part)", "True if text contains part (case-insensitive) or list contains item", ([e, t]) => _(e) ? e.some((n) => te(n, t)) : p(e).toLowerCase().includes(p(t).toLowerCase()));
 m("startswith", "Text", "startswith(text, part)", "True if text starts with part", ([e, t]) => p(e).toLowerCase().startsWith(p(t).toLowerCase()));
 m("endswith", "Text", "endswith(text, part)", "True if text ends with part", ([e, t]) => p(e).toLowerCase().endsWith(p(t).toLowerCase()));
 m("split", "Text", "split(text, separator)", "Split text into a list", ([e, t]) => p(e).split(t === void 0 ? "," : p(t)).map((n) => n.trim()));
-m("join", "Text", "join(list, separator)", "Join list items into text", ([e, t], n) => ($(e) ? e : [e]).map((r) => p(r, n.fo)).join(t === void 0 ? ", " : p(t)));
-m("concat", "Text", "concat(a, b, ...)", "Join values together", (e, t) => $e(e).map((n) => p(n, t.fo)).join(""));
+m("join", "Text", "join(list, separator)", "Join list items into text", ([e, t], n) => (_(e) ? e : [e]).map((r) => p(r, n.fo)).join(t === void 0 ? ", " : p(t)));
+m("concat", "Text", "concat(a, b, ...)", "Join values together", (e, t) => _e(e).map((n) => p(n, t.fo)).join(""));
 m("repeat", "Text", "repeat(text, n)", "Repeat text n times", ([e, t]) => p(e).repeat(Math.max(0, Math.min(1e3, k(t)))));
 m("pad", "Text", "pad(text, length, char)", "Left-pad to a length", ([e, t, n]) => p(e).padStart(k(t), n === void 0 ? " " : p(n)));
 m("truncate", "Text", "truncate(text, n)", "Shorten to n characters with …", ([e, t]) => {
@@ -885,11 +885,11 @@ m("lastname", "Text", "lastname(name)", "Last word of a full name", ([e]) => {
 m("urlencode", "Text", "urlencode(text)", "Encode text for use inside a link", ([e]) => encodeURIComponent(p(e)));
 m("text", "Text", "text(value)", "Convert to text", ([e], t) => p(e, t.fo));
 m("format", "Text", 'format(value, "currency:EUR")', "Format a value (currency, number:2, percent, date:DD/MM/YYYY, upper …)", ([e, t], n) => Q(e, p(t), n.fo));
-m("if", "Logic", "if(condition, then, else)", "Choose a value based on a condition", ([e, t, n]) => F(e) ? t ?? "" : n ?? "");
-m("and", "Logic", "and(a, b, ...)", "True if all are true", (e) => e.every(F));
-m("or", "Logic", "or(a, b, ...)", "True if any is true", (e) => e.some(F));
-m("not", "Logic", "not(a)", "Negate", ([e]) => !F(e));
-m("isempty", "Logic", "isempty(value)", "True if blank", ([e]) => e == null || typeof e == "string" && e.trim() === "" || $(e) && e.length === 0);
+m("if", "Logic", "if(condition, then, else)", "Choose a value based on a condition", ([e, t, n]) => C(e) ? t ?? "" : n ?? "");
+m("and", "Logic", "and(a, b, ...)", "True if all are true", (e) => e.every(C));
+m("or", "Logic", "or(a, b, ...)", "True if any is true", (e) => e.some(C));
+m("not", "Logic", "not(a)", "Negate", ([e]) => !C(e));
+m("isempty", "Logic", "isempty(value)", "True if blank", ([e]) => e == null || typeof e == "string" && e.trim() === "" || _(e) && e.length === 0);
 m("coalesce", "Logic", "coalesce(a, b, ...)", "First non-blank value", (e) => e.find((t) => !(t == null || t === "")) ?? "");
 m("choose", "Logic", 'choose(value, "a", "A", "b", "B", default)', "Map a value to a result", ([e, ...t]) => {
   for (let n = 0; n + 1 < t.length; n += 2) if (te(e, t[n])) return t[n + 1];
@@ -914,14 +914,14 @@ m("floor", "Math", "floor(n)", "Round down", ([e]) => Math.floor(k(e)));
 m("ceil", "Math", "ceil(n)", "Round up", ([e]) => Math.ceil(k(e)));
 m("abs", "Math", "abs(n)", "Absolute value", ([e]) => Math.abs(k(e)));
 m("sqrt", "Math", "sqrt(n)", "Square root", ([e]) => Math.sqrt(k(e)));
-m("min", "Math", "min(a, b, ...)", "Smallest number (lists allowed)", (e) => Math.min(...Ce(e)));
-m("max", "Math", "max(a, b, ...)", "Largest number (lists allowed)", (e) => Math.max(...Ce(e)));
-m("sum", "Math", "sum(list or numbers)", "Total", (e) => Ce(e).reduce((t, n) => t + n, 0));
+m("min", "Math", "min(a, b, ...)", "Smallest number (lists allowed)", (e) => Math.min(...Fe(e)));
+m("max", "Math", "max(a, b, ...)", "Largest number (lists allowed)", (e) => Math.max(...Fe(e)));
+m("sum", "Math", "sum(list or numbers)", "Total", (e) => Fe(e).reduce((t, n) => t + n, 0));
 m("avg", "Math", "avg(list or numbers)", "Average", (e) => {
-  const t = Ce(e);
+  const t = Fe(e);
   return t.length ? t.reduce((n, r) => n + r, 0) / t.length : 0;
 });
-m("count", "Math", "count(list)", "Number of items", (e) => $e(e).filter((t) => t !== null && t !== "").length);
+m("count", "Math", "count(list)", "Number of items", (e) => _e(e).filter((t) => t !== null && t !== "").length);
 m("number", "Math", "number(value)", "Convert to number", ([e]) => k(e));
 m("percent", "Math", "percent(part, whole)", "part as a percentage of whole (0-100)", ([e, t]) => {
   const n = k(t);
@@ -977,11 +977,11 @@ m("greeting", "Date", "greeting()", "Good morning / afternoon / evening", (e, t)
   return n < 12 ? "Good morning" : n < 17 ? "Good afternoon" : "Good evening";
 });
 m("list", "Lists", "list(a, b, ...)", "Make a list", (e) => e);
-m("first", "Lists", "first(list)", "First item", ([e]) => $(e) ? e[0] ?? null : e);
-m("last", "Lists", "last(list)", "Last item", ([e]) => $(e) ? e[e.length - 1] ?? null : e);
-m("item", "Lists", "item(list, n)", "Item number n (1-based)", ([e, t]) => $(e) ? e[k(t) - 1] ?? null : null);
-m("unique", "Lists", "unique(list)", "Remove duplicates", ([e]) => $(e) ? e.filter((t, n) => e.findIndex((r) => te(t, r)) === n) : e);
-m("sort", "Lists", "sort(list)", "Sort ascending", ([e]) => $(e) ? [...e].sort(ee) : e);
+m("first", "Lists", "first(list)", "First item", ([e]) => _(e) ? e[0] ?? null : e);
+m("last", "Lists", "last(list)", "Last item", ([e]) => _(e) ? e[e.length - 1] ?? null : e);
+m("item", "Lists", "item(list, n)", "Item number n (1-based)", ([e, t]) => _(e) ? e[k(t) - 1] ?? null : null);
+m("unique", "Lists", "unique(list)", "Remove duplicates", ([e]) => _(e) ? e.filter((t, n) => e.findIndex((r) => te(t, r)) === n) : e);
+m("sort", "Lists", "sort(list)", "Sort ascending", ([e]) => _(e) ? [...e].sort(ee) : e);
 m("filter", "Lists", 'filter(table, "column", value)', "Rows whose column equals value", ([e, t, n]) => Je(e, "filter").filter((r) => te(ae(r, p(t)), n)));
 m("lookup", "Lists", 'lookup(table, "matchColumn", value, "resultColumn")', "Find a row and return one column", ([e, t, n, r]) => {
   const a = Je(e, "lookup").find((o) => te(ae(o, p(t)), n));
@@ -1004,8 +1004,8 @@ function St(e, t, n) {
       return te(e, n);
   }
 }
-m("countif", "Lists", 'countif(list, ">", 0)', "Count items matching a comparison (= != > >= < <=)", ([e, t, n]) => ($(e) ? e : [e]).filter((r) => St(r, p(t), n)).length);
-m("sumif", "Lists", 'sumif(list, ">", 0)', "Sum items matching a comparison", ([e, t, n]) => ($(e) ? e : [e]).filter((r) => St(r, p(t), n)).reduce((r, a) => r + k(a), 0));
+m("countif", "Lists", 'countif(list, ">", 0)', "Count items matching a comparison (= != > >= < <=)", ([e, t, n]) => (_(e) ? e : [e]).filter((r) => St(r, p(t), n)).length);
+m("sumif", "Lists", 'sumif(list, ">", 0)', "Sum items matching a comparison", ([e, t, n]) => (_(e) ? e : [e]).filter((r) => St(r, p(t), n)).reduce((r, a) => r + k(a), 0));
 m("pluck", "Lists", 'pluck(table, "column")', "One column of a table as a list", ([e, t]) => Je(e, "pluck").map((n) => ae(n, p(t))));
 function R(e, t) {
   switch (e.t) {
@@ -1028,20 +1028,20 @@ function R(e, t) {
       return ae(R(e.obj, t), e.prop);
     case "index": {
       const n = R(e.obj, t), r = R(e.index, t);
-      return $(n) ? n[k(r) - 1] ?? null : ae(n, p(r));
+      return _(n) ? n[k(r) - 1] ?? null : ae(n, p(r));
     }
     case "unary": {
       const n = R(e.arg, t);
-      return e.op === "not" ? !F(n) : e.op === "-" ? $(n) ? n.map((r) => -k(r)) : -k(n) : k(n);
+      return e.op === "not" ? !C(n) : e.op === "-" ? _(n) ? n.map((r) => -k(r)) : -k(n) : k(n);
     }
     case "call": {
       const n = Tt[e.fn];
       if (!n) throw new Y(`Unknown function "${e.fn}()"`);
-      return e.fn === "if" ? F(R(e.args[0], t)) ? e.args[1] ? R(e.args[1], t) : "" : e.args[2] ? R(e.args[2], t) : "" : n.fn(e.args.map((r) => R(r, t)), t);
+      return e.fn === "if" ? C(R(e.args[0], t)) ? e.args[1] ? R(e.args[1], t) : "" : e.args[2] ? R(e.args[2], t) : "" : n.fn(e.args.map((r) => R(r, t)), t);
     }
     case "bin": {
-      if (e.op === "and" || e.op === "&&") return F(R(e.left, t)) && F(R(e.right, t));
-      if (e.op === "or" || e.op === "||") return F(R(e.left, t)) || F(R(e.right, t));
+      if (e.op === "and" || e.op === "&&") return C(R(e.left, t)) && C(R(e.right, t));
+      if (e.op === "or" || e.op === "||") return C(R(e.left, t)) || C(R(e.right, t));
       const n = R(e.left, t), r = R(e.right, t);
       switch (e.op) {
         case "&":
@@ -1158,7 +1158,7 @@ function Lt(e, t, n = {}) {
   ze(T, n, S, null, 0, /* @__PURE__ */ new Set()), en(S);
   const j = {}, oe = {};
   for (const [i, u] of Object.entries(n.data || {})) oe[i] = u.rows.map((y) => ({ ...y }));
-  const Fe = n.profile || {}, Ie = n.page || { url: "", title: "", host: "" }, I = [], Ye = () => {
+  const Ce = n.profile || {}, Ie = n.page || { url: "", title: "", host: "" }, I = [], Ye = () => {
     for (let i = I.length - 1; i >= 0; i--) if (!I[i].repeat.startsWith("__")) return I[i];
   };
   function Ze(i, u) {
@@ -1167,7 +1167,7 @@ function Lt(e, t, n = {}) {
       case "checkbox":
       case "toggle":
       case "section":
-        return y !== void 0 ? F(y) : u.flags.has("checked") || u.flags.has("on");
+        return y !== void 0 ? C(y) : u.flags.has("checked") || u.flags.has("on");
       case "date": {
         const h = H(y ?? "", s);
         return h ? Le(h) : "";
@@ -1261,7 +1261,7 @@ function Lt(e, t, n = {}) {
         for (const [f, b] of y.fields) N[f] = we(b.type, x[f] !== void 0 ? x[f] : Ze(b.type, b.args), b.args);
         return N;
       })
-    } : i === "me" ? { found: !0, value: Fe } : i === "data" ? { found: !0, value: oe } : i === "page" ? { found: !0, value: Ie } : { found: !1, value: null };
+    } : i === "me" ? { found: !0, value: Ce } : i === "data" ? { found: !0, value: oe } : i === "page" ? { found: !0, value: Ie } : { found: !1, value: null };
   }
   const ie = { lookup: Ee, fo: o, now: s }, ne = (i) => {
     if (!d.formulas) throw new Error("Formulas require the Pro plan");
@@ -1273,10 +1273,10 @@ function Lt(e, t, n = {}) {
   }
   function se(i, u, y, h, x, g, N = !1, f = !1) {
     if (!d.forms) throw new Error("Dynamic form fields require an upgraded plan");
-    const b = f ? void 0 : Ye(), q = b ? `${b.repeat}#${b.index}.${i}` : i;
-    if (w.has(q)) return;
-    w.add(q);
-    const O = be(i, u, y, b), D = y.opts, L = {
+    const b = f ? void 0 : Ye(), $ = b ? `${b.repeat}#${b.index}.${i}` : i;
+    if (w.has($)) return;
+    w.add($);
+    const O = be(i, u, y, b), D = y.opts, q = {
       name: i,
       type: u,
       depth: h,
@@ -1285,7 +1285,7 @@ function Lt(e, t, n = {}) {
       start: x,
       end: g,
       label: D.label || Ue(i),
-      required: y.flags.has("required") || F(D.required ?? ""),
+      required: y.flags.has("required") || C(D.required ?? ""),
       defaultRaw: D.default,
       options: u === "select" ? He(pe(D.options) || "") : void 0,
       multiple: y.flags.has("multiple"),
@@ -1307,12 +1307,12 @@ function Lt(e, t, n = {}) {
       const K = n.data?.[D.table || ""];
       if (!K) throw new Error(`Data Hub table "${D.table}" was not found`);
       const Ne = D.display || K.columns?.[0] || "name";
-      L.options = K.rows.map((M) => `${M.__id}\0${p(M[Ne] ?? "")}`);
+      q.options = K.rows.map((M) => `${M.__id}\0${p(M[Ne] ?? "")}`);
     }
-    const U = Ft(L);
-    U && (L.error = U, A.push(`${L.label}: ${U}`)), b ? b.formRow.push(L) : v.push(L);
+    const U = Ct(q);
+    U && (q.error = U, A.push(`${q.label}: ${U}`)), b ? b.formRow.push(q) : v.push(q);
   }
-  function Ft(i) {
+  function Ct(i) {
     const u = i.value, y = u === "" || u === null || u === void 0 || Array.isArray(u) && u.length === 0 || (i.type === "checkbox" || i.type === "toggle") && i.required && !u;
     if (i.required && y) return i.message || "This field is required";
     if (!y) {
@@ -1350,7 +1350,7 @@ function Lt(e, t, n = {}) {
     switch (i) {
       case "checkbox":
       case "toggle":
-        return F(u) ? pe(y.opts.value ?? y.opts.on ?? "") : pe(y.opts.off ?? "");
+        return C(u) ? pe(y.opts.value ?? y.opts.on ?? "") : pe(y.opts.off ?? "");
       case "currency":
         return u === null || u === "" ? "" : typeof u == "number" ? Q(u, h || `currency:${y.opts.currency || o.currency}`, o) : p(u, o);
       case "number":
@@ -1369,28 +1369,28 @@ function Lt(e, t, n = {}) {
   }
   function It(i) {
     const u = ne(i.main);
-    if (!$(u)) throw new Error("{{table}} source must be a list (a repeat section or data.<table>)");
-    let y = u.filter((M) => _e(M));
+    if (!_(u)) throw new Error("{{table}} source must be a list (a repeat section or data.<table>)");
+    let y = u.filter((M) => $e(M));
     const x = (i.opts.columns ? ge(i.opts.columns, "|").map((M) => M.trim()).filter(Boolean) : Object.keys(y[0] || {}).filter((M) => !M.startsWith("__") && M !== "index")).map((M) => {
-      const C = M.indexOf(":");
-      return C > 0 ? { header: M.slice(0, C).trim(), expr: M.slice(C + 1).trim() } : { header: Ue(M), expr: M };
-    }), g = (M, C, G) => {
-      I.push({ repeat: "__table", row: {}, rowVars: { ...M, index: C + 1 }, index: C, formRow: [] });
+      const F = M.indexOf(":");
+      return F > 0 ? { header: M.slice(0, F).trim(), expr: M.slice(F + 1).trim() } : { header: Ue(M), expr: M };
+    }), g = (M, F, G) => {
+      I.push({ repeat: "__table", row: {}, rowVars: { ...M, index: F + 1 }, index: F, formRow: [] });
       try {
         return G();
       } finally {
         I.pop();
       }
     };
-    i.opts.where && (y = y.filter((M, C) => g(M, C, () => F(ne(i.opts.where))))), i.opts.limit && (y = y.slice(0, parseInt(i.opts.limit, 10) || y.length));
-    const N = (i.opts.formats || "").split("|").map((M) => M.trim()), f = y.map((M, C) => x.map((G, Re) => g(M, C, () => Q(ne(G.expr), N[Re] || void 0, o)))), b = i.opts.total ? x.map((M, C) => {
+    i.opts.where && (y = y.filter((M, F) => g(M, F, () => C(ne(i.opts.where))))), i.opts.limit && (y = y.slice(0, parseInt(i.opts.limit, 10) || y.length));
+    const N = (i.opts.formats || "").split("|").map((M) => M.trim()), f = y.map((M, F) => x.map((G, Re) => g(M, F, () => Q(ne(G.expr), N[Re] || void 0, o)))), b = i.opts.total ? x.map((M, F) => {
       const G = ge(i.opts.total, "|").map((Pe) => Pe.trim().toLowerCase());
-      if (C === 0 && !G.includes(M.header.toLowerCase())) return i.opts.totallabel || "Total";
+      if (F === 0 && !G.includes(M.header.toLowerCase())) return i.opts.totallabel || "Total";
       if (!G.includes(M.header.toLowerCase())) return "";
       const Re = y.reduce((Pe, Nt, Rt) => Pe + (P(g(Nt, Rt, () => ne(M.expr))) || 0), 0);
-      return Q(Re, N[C] || void 0, o);
-    }) : null, q = x.map((M) => M.header), O = [q, ...f, ...b ? [b] : []], D = q.map((M, C) => Math.max(...O.map((G) => (G[C] || "").length))), L = (M) => "| " + M.map((C, G) => (C || "").padEnd(D[G])).join(" | ") + " |", U = [L(q), "|" + D.map((M) => "-".repeat(M + 2)).join("|") + "|", ...f.map(L), ...b ? [L(b)] : []].join(`
-`), K = 'style="border:1px solid #bbb;padding:4px 8px"', Ne = `<table style="border-collapse:collapse"><thead><tr>${q.map((M) => `<th ${K}>${ue(M)}</th>`).join("")}</tr></thead><tbody>${f.map((M) => `<tr>${M.map((C) => `<td ${K}>${ue(C)}</td>`).join("")}</tr>`).join("")}${b ? `<tr>${b.map((M) => `<td ${K}><b>${ue(M)}</b></td>`).join("")}</tr>` : ""}</tbody></table>`;
+      return Q(Re, N[F] || void 0, o);
+    }) : null, $ = x.map((M) => M.header), O = [$, ...f, ...b ? [b] : []], D = $.map((M, F) => Math.max(...O.map((G) => (G[F] || "").length))), q = (M) => "| " + M.map((F, G) => (F || "").padEnd(D[G])).join(" | ") + " |", U = [q($), "|" + D.map((M) => "-".repeat(M + 2)).join("|") + "|", ...f.map(q), ...b ? [q(b)] : []].join(`
+`), K = 'style="border:1px solid #bbb;padding:4px 8px"', Ne = `<table style="border-collapse:collapse"><thead><tr>${$.map((M) => `<th ${K}>${ue(M)}</th>`).join("")}</tr></thead><tbody>${f.map((M) => `<tr>${M.map((F) => `<td ${K}>${ue(F)}</td>`).join("")}</tr>`).join("")}${b ? `<tr>${b.map((M) => `<td ${K}><b>${ue(M)}</b></td>`).join("")}</tr>` : ""}</tbody></table>`;
     et(Ne, U);
   }
   function re(i, u, y) {
@@ -1411,7 +1411,7 @@ function Lt(e, t, n = {}) {
       case "if": {
         if (!d.conditionals) throw new Error("Conditional rules require the Pro plan");
         for (const f of i.branches)
-          if (F(le(f.cond, ie))) {
+          if (C(le(f.cond, ie))) {
             re(f.body, u, y);
             return;
           }
@@ -1421,14 +1421,14 @@ function Lt(e, t, n = {}) {
       case "section": {
         const f = i.args.main;
         if (!ve.test(f)) throw new Error("Section needs a name, e.g. {{section: extras; label=Add extras?}}");
-        se(f, "section", i.args, u, i.start, i.end), F(we("section", be(f, "section", i.args, h), i.args)) && re(i.body, u + 1, y);
+        se(f, "section", i.args, u, i.start, i.end), C(we("section", be(f, "section", i.args, h), i.args)) && re(i.body, u + 1, y);
         return;
       }
       case "repeat": {
-        const f = i.args.main, b = i.args.opts.separator ?? "", q = /^\d+$/.test(f) ? parseInt(f, 10) : i.args.opts.count ? Math.round(P(ne(i.args.opts.count))) : null;
-        if (q !== null) {
-          const L = Math.max(0, Math.min(500, isNaN(q) ? 0 : q));
-          for (let U = 0; U < L; U++) {
+        const f = i.args.main, b = i.args.opts.separator ?? "", $ = /^\d+$/.test(f) ? parseInt(f, 10) : i.args.opts.count ? Math.round(P(ne(i.args.opts.count))) : null;
+        if ($ !== null) {
+          const q = Math.max(0, Math.min(500, isNaN($) ? 0 : $));
+          for (let U = 0; U < q; U++) {
             U && b && V(b), I.push({ repeat: "__static", row: {}, rowVars: { index: U + 1 }, index: U, formRow: [] });
             try {
               re(i.body, u, y);
@@ -1449,9 +1449,9 @@ function Lt(e, t, n = {}) {
           depth: u,
           rows: []
         };
-        v.push(D), O.forEach((L, U) => {
+        v.push(D), O.forEach((q, U) => {
           U && b && V(b);
-          const K = { repeat: f, row: L || {}, rowVars: {}, index: U, formRow: [] };
+          const K = { repeat: f, row: q || {}, rowVars: {}, index: U, formRow: [] };
           I.push(K);
           try {
             re(i.body, u + 1, y);
@@ -1483,9 +1483,9 @@ function Lt(e, t, n = {}) {
           const D = Ee(b);
           if (!D.found) throw new Error(`Unknown name "${b}"`);
           O = D.value;
-          const L = S.fields.get(b) || (h ? S.repeats.get(h.repeat)?.fields.get(b) : void 0);
-          if (L && !g.opts.format) {
-            V(tt(L.type, O, { ...L.args, opts: { ...L.args.opts } }));
+          const q = S.fields.get(b) || (h ? S.repeats.get(h.repeat)?.fields.get(b) : void 0);
+          if (q && !g.opts.format) {
+            V(tt(q.type, O, { ...q.args, opts: { ...q.args.opts } }));
             return;
           }
         }
@@ -1502,8 +1502,8 @@ function Lt(e, t, n = {}) {
         if (f < 1) throw new Error("Use {{set: name = formula}}");
         const b = g.main.slice(0, f).trim();
         if (!ve.test(b)) throw new Error(`Invalid variable name "${b}"`);
-        const q = ne(g.main.slice(f + 1));
-        h ? h.rowVars[b] = q : j[b] = q;
+        const $ = ne(g.main.slice(f + 1));
+        h ? h.rowVars[b] = $ : j[b] = $;
         return;
       }
       case "upper":
@@ -1536,7 +1536,7 @@ function Lt(e, t, n = {}) {
       case "link": {
         const f = pe(g.opts.url ?? (g.main.startsWith("="), g.main)), b = pe(g.opts.text ?? "") || f;
         if (!/^(https?:|mailto:|tel:)/i.test(f)) throw new Error(`Links must start with https://, http://, mailto: or tel: (got "${f}")`);
-        const q = g.opts.plain || "both", O = b === f || q === "url" ? f : q === "text" ? b : `${b} (${f})`;
+        const $ = g.opts.plain || "both", O = b === f || $ === "url" ? f : $ === "text" ? b : `${b} (${f})`;
         et(`<a href="${ue(f)}">${ue(b)}</a>`, O);
         return;
       }
@@ -1548,24 +1548,24 @@ function Lt(e, t, n = {}) {
         if (y >= 5) throw new Error("Snippets are nested too deeply (max 5)");
         const f = n.resolveSnippet?.(g.main);
         if (!f) throw new Error(`No snippet with shortcut "${g.main}"`);
-        const b = f.contentType === "html", q = We(f.content, b);
+        const b = f.contentType === "html", $ = We(f.content, b);
         if (b === a) {
-          re(q, u, y + 1);
+          re($, u, y + 1);
           return;
         }
         const O = B, D = a;
         B = "", a = b;
         try {
-          re(q, u, y + 1);
+          re($, u, y + 1);
         } finally {
           a = D;
         }
-        const L = B;
-        B = O + (b ? it(L) : Oe(L));
+        const q = B;
+        B = O + (b ? it(q) : Oe(q));
         return;
       }
       case "validate": {
-        F(le(g.main, ie)) || A.push(g.opts.message || `Check failed: ${g.main}`);
+        C(le(g.main, ie)) || A.push(g.opts.message || `Check failed: ${g.main}`);
         return;
       }
       case "index": {
@@ -2239,11 +2239,11 @@ async function on(e = !1) {
   return await xe("folders", n.folders), await xe("snippets", n.snippets), await xe("tables", n.tables), await xe("workflows", n.workflows), await at("seeded", !0), !0;
 }
 const me = /* @__PURE__ */ new Map();
-function _t() {
+function $t() {
   const e = Date.now();
   for (const [t, n] of me) e - n.at > 600 * 1e3 && me.delete(t);
 }
-function $t() {
+function _t() {
   const e = new Uint8Array(16);
   return crypto.getRandomValues(e), Array.from(e, (t) => t.toString(16).padStart(2, "0")).join("");
 }
@@ -2277,14 +2277,14 @@ async function cn(e, t, n) {
   const c = qt({ settings: r, snippets: a, tables: o, page: t }), d = Lt(s.content, s.contentType, c);
   if (d.errors.length && !d.needsForm) return { kind: "error", message: d.errors[0] };
   if (d.needsForm) {
-    _t();
-    const l = $t();
+    $t();
+    const l = _t();
     return me.set(l, { snippetId: e, page: t, tabId: n, at: Date.now(), mode: "form" }), { kind: "form", nonce: l, name: s.name };
   }
-  return await wt(e), { kind: "insert", text: d.text, html: d.html, isRich: d.isRich, cursor: d.cursor === null ? null : d.text.length - d.cursor, name: s.name };
+  return !d.text.trim() && !d.html.replace(/<[^>]*>/g, "").trim() ? { kind: "error", message: /\{\{\s*me\./.test(s.content) ? `“${s.name}” is empty because your profile isn't filled in yet. Open the QuickText dashboard → Settings → Profile and add your details (e.g. your signature).` : `“${s.name}” has no text yet. Add content to it in the QuickText dashboard.` } : (await wt(e), { kind: "insert", text: d.text, html: d.html, isRich: d.isRich, cursor: d.cursor === null ? null : d.text.length - d.cursor, name: s.name });
 }
-_.runtime.onMessage.addListener((e, t, n) => {
-  if (!e || typeof e.type != "string" || !e.type.startsWith("qth/") || t.id !== _.runtime.id) return !1;
+L.runtime.onMessage.addListener((e, t, n) => {
+  if (!e || typeof e.type != "string" || !e.type.startsWith("qth/") || t.id !== L.runtime.id) return !1;
   const r = t.tab?.id;
   return (async () => {
     switch (e.type) {
@@ -2297,8 +2297,8 @@ _.runtime.onMessage.addListener((e, t, n) => {
         return a ? (me.delete(String(e.nonce)), { ok: !0, snippetId: a.snippetId, page: a.page, mode: a.mode, payload: a.payload }) : { ok: !1 };
       }
       case "qth/openOverlay": {
-        _t();
-        const a = $t();
+        $t();
+        const a = _t();
         return me.set(a, { snippetId: String(e.snippetId || ""), page: e.page, tabId: r, at: Date.now(), mode: String(e.mode || "picker"), payload: e.payload }), { nonce: a };
       }
       case "qth/renderText": {
@@ -2316,31 +2316,38 @@ _.runtime.onMessage.addListener((e, t, n) => {
       case W.getWorkflow:
         return Ke("workflows", String(e.id));
       case W.openDashboard:
-        return await _.tabs.create({ url: _.runtime.getURL("dashboard/index.html" + (e.hash ? "#" + e.hash : "")) }), { ok: !0 };
+        return await L.tabs.create({ url: L.runtime.getURL("dashboard/index.html" + (e.hash ? "#" + e.hash : "")) }), { ok: !0 };
       case W.picked:
-        return await new Promise((a) => _.storage.local.set({ [Se.picked]: { ...e.element, at: Date.now() } }, () => a())), { ok: !0 };
+        return await new Promise((a) => L.storage.local.set({ [Se.picked]: { ...e.element, at: Date.now() } }, () => a())), { ok: !0 };
       default:
         return { error: "unknown message" };
     }
   })().then(n, (a) => n({ kind: "error", error: String(a?.message || a), message: String(a?.message || a) })), !0;
 });
-_.commands?.onCommand.addListener((e, t) => {
-  e === "open-assistant" && t?.id !== void 0 && _.tabs.sendMessage(t.id, { type: W.openAssistant }).catch?.(() => {
+L.commands?.onCommand.addListener((e, t) => {
+  e === "open-assistant" && t?.id !== void 0 && L.tabs.sendMessage(t.id, { type: W.openAssistant }).catch?.(() => {
   });
 });
-function Ct() {
-  _.contextMenus.removeAll(() => {
-    _.contextMenus.create({ id: "qth-insert", title: "Insert QuickText snippet…", contexts: ["editable"] }), _.contextMenus.create({ id: "qth-new-from-selection", title: "Create QuickText snippet from selection", contexts: ["selection"] });
+function Ft() {
+  L.contextMenus.removeAll(() => {
+    L.contextMenus.create({ id: "qth-insert", title: "Insert QuickText snippet…", contexts: ["editable"] }), L.contextMenus.create({ id: "qth-new-from-selection", title: "Create QuickText snippet from selection", contexts: ["selection"] });
   });
 }
-_.contextMenus.onClicked.addListener((e, t) => {
-  if (t?.id && (e.menuItemId === "qth-insert" && _.tabs.sendMessage(t.id, { type: W.openAssistant }, { frameId: e.frameId }).catch?.(() => {
+L.contextMenus.onClicked.addListener((e, t) => {
+  if (t?.id && (e.menuItemId === "qth-insert" && L.tabs.sendMessage(t.id, { type: W.openAssistant }, { frameId: e.frameId }).catch?.(() => {
   }), e.menuItemId === "qth-new-from-selection")) {
     const n = (e.selectionText || "").slice(0, 2e4);
-    _.tabs.create({ url: _.runtime.getURL("dashboard/index.html#/new?text=" + encodeURIComponent(n)) });
+    L.tabs.create({ url: L.runtime.getURL("dashboard/index.html#/new?text=" + encodeURIComponent(n)) });
   }
 });
-_.runtime.onInstalled.addListener(async (e) => {
-  Ct(), e.reason === "install" && (await on(), _.tabs.create({ url: _.runtime.getURL("dashboard/index.html#/welcome") }));
+async function ln() {
+  if (!L.scripting?.executeScript) return;
+  const e = await L.tabs.query({});
+  for (const t of e)
+    t.id === void 0 || !/^(https?|file):/.test(t.url || "") || L.scripting.executeScript({ target: { tabId: t.id, allFrames: !0 }, files: ["content.js"] }).catch(() => {
+    });
+}
+L.runtime.onInstalled.addListener(async (e) => {
+  Ft(), ln(), e.reason === "install" && (await on(), L.tabs.create({ url: L.runtime.getURL("dashboard/index.html#/welcome") }));
 });
-_.runtime.onStartup?.addListener(Ct);
+L.runtime.onStartup?.addListener(Ft);

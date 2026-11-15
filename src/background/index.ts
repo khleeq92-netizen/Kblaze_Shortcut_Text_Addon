@@ -62,6 +62,10 @@ async function expand(snippetId: string, page: any, tabId?: number) {
     formSessions.set(n, { snippetId, page, tabId, at: Date.now(), mode: 'form' });
     return { kind: 'form', nonce: n, name: snippet.name };
   }
+  if (!out.text.trim() && !out.html.replace(/<[^>]*>/g, '').trim()) {
+    const usesProfile = /\{\{\s*me\./.test(snippet.content);
+    return { kind: 'error', message: usesProfile ? `“${snippet.name}” is empty because your profile isn't filled in yet. Open the QuickText dashboard → Settings → Profile and add your details (e.g. your signature).` : `“${snippet.name}” has no text yet. Add content to it in the QuickText dashboard.` };
+  }
   await recordUsage(snippetId);
   return { kind: 'insert', text: out.text, html: out.html, isRich: out.isRich, cursor: out.cursor === null ? null : out.text.length - out.cursor, name: snippet.name };
 }
@@ -145,8 +149,20 @@ api.contextMenus.onClicked.addListener((info, tab) => {
   }
 });
 
+// Activate expansion in tabs that were already open when the extension was installed
+// or updated (declared content scripts only reach pages loaded afterwards).
+async function injectIntoOpenTabs() {
+  if (!api.scripting?.executeScript) return;
+  const tabs = await api.tabs.query({});
+  for (const t of tabs) {
+    if (t.id === undefined || !/^(https?|file):/.test(t.url || '')) continue;
+    api.scripting.executeScript({ target: { tabId: t.id, allFrames: true }, files: ['content.js'] }).catch(() => {});
+  }
+}
+
 api.runtime.onInstalled.addListener(async (details) => {
   setupMenus();
+  injectIntoOpenTabs();
   if (details.reason === 'install') {
     await seedIfEmpty();
     api.tabs.create({ url: api.runtime.getURL('dashboard/index.html#/welcome') });

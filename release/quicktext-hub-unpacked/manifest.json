@@ -23,7 +23,8 @@
   "permissions": [
     "storage",
     "contextMenus",
-    "identity"
+    "identity",
+    "scripting"
   ],
   "host_permissions": [
     "<all_urls>"

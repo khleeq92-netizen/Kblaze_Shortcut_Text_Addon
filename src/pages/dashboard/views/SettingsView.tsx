@@ -330,7 +330,7 @@ function Privacy() {
         <li>Imported files and share codes are validated, size-limited and rich HTML is sanitized (scripts, event handlers and javascript: links are removed).</li>
         <li>Autopilot only runs when you start it, shows every step, can be stopped, and always asks before submitting forms, sending, purchasing, deleting or typing into password/payment fields.</li>
         <li>Cloud data is isolated per user by Firestore security rules (<span className="mono">firebase/firestore.rules</span>); shared items are readable only via their link or by the listed accounts.</li>
-        <li>Permissions: storage, contextMenus, identity (Google sign-in only) and access to pages for text expansion. No tabs, history, cookies or webRequest permissions.</li>
+        <li>Permissions: storage, contextMenus, scripting (activates expansion in tabs already open at install), identity (Google sign-in only) and access to pages for text expansion. No tabs, history, cookies or webRequest permissions.</li>
       </ul>
     </Section>
   );

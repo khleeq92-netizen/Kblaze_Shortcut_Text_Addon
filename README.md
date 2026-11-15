@@ -154,7 +154,7 @@ Step-by-step: **[docs/FIREBASE_SETUP.md](docs/FIREBASE_SETUP.md)** · schema & r
 
 ## Security & privacy
 
-* Permissions: `storage`, `contextMenus`, `identity` + page access for expansion. No `tabs`, history, cookies, webRequest or remote code.
+* Permissions: `storage`, `contextMenus`, `scripting` (activate in already-open tabs), `identity` + page access for expansion. No `tabs`, history, cookies, webRequest or remote code.
 * The content script reads only up to ~50 characters before the caret in the focused field; it receives just shortcut
   metadata — snippet content stays in the extension and only the final text is inserted.
 * Fill-in forms, the assistant and Autopilot confirmations run in an extension-origin iframe guarded by a one-time
