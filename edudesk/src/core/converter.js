@@ -20,6 +20,8 @@ const { PDFDocument } = require('pdf-lib');
 const { UserError, ensureDir, fileSize } = require('./util');
 
 const isWin = process.platform === 'win32';
+const isMac = process.platform === 'darwin';
+const MAC_WORD = ['/Applications/Microsoft Word.app', path.join(os.homedir(), 'Applications', 'Microsoft Word.app')];
 
 function run(cmd, args, { timeoutMs = 180000, cwd } = {}) {
   return new Promise((resolve) => {
@@ -41,8 +43,9 @@ async function powershell(script, timeoutMs) {
 let wordCache;
 /** Locate WINWORD.EXE through the App Paths registry key. */
 async function findWord() {
-  if (!isWin) return null;
   if (wordCache !== undefined) return wordCache;
+  if (isMac) return (wordCache = MAC_WORD.find((p) => fs.existsSync(p)) || null);
+  if (!isWin) return (wordCache = null);
   const keys = [
     'HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\Winword.exe',
     'HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\Winword.exe',
@@ -73,6 +76,8 @@ function findLibreOffice(configured) {
     for (const base of [process.env.ProgramFiles, process.env['ProgramFiles(x86)'], 'C:\\Program Files', 'C:\\Program Files (x86)'].filter(Boolean)) {
       cands.push(path.join(base, 'LibreOffice', 'program', 'soffice.exe'));
     }
+  } else if (isMac) {
+    cands.push('/Applications/LibreOffice.app/Contents/MacOS/soffice', path.join(os.homedir(), 'Applications', 'LibreOffice.app', 'Contents', 'MacOS', 'soffice'));
   } else {
     cands.push('/usr/bin/soffice', '/usr/lib/libreoffice/program/soffice', '/opt/libreoffice/program/soffice', '/Applications/LibreOffice.app/Contents/MacOS/soffice');
   }
@@ -108,6 +113,50 @@ try {
   if (r.stdout.includes('EDUDESK_OK') && fileSize(pdfPath) > 0) return { ok: true, engine: 'Microsoft Word' };
   const msg = (/EDUDESK_ERR (.*)/.exec(r.stdout) || [])[1] || r.stderr || (r.error && r.error.message) || 'Unknown error';
   return { ok: false, engine: 'Microsoft Word', error: msg.trim() };
+}
+
+/**
+ * Microsoft Word for Mac, driven with JavaScript for Automation (osascript -l JavaScript).
+ * Word for Mac is sandboxed: it may only write freely inside its own container, so the
+ * document is copied there, exported to PDF by Word, and the PDF is moved back. This avoids
+ * the "Grant File Access" prompt for every archive folder.
+ * The first time, macOS asks the user to allow EduDesk to control Microsoft Word
+ * (System Settings → Privacy & Security → Automation).
+ */
+async function convertWithWordMac(docxPath, pdfPath, timeoutMs) {
+  const box = path.join(os.homedir(), 'Library', 'Containers', 'com.microsoft.Word', 'Data', 'Documents', 'EduDeskConvert');
+  const work = path.join(box, `${Date.now()}_${process.pid}`);
+  fs.mkdirSync(work, { recursive: true });
+  const inDoc = path.join(work, 'letter.docx');
+  const outPdf = path.join(work, 'letter.pdf');
+  fs.copyFileSync(docxPath, inDoc);
+  const script = `
+    function run(argv) {
+      var word = Application('Microsoft Word');
+      var before = 0;
+      try { before = word.documents.length; } catch (e) {}
+      word.open(Path(argv[0]));
+      var doc = word.activeDocument;
+      try {
+        doc.saveAs({ fileName: argv[1], fileFormat: 'format PDF' });
+      } finally {
+        doc.close({ saving: 'no' });
+        try { if (before === 0 && word.documents.length === 0) word.quit({ saving: 'no' }); } catch (e) {}
+      }
+      return 'EDUDESK_OK';
+    }`;
+  try {
+    const r = await run('/usr/bin/osascript', ['-l', 'JavaScript', '-e', script, inDoc, outPdf], { timeoutMs });
+    if (r.stdout.includes('EDUDESK_OK') && fileSize(outPdf) > 0) {
+      fs.copyFileSync(outPdf, pdfPath);
+      return { ok: true, engine: 'Microsoft Word (Mac)' };
+    }
+    let msg = (r.stderr || (r.error && r.error.message) || 'Unknown error').trim();
+    if (/-1743|not allowed|Not authorized/i.test(msg)) msg = 'macOS did not allow EduDesk to control Microsoft Word. Open System Settings → Privacy & Security → Automation and allow EduDesk → Microsoft Word, then retry.';
+    return { ok: false, engine: 'Microsoft Word (Mac)', error: msg };
+  } finally {
+    fs.rmSync(work, { recursive: true, force: true });
+  }
 }
 
 async function convertWithLibreOffice(docxPath, pdfPath, soffice, timeoutMs) {
@@ -168,8 +217,8 @@ class Converter {
       for (const e of engines) {
         let r;
         if (e === 'word') {
-          if (!isWin || !(await findWord())) { attempts.push({ engine: 'Microsoft Word', ok: false, error: 'Microsoft Word is not installed on this computer.' }); continue; }
-          r = await convertWithWord(path.resolve(docxPath), tmpPdf, timeoutMs);
+          if (!(isWin || isMac) || !(await findWord())) { attempts.push({ engine: 'Microsoft Word', ok: false, error: 'Microsoft Word is not installed on this computer.' }); continue; }
+          r = isMac ? await convertWithWordMac(path.resolve(docxPath), tmpPdf, timeoutMs) : await convertWithWord(path.resolve(docxPath), tmpPdf, timeoutMs);
         } else {
           const so = findLibreOffice(cfg.libreOfficePath);
           if (!so) { attempts.push({ engine: 'LibreOffice', ok: false, error: 'LibreOffice is not installed.' }); continue; }
@@ -195,7 +244,10 @@ class Converter {
   /** Open a document in Microsoft Word when available, otherwise the default app. */
   async openInWord(docxPath, shellOpen) {
     const word = await findWord();
-    if (word) {
+    if (word && isMac) {
+      const r = await run('/usr/bin/open', ['-a', word, path.resolve(docxPath)], { timeoutMs: 30000 });
+      if (r.ok) return { ok: true, app: 'Microsoft Word' };
+    } else if (word) {
       const child = spawn(word, [path.resolve(docxPath)], { detached: true, stdio: 'ignore', windowsHide: false });
       child.unref();
       return { ok: true, app: 'Microsoft Word' };
@@ -210,7 +262,12 @@ class Converter {
 
   /** Send a file to the default printer through its associated application. */
   async print(filePath) {
-    if (!isWin) return { ok: false, error: 'Direct printing is available on Windows. Open the PDF and print from your PDF viewer.' };
+    if (isMac) {
+      // CUPS: prints to the default printer set in System Settings → Printers & Scanners
+      const r = await run('/usr/bin/lp', [path.resolve(filePath)], { timeoutMs: 60000 });
+      return r.ok ? { ok: true } : { ok: false, error: (r.stderr || 'Printing failed.').trim() + ' Open the file and print it manually.' };
+    }
+    if (!isWin) return { ok: false, error: 'Direct printing is available on Windows and macOS. Open the PDF and print from your PDF viewer.' };
     const r = await powershell(`Start-Process -FilePath ${psQuote(path.resolve(filePath))} -Verb Print`, 60000);
     return r.ok ? { ok: true } : { ok: false, error: r.stderr || 'Printing failed. Open the file and print it manually.' };
   }

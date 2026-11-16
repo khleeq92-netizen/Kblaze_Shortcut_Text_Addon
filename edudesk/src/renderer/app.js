@@ -39,6 +39,8 @@ const VIEWS = {
 };
 
 let current = null; // { name, ctl }
+const isMac = navigator.platform.toUpperCase().includes('MAC');
+window.__isMac = isMac;
 let counts = {};
 
 function parseHash() {
@@ -115,18 +117,20 @@ function updateFooter() {
 }
 
 function shortcuts(e) {
-  if (e.ctrlKey && !e.shiftKey && (e.key === 'k' || e.key === 'K' || e.key === 'f' || e.key === 'F')) {
+  const mod = isMac ? e.metaKey : e.ctrlKey;
+  if (mod && !e.shiftKey && (e.key === 'k' || e.key === 'K' || e.key === 'f' || e.key === 'F')) {
     if (e.key.toLowerCase() === 'f' && document.activeElement && document.activeElement.closest('.modal')) return;
     e.preventDefault(); $('#global-search').focus(); $('#global-search').select();
-  } else if (e.ctrlKey && (e.key === 'n' || e.key === 'N')) { e.preventDefault(); go('letter/new'); } else if (e.ctrlKey && (e.key === 'i' || e.key === 'I')) { e.preventDefault(); go('inward/new'); } else if (e.altKey && /^[1-9]$/.test(e.key)) {
+  } else if (mod && (e.key === 'n' || e.key === 'N')) { e.preventDefault(); go('letter/new'); } else if (mod && (e.key === 'i' || e.key === 'I')) { e.preventDefault(); go('inward/new'); } else if ((isMac ? e.ctrlKey : e.altKey) && /^[1-9]$/.test(e.key)) {
     const n = NAV.find((x) => x.key === e.key);
     if (n) { e.preventDefault(); go(n.r); }
   } else if (e.key === 'F1') { e.preventDefault(); showShortcuts(); }
 }
 
 function showShortcuts() {
-  const rows = [['Ctrl + N', 'Create a new letter'], ['Ctrl + I', 'Add an inward entry'], ['Ctrl + K / Ctrl + F', 'Search all records'], ['Ctrl + S', 'Save draft (in the letter editor)'],
-    ['Alt + 1 … 9', 'Open sidebar sections in order'], ['Esc', 'Close a dialog'], ['F1', 'This help']];
+  const M = isMac ? '⌘' : 'Ctrl +';
+  const rows = [[`${M} N`, 'Create a new letter'], [`${M} I`, 'Add an inward entry'], [`${M} K / ${M} F`, 'Search all records'], [`${M} S`, 'Save draft (in the letter editor)'],
+    [isMac ? '⌃ 1 … 9' : 'Alt + 1 … 9', 'Open sidebar sections in order'], ['Esc', 'Close a dialog'], ['F1', 'This help']];
   modal({ title: 'Keyboard shortcuts', body: `<table class="tbl">${rows.map(([k, d]) => `<tr><td style="width:180px"><span class="kbd">${esc(k)}</span></td><td>${esc(d)}</td></tr>`).join('')}</table>` });
 }
 
@@ -140,6 +144,7 @@ async function boot() {
     return;
   }
   updateFooter();
+  if (isMac) { document.querySelector('.searchbox .kbd').textContent = '⌘ K'; document.querySelector('.searchbox').title = 'Search letters, numbers, recipients (⌘K)'; document.body.classList.add('mac'); }
   if (state.info.integrity && !state.info.integrity.ok) toast('Database integrity check reported a problem. Please create a backup and contact support.', 'error', 15000);
   window.edudesk.onChanged(onDataChanged);
   window.edudesk.onNotice((n) => toast(n.text, n.type));

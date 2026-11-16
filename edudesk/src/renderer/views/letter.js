@@ -446,7 +446,7 @@ export async function render(el, route) {
   }
 
   draw();
-  const keyHandler = (e) => { if (e.ctrlKey && (e.key === 's' || e.key === 'S')) { e.preventDefault(); if (editable()) save(); } };
+  const keyHandler = (e) => { if ((window.__isMac ? e.metaKey : e.ctrlKey) && (e.key === 's' || e.key === 'S')) { e.preventDefault(); if (editable()) save(); } };
   document.addEventListener('keydown', keyHandler);
   return {
     title: letter ? (letter.outward_no || `Draft #${letter.id}`) : 'Create Letter',

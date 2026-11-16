@@ -2,6 +2,8 @@
 
 This manual is written for office staff. You do not need any technical knowledge.
 
+**On a Mac** use ⌘ instead of Ctrl, and ⌃1…9 instead of Alt + 1…9.
+
 **Keyboard shortcuts:** Ctrl + N new letter · Ctrl + I new inward entry · Ctrl + K search ·
 Ctrl + S save draft · Alt + 1…9 sidebar sections · F1 shortcut list · Esc close a dialog.
 

@@ -253,7 +253,7 @@ class Reports {
     const groups = rep.groups ? `<h3>Summary</h3><table class="sum"><tr><th>Group</th><th>Letters</th></tr>${rep.groups.map((g) => `<tr><td>${e(g.name)}</td><td>${g.count}</td></tr>`).join('')}</table>` : '';
     return `<!doctype html><html><head><meta charset="utf-8"><style>
       @page { size: A4 landscape; margin: 12mm 10mm 14mm; }
-      body { font-family: 'Segoe UI', 'Nirmala UI', 'Noto Sans Devanagari', Arial, sans-serif; font-size: 8.5pt; color: #111; }
+      body { font-family: 'Segoe UI', -apple-system, 'Helvetica Neue', 'Nirmala UI', 'Kohinoor Devanagari', 'Noto Sans Devanagari', Arial, sans-serif; font-size: 8.5pt; color: #111; }
       .head { text-align: center; border-bottom: 2px solid #1F4E79; padding-bottom: 6px; margin-bottom: 8px; }
       .head h1 { font-size: 15pt; margin: 0; } .head .addr { font-size: 8.5pt; color: #333; }
       h2 { font-size: 12pt; margin: 6px 0 2px; text-align: center; letter-spacing: .5px; text-transform: uppercase; }

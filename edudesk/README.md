@@ -1,6 +1,6 @@
 # EduDesk Correspondence Manager
 
-Offline Windows desktop application for school and college offices: official letters from
+Offline desktop application for Windows and macOS for school and college offices: official letters from
 reusable Word templates, a numbered **Outward Register**, an **Inward Register**, dispatch
 tracking, automatic **DOCX + PDF archiving**, UDISE **S02 / S03** forms filled on the
 original fillable PDFs, reports, search, and verified backups.
@@ -25,6 +25,27 @@ or student data leaves the computer.
 The installers are not code-signed, so Windows SmartScreen may show *“Windows protected your PC”*.
 Click **More info → Run anyway**. For commercial distribution, sign the installers (see
 `docs/BUILD_WINDOWS.md`).
+
+## 1a. Install on a Mac (macOS 12 Monterey or newer, Intel or Apple silicon)
+
+1. Open `EduDesk-1.0.0-mac-universal.dmg` and drag **EduDesk Correspondence Manager** onto
+   **Applications**.
+2. The app is not notarized by Apple, so the first start needs one extra step:
+   - **macOS 15 Sequoia and newer:** double-click the app and click **Done** when it is blocked.
+     Then open **System Settings → Privacy & Security**, scroll down, click **Open Anyway** and
+     confirm.
+   - **macOS 12 to 14:** right-click (or Control-click) the app, choose **Open**, then **Open**.
+   - If macOS says the app *“is damaged”*, run this once in **Terminal**, then open the app again:
+     ```bash
+     xattr -cr "/Applications/EduDesk Correspondence Manager.app"
+     ```
+3. Install **Microsoft Word for Mac** (recommended) or **LibreOffice**.
+4. The first time you click **Finalize & Archive**, macOS asks:
+   *“EduDesk wants to control Microsoft Word”*. Click **OK**. If you clicked *Don't Allow*, turn
+   it on later in **System Settings → Privacy & Security → Automation → EduDesk → Microsoft Word**.
+
+Data is kept in `~/Documents/EduDesk`. Keyboard shortcuts use **⌘** instead of Ctrl (⌘N new
+letter, ⌘I inward entry, ⌘K search, ⌘S save draft, ⌃1…9 sidebar sections).
 
 ## 2. First-time set-up (10 minutes)
 
@@ -98,10 +119,16 @@ npm run test:e2e
 npm run dist:win
 ```
 
+```bash
+npm run dist:mac
+```
+
 - `npm start` runs the app from source.
 - `npm test` runs the core tests (needs LibreOffice and `pdftotext` on Linux).
 - `npm run test:e2e` runs the end-to-end UI test (Playwright; use `xvfb-run -a` on Linux).
 - `npm run dist:win` builds `dist/EduDesk-Setup-*.exe` and `dist/EduDesk-Portable-*.exe`.
+- `npm run dist:mac` builds the universal `.dmg` and `.zip`. It must run on a Mac; the GitHub
+  Actions workflow `.github/workflows/edudesk-mac.yml` does this automatically.
 
 Source layout:
 

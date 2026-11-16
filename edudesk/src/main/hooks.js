@@ -46,7 +46,7 @@ async function renderFieldOverlay({ width, height, items, fontsDir }) {
     @page { size: ${width}pt ${height}pt; margin: 0; }
     html, body { margin: 0; padding: 0; background: transparent; }
     body { width: ${width}pt; height: ${height}pt; position: relative; overflow: hidden; }
-    .f { position: absolute; box-sizing: border-box; padding: 0 2pt; color: #000; font-family: Arial, Helvetica, 'EdDeva', 'Nirmala UI', 'Mangal', sans-serif;
+    .f { position: absolute; box-sizing: border-box; padding: 0 2pt; color: #000; font-family: Arial, Helvetica, 'EdDeva', 'Nirmala UI', 'Kohinoor Devanagari', 'Mangal', sans-serif;
          display: flex; align-items: center; overflow: hidden; }
     .f span { white-space: nowrap; display: block; }
     .f.wrap span { white-space: normal; line-height: 1.05; }

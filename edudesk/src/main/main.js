@@ -82,7 +82,16 @@ if (!app.requestSingleInstanceLock()) {
 } else {
   app.on('second-instance', () => { if (win) { if (win.isMinimized()) win.restore(); win.focus(); } });
   app.whenReady().then(async () => {
-    Menu.setApplicationMenu(isDev ? Menu.buildFromTemplate([{ role: 'viewMenu' }, { role: 'editMenu' }]) : null);
+    if (process.platform === 'darwin') {
+      // macOS needs a menu bar: it provides Quit (⌘Q), Hide, and copy/paste (⌘C/⌘V) in text fields.
+      Menu.setApplicationMenu(Menu.buildFromTemplate([
+        { role: 'appMenu' }, { role: 'editMenu' },
+        { label: 'View', submenu: [{ role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' }, { type: 'separator' }, { role: 'togglefullscreen' }, ...(isDev ? [{ role: 'toggleDevTools' }] : [])] },
+        { role: 'windowMenu' },
+      ]));
+    } else {
+      Menu.setApplicationMenu(isDev ? Menu.buildFromTemplate([{ role: 'viewMenu' }, { role: 'editMenu' }]) : null);
+    }
     registerIpc();
     try {
       await startCore();

@@ -24,6 +24,19 @@
 - Printing uses Windows' "Print" verb for the default PDF viewer, so it depends on the installed
   viewer.
 
+## macOS version
+
+- The Mac app is built and smoke-tested on a GitHub macOS runner. The core tests also run there,
+  with LibreOffice. **Microsoft Word for Mac automation has not been tested** (Word is not
+  available on CI). Before relying on it, do the same manual check as on Windows on one Mac:
+  create a letter → Open in Word → edit, save and close → Finalize & Archive → check the PDF.
+- The build is ad-hoc signed and not notarized, so macOS asks for approval on first start (see
+  the README). The first PDF also triggers the *“control Microsoft Word”* permission prompt.
+- Word for Mac's PDF export can look slightly different from Word for Windows (font
+  substitution). Letter templates that use *Nirmala UI* for Marathi fall back to *Kohinoor
+  Devanagari* on a Mac.
+- There is no portable version for Mac. The app keeps its data in `~/Documents/EduDesk`.
+
 ## Functional limitations
 
 - **Single user per installation.** Roles and permissions are enforced, but there is no login

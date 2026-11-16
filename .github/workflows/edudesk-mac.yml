@@ -1,0 +1,66 @@
+name: EduDesk – macOS build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'edudesk/**'
+      - '.github/workflows/edudesk-mac.yml'
+
+jobs:
+  mac:
+    runs-on: macos-14
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: edudesk
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install LibreOffice and Poppler (needed by the PDF tests)
+        run: |
+          brew install --cask libreoffice
+          brew install poppler
+
+      - name: Core tests on macOS
+        run: npm test
+
+      - name: Build universal .dmg and .zip (ad-hoc signed)
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npm run dist:mac
+
+      - name: Check the app signature and architectures
+        run: |
+          APP="dist/mac-universal/EduDesk Correspondence Manager.app"
+          codesign --verify --deep --verbose=2 "$APP"
+          lipo -archs "$APP/Contents/MacOS/EduDesk Correspondence Manager"
+
+      - name: Smoke test – the packaged app starts and creates its data
+        run: |
+          APP="dist/mac-universal/EduDesk Correspondence Manager.app"
+          export EDUDESK_DATA="$RUNNER_TEMP/edudesk-smoke"
+          "$APP/Contents/MacOS/EduDesk Correspondence Manager" &
+          PID=$!
+          for i in $(seq 1 45); do [ -f "$EDUDESK_DATA/Data/edudesk.sqlite" ] && break; sleep 2; done
+          sleep 5
+          kill $PID || true
+          ls -R "$EDUDESK_DATA" | head -40
+          test -f "$EDUDESK_DATA/Data/edudesk.sqlite"
+          test -n "$(ls "$EDUDESK_DATA/Documents/Templates/UDISE")"
+          grep -q '"platform":"darwin"' "$EDUDESK_DATA"/Logs/*.log
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EduDesk-macOS
+          path: |
+            edudesk/dist/*.dmg
+            edudesk/dist/*.zip
+          retention-days: 30
