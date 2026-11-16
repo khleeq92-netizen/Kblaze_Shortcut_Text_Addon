@@ -114,6 +114,27 @@ class Letters {
     return { category_name: c ? c.name : null, category_folder: c ? c.folder_name : null, subcategory_name: s ? s.name : null };
   }
 
+  /**
+   * Start a letter from one of the college's previous letters (Templates → Previous letters).
+   * Category, subject and recipient come from the letter itself; only the date (and any reference)
+   * need attention. The text is changed, if at all, directly in Word.
+   */
+  fromPreviousLetter(templateId, input = {}) {
+    const t = this.db.get("SELECT * FROM templates WHERE id=? AND kind='library' AND deleted_at IS NULL", [templateId]);
+    if (!t) throw new UserError('That previous letter was not found.');
+    const meta = json(t.meta, {});
+    const lines = meta.recipientLines || [];
+    const draft = this.saveDraft({
+      template_id: t.id, category_id: input.category_id || t.category_id, subcategory_id: input.subcategory_id || t.subcategory_id,
+      language: t.language, subject: input.subject || t.default_subject || t.name,
+      recipient_designation: input.recipient_designation != null ? input.recipient_designation : (lines[0] || ''),
+      recipient_office: input.recipient_office != null ? input.recipient_office : (lines.slice(1, 3).join(', ') || (lines[0] ? '' : 'As in the letter')),
+      letter_date: input.letter_date || todayISO(), reference_no: input.reference_no || null, summary: input.summary || null,
+    });
+    this.db.run('UPDATE letters SET extra=? WHERE id=?', [JSON.stringify({ ...draft.extra, fromPrevious: { templateId: t.id, name: t.name } }), draft.id]);
+    return this.get(draft.id);
+  }
+
   /** Start a new draft from an existing letter (any status). Numbers are never copied. */
   copyFrom(id) {
     const src = this.get(id);

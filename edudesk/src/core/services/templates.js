@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const docx = require('../docx');
-const { convertToLetterhead } = require('../docxBuilder');
+const { convertToLetterhead, makeReusableLetter } = require('../docxBuilder');
 const { UserError, ensureDir, sanitizeFileName, sha256Buffer, json } = require('../util');
 
 class Templates {
@@ -12,9 +12,14 @@ class Templates {
     return ensureDir(path.join(this.app.documentsRoot(), 'Templates', 'Letters', String(templateId)));
   }
 
-  list({ categoryId, includeInactive = false, q = '' } = {}) {
+  /**
+   * kind: 'template' (letterheads + letter formats, default), 'library' (previous letters reused as
+   * they are) or 'all'.
+   */
+  list({ categoryId, includeInactive = false, q = '', kind = 'template' } = {}) {
     const where = ['t.deleted_at IS NULL'];
     const params = [];
+    if (kind !== 'all') { where.push('t.kind = ?'); params.push(kind); }
     if (!includeInactive) where.push('t.active = 1');
     if (categoryId) { where.push('(t.category_id = ? OR t.category_id IS NULL)'); params.push(categoryId); }
     if (q) { where.push('(t.name LIKE ? OR t.description LIKE ?)'); params.push(`%${q}%`, `%${q}%`); }
@@ -22,12 +27,13 @@ class Templates {
       FROM templates t LEFT JOIN categories c ON c.id = t.category_id LEFT JOIN subcategories s ON s.id = t.subcategory_id
       LEFT JOIN template_versions v ON v.id = t.current_version_id
       WHERE ${where.join(' AND ')} ORDER BY t.is_letterhead DESC, c.sort_order, t.name`, params)
-      .map((t) => ({ ...t, placeholders: json(t.placeholders, []) }));
+      .map((t) => ({ ...t, placeholders: json(t.placeholders, []), meta: json(t.meta, {}) }));
   }
 
   get(id) {
     const t = this.db.get('SELECT * FROM templates WHERE id=?', [id]);
     if (!t) return null;
+    t.meta = json(t.meta, {});
     t.versions = this.db.all('SELECT * FROM template_versions WHERE template_id=? ORDER BY version DESC', [id]).map((v) => ({ ...v, placeholders: json(v.placeholders, []) }));
     return t;
   }
@@ -41,20 +47,21 @@ class Templates {
   }
 
   /** Create a template from a .docx on disk (a letterhead, an old letter, a format). */
-  create(meta, filePath, { user, sample = false } = {}) {
+  create(meta, filePath, { user, sample = false, buffer } = {}) {
     user = user || this.app.require('templates.manage');
     if (!meta.name || !String(meta.name).trim()) throw new UserError('Template name is required.');
-    let clean = docx.sanitizeTemplate(fs.readFileSync(filePath), path.basename(filePath));
+    let clean = docx.sanitizeTemplate(buffer || fs.readFileSync(filePath), path.basename(filePath));
     if (meta.convertBody) {
       // keep letterhead (headers, footers, logo, borders, margins) and insert the EduDesk letter layout
       const converted = convertToLetterhead(clean.buffer, meta.language || 'en');
       clean = { ...docx.sanitizeTemplate(converted, 'converted.docx'), removedParts: clean.removedParts };
     }
-    if (!clean.placeholders.length) clean.warning = 'This document contains no {{placeholders}}. Letters made from it will not be filled automatically; add placeholders such as {{subject}} in Word, or use "Use as letterhead".';
+    if (!clean.placeholders.length && meta.kind !== 'library') clean.warning = 'This document contains no {{placeholders}}. Letters made from it will not be filled automatically; add placeholders such as {{subject}} in Word, or use "Use as letterhead".';
     return this.db.tx(() => {
-      const id = this.db.run(`INSERT INTO templates(name, category_id, subcategory_id, language, description, default_subject, default_body, is_letterhead, is_sample)
-        VALUES(?,?,?,?,?,?,?,?,?)`, [meta.name.trim(), meta.category_id || null, meta.subcategory_id || null, meta.language || 'en', meta.description || null,
-        meta.default_subject || null, meta.default_body || null, meta.is_letterhead ? 1 : 0, sample ? 1 : 0]).lastInsertRowid;
+      const id = this.db.run(`INSERT INTO templates(name, category_id, subcategory_id, language, description, default_subject, default_body, is_letterhead, is_sample, kind, variant_group, sample_key, meta)
+        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`, [meta.name.trim(), meta.category_id || null, meta.subcategory_id || null, meta.language || 'en', meta.description || null,
+        meta.default_subject || null, meta.default_body || null, meta.is_letterhead ? 1 : 0, sample ? 1 : 0, meta.kind || 'template', meta.variant_group || null,
+        meta.sample_key || null, meta.meta ? JSON.stringify(meta.meta) : null]).lastInsertRowid;
       const vId = this.addVersionFile(id, 1, clean, path.basename(filePath), meta.note || 'Initial version', user);
       this.db.run('UPDATE templates SET current_version_id=? WHERE id=?', [vId, id]);
       this.app.audit(user, 'template.create', 'template', id, { name: meta.name, removedParts: clean.removedParts });
@@ -126,7 +133,11 @@ class Templates {
     this.app.emitChange('templates');
   }
 
-  /** Install the bundled sample templates on first run. */
+  /**
+   * Install or update the bundled sample templates. Runs at every start and is idempotent: each
+   * sample is identified by its key, so new samples (e.g. Marathi versions) appear after an update,
+   * and samples installed by an older version get their language group and default text.
+   */
   async installBundledSamples() {
     const dir = path.join(this.app.resourcesDir, 'templates');
     const manifestPath = path.join(dir, 'manifest.json');
@@ -134,18 +145,90 @@ class Templates {
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     let n = 0;
     for (const item of manifest.templates) {
-      const file = path.join(dir, item.file);
-      if (!fs.existsSync(file)) continue;
+      const key = item.key || item.file;
       const cat = item.category ? this.db.get('SELECT id FROM categories WHERE code=?', [item.category]) : null;
       const sub = cat && item.subcategory ? this.db.get('SELECT id FROM subcategories WHERE category_id=? AND name=?', [cat.id, item.subcategory]) : null;
+      const existing = this.db.get('SELECT * FROM templates WHERE sample_key=?', [key])
+        || this.db.get('SELECT * FROM templates WHERE is_sample=1 AND sample_key IS NULL AND name=? AND language=?', [item.name, item.language || 'en']);
+      if (existing) {
+        // adopt / refresh an installed sample without touching anything the user changed
+        this.db.run('UPDATE templates SET sample_key=?, variant_group=COALESCE(variant_group, ?) WHERE id=?', [key, item.group || null, existing.id]);
+        if (!existing.default_body && item.body) this.db.run('UPDATE templates SET default_body=?, default_subject=COALESCE(default_subject, ?) WHERE id=?', [item.body, item.subject || null, existing.id]);
+        continue;
+      }
+      const file = path.join(dir, item.file);
+      if (!fs.existsSync(file)) continue;
       const res = this.create({
         name: item.name, category_id: cat && cat.id, subcategory_id: sub && sub.id, language: item.language || 'en',
         description: item.description, default_subject: item.subject, default_body: item.body, is_letterhead: item.letterhead, note: 'Bundled sample (editable)',
+        variant_group: item.group || null, sample_key: key,
       }, file, { user: 'system', sample: true });
       if (item.letterhead && !this.app.settings.get('letter').defaultTemplateId) this.app.settings.set('letter', { defaultTemplateId: res.template.id });
       n++;
     }
     return n;
+  }
+
+  /** The same template in another language (same variant group), if one exists. */
+  variant(templateId, language) {
+    const t = this.db.get('SELECT * FROM templates WHERE id=?', [templateId]);
+    if (!t || !t.variant_group) return null;
+    const v = this.db.get('SELECT id FROM templates WHERE variant_group=? AND language=? AND deleted_at IS NULL AND active=1 ORDER BY id LIMIT 1', [t.variant_group, language]);
+    return v ? this.get(v.id) : null;
+  }
+
+  // ---------- previous letters (the college's own letters, reused as they are) ----------
+  guessCategory(text, fileName) {
+    const t = `${fileName} ${text}`;
+    const code = /udise|s0[23]\b|so2/i.test(t) && /गटशिक्षणाधिकारी|gatshikshan|beo|block/i.test(t) ? 'BEO'
+      : /udise/i.test(t) ? 'UDISE'
+        : /विभागीय सचिव|divisional (secretary|board)|माध्यमिक व उच्च माध्यमिक शिक्षण मंडळ|hsc|एच\.?एस\.?सी|मंडळ मान्यता/i.test(t) ? 'HSC'
+          : /गटशिक्षणाधिकारी|gatshikshan|पंचायत समिती|block education/i.test(t) ? 'BEO'
+            : /जिल्हा परिषद|zilla parishad|शिक्षणाधिकारी|shikshanadhikari/i.test(t) ? 'ZP'
+              : 'GEN';
+    const c = this.db.get('SELECT id FROM categories WHERE code=? AND deleted_at IS NULL', [code]) || this.db.get('SELECT id FROM categories WHERE code=\'GEN\'');
+    return c ? c.id : null;
+  }
+
+  /**
+   * Import previous letters (.docx) so they can be reused: the outward number and the date in the
+   * top line become automatic; the rest of each letter stays exactly as it was written.
+   */
+  importPreviousLetters(filePaths) {
+    const user = this.app.require('templates.manage');
+    const report = [];
+    for (const f of filePaths) {
+      const name = path.basename(f);
+      try {
+        if (!/\.docx$/i.test(name) || name.startsWith('~$')) { report.push({ file: name, ok: false, error: 'Not a .docx file' }); continue; }
+        const original = fs.readFileSync(f);
+        const sourceSha = sha256Buffer(original);
+        const dup = this.db.all("SELECT id, meta FROM templates WHERE kind='library' AND deleted_at IS NULL").find((r) => json(r.meta, {}).sourceSha === sourceSha);
+        if (dup) { report.push({ file: name, ok: false, skipped: true, error: 'Already imported' }); continue; }
+        const clean = docx.sanitizeTemplate(original, name);
+        const { buffer, meta } = makeReusableLetter(clean.buffer);
+        const text = docx.extractText(buffer);
+        const title = name.replace(/\.docx$/i, '').replace(/^\d+\s+[A-Za-z_]+\s*-\s*\d+\s*-\s*/, '').trim();
+        const res = this.create({
+          name: title, kind: 'library', category_id: this.guessCategory(text.slice(0, 3000), name), language: meta.language,
+          default_subject: meta.subject || title, description: meta.subject || null,
+          meta: { ...meta, sourceSha, sourceFile: name }, note: `Imported from ${name}`,
+        }, f, { user, buffer });
+        report.push({ file: name, ok: true, id: res.template.id, refFound: meta.refFound, dateFound: meta.dateFound, lineAdded: !!meta.lineAdded });
+      } catch (e) {
+        report.push({ file: name, ok: false, error: e.message });
+      }
+    }
+    this.app.audit(user, 'library.import', 'template', null, { files: filePaths.length, imported: report.filter((r) => r.ok).length });
+    this.app.emitChange('templates');
+    return report;
+  }
+
+  importPreviousFolder(dir) {
+    if (!dir || !fs.existsSync(dir)) throw new UserError('Folder not found.');
+    const files = fs.readdirSync(dir).filter((f) => /\.docx$/i.test(f) && !f.startsWith('~$')).sort().map((f) => path.join(dir, f));
+    if (!files.length) throw new UserError('No Word (.docx) files were found in that folder.');
+    return this.importPreviousLetters(files);
   }
 
   // ---------- saved text snippets ("frequently used letter content") ----------

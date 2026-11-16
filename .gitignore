@@ -16,3 +16,4 @@ edudesk/.test-data/
 edudesk/test/e2e/output/
 edudesk/*.zip
 edudesk/edudesk-mac.yml
+edudesk/assets/library/

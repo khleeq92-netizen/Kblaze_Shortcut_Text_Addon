@@ -36,7 +36,7 @@ const DEFAULTS = {
   workflow: { approvalRequired: false, assignNumberAt: 'generate' },
   conversion: { engine: 'auto', libreOfficePath: '', timeoutSeconds: 180 },
   backup: { auto: 'daily', destination: '', keep: 30, lastAutoAt: null },
-  ui: { onboardingDone: false },
+  ui: { onboardingDone: false, libraryImported: false },
   session: { currentUser: 'owner' },
 };
 

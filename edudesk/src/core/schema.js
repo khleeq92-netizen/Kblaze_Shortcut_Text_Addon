@@ -6,7 +6,7 @@
  * changes old register entries.
  */
 
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 const V1 = `
 CREATE TABLE settings (
@@ -368,8 +368,19 @@ CREATE TABLE recent_searches (
 );
 `;
 
+// v2: language variants for templates (English / Marathi / Hindi of the same letter) and
+// "previous letters" – the college's own letters reused as they are.
+const V2 = `
+ALTER TABLE templates ADD COLUMN kind TEXT NOT NULL DEFAULT 'template';
+ALTER TABLE templates ADD COLUMN variant_group TEXT;
+ALTER TABLE templates ADD COLUMN sample_key TEXT;
+ALTER TABLE templates ADD COLUMN meta TEXT;
+CREATE INDEX idx_templates_group ON templates(variant_group);
+`;
+
 const migrations = {
   1: (db) => db.raw.exec(V1),
+  2: (db) => db.raw.exec(V2),
 };
 
 module.exports = { SCHEMA_VERSION, migrations };

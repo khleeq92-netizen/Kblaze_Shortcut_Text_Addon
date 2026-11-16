@@ -71,13 +71,71 @@ const templates = [
     body: 'With reference to the above subject, the information requested by your office is submitted herewith in the prescribed format. Kindly accept the same.' }),
 ];
 
+
+// ---- language groups: the same letter in English and Marathi -----------------------------------
+// Each English sample is paired with a Marathi version (same group). Switching the letter language
+// in EduDesk switches to the paired template, so labels (विषय, दिनांक, प्रति…) and text follow.
+const GROUP = {
+  '00_Standard_Letterhead_English.docx': 'standard', '00_Standard_Letterhead_Marathi.docx': 'standard', '00_Standard_Letterhead_Hindi.docx': 'standard',
+  '02_UDISE_S02_New_Student.docx': 'udise_s02', '02_UDISE_S02_New_Student_Marathi.docx': 'udise_s02',
+  '04_Student_Name_Correction.docx': 'name_correction', '04_Student_Name_Correction_Marathi.docx': 'name_correction',
+};
+const MARATHI = [
+  ['01_BEO_Student_Information.docx', 'BEO – विद्यार्थ्यांची माहिती सादर करणे (मराठी)', 'शैक्षणिक वर्षासाठी विद्यार्थ्यांची माहिती सादर करणेबाबत.',
+    'उपरोक्त विषयास अनुसरून आपल्या कार्यालयाने मागविलेली आमच्या महाविद्यालयातील विद्यार्थ्यांची चालू शैक्षणिक वर्षाची माहिती सोबत सादर करीत आहोत.\nसदर माहिती महाविद्यालयाच्या अभिलेखानुसार तपासून सादर करण्यात येत आहे. कृपया ती स्वीकारून पोच द्यावी, ही विनंती.'],
+  ['03_UDISE_S03_Correction.docx', 'UDISE – S03 माहिती दुरुस्ती (मराठी)', 'UDISE+ मधील सक्रिय विद्यार्थ्यांच्या माहितीत दुरुस्ती करण्याबाबत (फॉर्म S03).',
+    'UDISE+ प्रणालीमध्ये नोंद असलेल्या खालील सक्रिय विद्यार्थ्यांची काही माहिती महाविद्यालयाच्या अभिलेखाशी जुळत नाही. विद्यमान व दुरुस्त माहिती {{student_count}} विद्यार्थ्यांच्या फॉर्म S03 मध्ये दर्शविली आहे.\nपडताळणीसाठी जनरल रजिस्टर व जन्म दाखल्याच्या प्रती सोबत जोडल्या आहेत. तरी UDISE+ मध्ये दुरुस्तीस मान्यता द्यावी, ही विनंती.'],
+  ['05_Student_DOB_Correction.docx', 'विद्यार्थी जन्मतारीख दुरुस्ती (मराठी)', 'विद्यार्थ्याच्या जन्मतारखेत दुरुस्ती करण्याबाबत.',
+    'खालील विद्यार्थ्याची जन्मतारीख चुकीची नोंदविली गेली आहे. जन्म दाखला व महाविद्यालयाच्या जनरल रजिस्टरप्रमाणे योग्य जन्मतारीख खाली दिली आहे.\nविद्यार्थ्याचे नाव: ______\nनोंदलेली जन्मतारीख: ______\nयोग्य जन्मतारीख: ______\nजन्म दाखला व जनरल रजिस्टर उताऱ्याच्या साक्षांकित प्रती सोबत जोडल्या आहेत.'],
+  ['06_HSC_Mark_Memo_Collection.docx', 'HSC मंडळ – गुणपत्रिका मिळणेबाबत (मराठी)', 'इ. १२ वी (एच.एस.सी.) परीक्षेच्या गुणपत्रिका मिळण्याबाबत विनंती.',
+    'आमच्या कनिष्ठ महाविद्यालयातील विद्यार्थ्यांच्या एच.एस.सी. परीक्षेच्या गुणपत्रिका (Statement of Marks) देण्यात याव्यात, ही विनंती. आमचे अधिकृत प्रतिनिधी विभागीय मंडळ कार्यालयातून सदर कागदपत्रे ताब्यात घेतील.\nमहाविद्यालयाचा तपशील: {{college_name}}, इंडेक्स क्र. {{index_no}}, UDISE {{udise_code}}.'],
+  ['07_HSC_Passing_Certificate_Collection.docx', 'HSC मंडळ – उत्तीर्ण प्रमाणपत्र मिळणेबाबत (मराठी)', 'इ. १२ वी (एच.एस.सी.) परीक्षेची उत्तीर्ण प्रमाणपत्रे मिळण्याबाबत विनंती.',
+    'आमच्या कनिष्ठ महाविद्यालयातील उत्तीर्ण विद्यार्थ्यांची एच.एस.सी. उत्तीर्ण प्रमाणपत्रे देण्यात यावीत, ही विनंती. आमचे अधिकृत प्रतिनिधी आपल्या कार्यालयातून प्रमाणपत्रे ताब्यात घेतील.\nप्रतिनिधीचे अधिकारपत्र सोबत जोडले आहे.'],
+  ['08_HSC_Prelist_Submission.docx', 'इ. १२ वी परीक्षा – पूर्वयादी सादर करणे (मराठी)', 'एच.एस.सी. परीक्षेसाठी प्रविष्ट होणाऱ्या विद्यार्थ्यांची पूर्वयादी सादर करण्याबाबत.',
+    'आगामी एच.एस.सी. परीक्षेसाठी प्रविष्ट होणाऱ्या आमच्या कनिष्ठ महाविद्यालयातील विद्यार्थ्यांची पूर्वयादी सोबत सादर करीत आहोत.\nसदर यादी महाविद्यालयाच्या अभिलेखाशी तपासली असून विद्यार्थ्यांचा तपशील पडताळण्यात आला आहे.'],
+  ['09_Examination_Fee_Submission.docx', 'परीक्षा शुल्क सादर करणे (मराठी)', 'एच.एस.सी. परीक्षा शुल्क सादर करण्याबाबत.',
+    'आगामी एच.एस.सी. परीक्षेसाठी आमच्या कनिष्ठ महाविद्यालयातील विद्यार्थ्यांचे परीक्षा शुल्क सादर करीत आहोत.\nचलन / भरणा तपशील व विद्यार्थ्यांची यादी सोबत जोडली आहे.'],
+  ['10_Teacher_Invigilator_Details.docx', 'शिक्षक व पर्यवेक्षक माहिती सादर करणे (मराठी)', 'पर्यवेक्षण / उत्तरपत्रिका तपासणी कामासाठी शिक्षकांची माहिती सादर करण्याबाबत.',
+    'आगामी एच.एस.सी. परीक्षेच्या पर्यवेक्षण, उत्तरपत्रिका तपासणी व नियमन (Moderation) कामासाठी उपलब्ध असलेल्या आमच्या कनिष्ठ महाविद्यालयातील शिक्षकांची माहिती सोबत सादर करीत आहोत.\nनेमणुकीनुसार संबंधित शिक्षकांना वेळापत्रकाप्रमाणे कार्यमुक्त करण्यात येईल.'],
+  ['11_Practical_Marks_Submission.docx', 'प्रात्यक्षिक परीक्षा गुण सादर करणे (मराठी)', 'प्रात्यक्षिक / तोंडी परीक्षेचे गुण सादर करण्याबाबत.',
+    'आमच्या कनिष्ठ महाविद्यालयातील एच.एस.सी. विद्यार्थ्यांच्या प्रात्यक्षिक / तोंडी परीक्षेचे गुण सोबत सादर करीत आहोत.\nगुणपत्रके तपासून अंतर्गत व बाह्य परीक्षकांच्या स्वाक्षरीसह सादर करण्यात येत आहेत.'],
+  ['12_Practical_Papers_Submission.docx', 'प्रात्यक्षिक परीक्षा उत्तरपत्रिका सादर करणे (मराठी)', 'प्रात्यक्षिक परीक्षेच्या उत्तरपत्रिका / जर्नल सादर करण्याबाबत.',
+    'मंडळाच्या सूचनेनुसार आमच्या कनिष्ठ महाविद्यालयातील विद्यार्थ्यांच्या प्रात्यक्षिक परीक्षेच्या उत्तरपत्रिका व संबंधित अभिलेखांचे सीलबंद पाकीट सादर करीत आहोत.'],
+  ['13_General_Information_Submission.docx', 'सर्वसाधारण माहिती सादर करणे (मराठी)', 'माहिती सादर करण्याबाबत.',
+    'उपरोक्त विषयास अनुसरून आपल्या कार्यालयाने मागविलेली माहिती विहित नमुन्यात सोबत सादर करीत आहोत. कृपया ती स्वीकारावी, ही विनंती.'],
+];
+for (const [enFile, name, subject, body] of MARATHI) {
+  const en = templates.find((t) => t.file === enFile);
+  const group = enFile.replace(/^\d+_/, '').replace(/\.docx$/, '').toLowerCase();
+  GROUP[enFile] = group;
+  const mrFile = enFile.replace(/\.docx$/, '_Marathi.docx');
+  GROUP[mrFile] = group;
+  templates.push({ file: mrFile, name, lang: 'mr', category: en.category, subcategory: en.subcategory, subject, body });
+}
+for (const t of templates) { t.group = GROUP[t.file] || null; t.key = t.file.replace(/\.docx$/, ''); }
+
 const manifest = { note: 'Sample editable templates generated by scripts/build-assets.js. Not verified official government formats.', templates: [] };
 for (const t of templates) {
   fs.writeFileSync(path.join(outDir, t.file), buildSampleDocx(t.lang));
-  manifest.templates.push({ file: t.file, name: t.name, language: t.lang, letterhead: !!t.letterhead, category: t.category, subcategory: t.subcategory || null, description: t.description || 'Sample editable template', subject: t.subject, body: t.body });
+  manifest.templates.push({ key: t.key, group: t.group, file: t.file, name: t.name, language: t.lang, letterhead: !!t.letterhead, category: t.category, subcategory: t.subcategory || null, description: t.description || 'Sample editable template', subject: t.subject, body: t.body });
 }
 fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
 console.log(`templates: ${templates.length}`);
+
+// ---- the college's own previous letters (private builds only) ----------------------------------
+// When private/college-letters exists, its .docx letters are bundled as assets/library and imported
+// automatically on first start ("Reuse a previous letter"). assets/library is git-ignored.
+{
+  const src = path.join(root, 'private', 'college-letters');
+  const dest = path.join(root, 'assets', 'library');
+  fs.rmSync(dest, { recursive: true, force: true });
+  if (fs.existsSync(src)) {
+    fs.mkdirSync(dest, { recursive: true });
+    const files = fs.readdirSync(src).filter((f) => /\.docx$/i.test(f) && !f.startsWith('~$'));
+    for (const f of files) fs.copyFileSync(path.join(src, f), path.join(dest, f));
+    console.log(`library letters bundled: ${files.length}`);
+  }
+}
 
 // ---- UDISE masters -------------------------------------------------------
 (async () => {
@@ -88,7 +146,8 @@ console.log(`templates: ${templates.length}`);
   const s03 = path.join(orig, 'Form_S03_UDISE_Fillable.pdf');
   const s02 = path.join(orig, 'Form_S02_UDISE_Fillable.pdf');
   if (fs.existsSync(s03)) fs.copyFileSync(s03, path.join(udiseOut, 'Form_S03_UDISE_v02.pdf')); // already blank – byte-identical copy
-  if (fs.existsSync(s02)) {
+  // The cleaned S02 master is committed; rebuild it only on request (needs python3 + pypdf).
+  if (fs.existsSync(s02) && (process.argv.includes('--udise') || !fs.existsSync(path.join(udiseOut, 'Form_S02_UDISE_v04.pdf')))) {
     // The supplied S02 carries the college's pre-filled HoS details; ship a cleared copy so the
     // values come from the College Profile instead. Structure, fields and layout are unchanged.
     // clean_pdf.py clears the values, keeps the original /DA font settings and drops every

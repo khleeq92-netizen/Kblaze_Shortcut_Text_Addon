@@ -59,10 +59,15 @@ class EduDeskApp {
       users: require('./services/users'),
     };
     for (const [name, Mod] of Object.entries(modules)) this.services[name] = new Mod(this);
-    if (firstRun) {
-      await this.services.templates.installBundledSamples();
-      await this.services.udise.installBundledMasters();
+    // idempotent: installs on first run and adds samples shipped by later versions
+    await this.services.templates.installBundledSamples();
+    // private builds can ship the college's own previous letters: import them once
+    const libDir = path.join(this.resourcesDir, 'library');
+    if (!this.settings.get('ui').libraryImported && fs.existsSync(libDir)) {
+      try { this.services.templates.importPreviousFolder(libDir); } catch (e) { this.log('warn', 'library import failed', { error: e.message }); }
+      this.settings.set('ui', { libraryImported: true });
     }
+    if (firstRun) await this.services.udise.installBundledMasters();
     this.integrity = integrity;
     return this;
   }

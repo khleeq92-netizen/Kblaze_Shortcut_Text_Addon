@@ -13,6 +13,7 @@ export async function render(el, route) {
   let dirty = false;
   let poll = null;
   let templates = [];
+  let mode = route.query.mode === 'reuse' ? 'reuse' : 'new';
   let recipients = [];
 
   const id = route.parts[1] && route.parts[1] !== 'new' ? Number(route.parts[1]) : null;
@@ -30,36 +31,162 @@ export async function render(el, route) {
       letter_date: today(), language: state.settings.letter.language,
       signatory_name: state.settings.letter.signatoryName || state.settings.college.principal_name,
       signatory_designation: state.settings.letter.signatoryDesignation || state.settings.college.principal_designation,
-      template_id: route.query.template || state.settings.letter.defaultTemplateId || '',
+      template_id: (() => {
+        // the default letterhead in the default language, when a language pair exists
+        const id = route.query.template || state.settings.letter.defaultTemplateId || '';
+        const t = templates.find((x) => String(x.id) === String(id));
+        const lang = state.settings.letter.language;
+        const v = t && t.variant_group && t.language !== lang ? templates.find((x) => x.variant_group === t.variant_group && x.language === lang) : null;
+        return v ? v.id : id;
+      })(),
     };
     return v;
   }
 
   function editable() { return !letter || (EDITABLE.includes(letter.status) && !letter.deleted_at); }
 
-  function templateOptions(catId) {
-    const list = templates.filter((t) => !catId || !t.category_id || String(t.category_id) === String(catId));
-    return [['', '— Select template —'], ...list.map((t) => [t.id, `${t.name}${t.is_sample ? ' (sample)' : ''}${t.language !== 'en' ? ` [${t.language}]` : ''}`])];
+  const LANG_NAME = { en: 'English', mr: 'मराठी', hi: 'हिंदी' };
+  /** Templates for a category in the chosen language (language pairs show only the matching one). */
+  function templateOptions(catId, lang, keepId) {
+    const list = templates.filter((t) => (!catId || !t.category_id || String(t.category_id) === String(catId))
+      && (!t.variant_group || !lang || t.language === lang || String(t.id) === String(keepId)));
+    return [['', '— Select template —'], ...list.map((t) => [t.id, `${t.name}${t.is_sample ? ' (sample)' : ''}${t.variant_group ? '' : t.language !== 'en' ? ` [${LANG_NAME[t.language] || t.language}]` : ''}`])];
+  }
+  /** The same template in another language, when a pair exists. */
+  function variantOf(t, lang) {
+    if (!t || !t.variant_group) return null;
+    return templates.find((x) => x.variant_group === t.variant_group && x.language === lang) || null;
+  }
+
+  function modeSwitch() {
+    if (letter) return '';
+    return `<div class="tabs" style="margin-bottom:18px"><button data-mode="new" class="${mode === 'new' ? 'active' : ''}">${icon('pen')} Write a new letter</button><button data-mode="reuse" class="${mode === 'reuse' ? 'active' : ''}">${icon('copy')} Reuse a previous letter</button></div>`;
+  }
+  function bindModeSwitch() {
+    $$('[data-mode]', el).forEach((b) => {
+      b.onclick = () => {
+        if (mode === b.dataset.mode) return;
+        mode = b.dataset.mode;
+        history.replaceState(null, '', `#/letter/new${mode === 'reuse' ? '?mode=reuse' : ''}`);
+        draw();
+      };
+    });
+  }
+
+  // ------------------------------------------------------------ reuse a previous letter
+  async function drawReuse() {
+    const lib = await api('templates', 'list', { kind: 'library' });
+    let q = '';
+    let cat = '';
+    el.innerHTML = `<div class="page-head"><div><h1>Create Letter</h1><p>Pick one of your earlier letters. EduDesk fills in the new outward number and the date; everything else stays exactly as you wrote it, and you change anything else in Word.</p></div>
+      <div class="actions"><button class="btn" id="b-imp-folder">${icon('folder')}Import letters from a folder</button><button class="btn" id="b-imp-files">${icon('upload')}Import letter files</button></div></div>
+      ${modeSwitch()}
+      ${lib.length ? `<div class="card"><div class="filters"><div class="field wide"><label>Search your letters</label><input class="input" id="rq" placeholder="Subject, office, file name (e.g. गुणपत्रिका, UDISE, Divisional)"></div>
+        <div class="field"><label>Category</label><select class="input" id="rc"><option value="">All</option>${catOptions(true).map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join('')}</select></div></div>
+        <div id="rl" class="bd" style="padding:4px 16px"></div></div>`
+    : `<div class="card"><div class="bd"><div class="empty">${icon('copy')}<h4>No previous letters yet</h4>
+          <p style="max-width:560px;margin:6px auto 14px">Import the Word letters your office has already written (for example the folder with your college letters). EduDesk finds the reference number and date in each one and makes them automatic. Nothing else in your letters is changed.</p>
+          <button class="btn accent" id="b-imp-folder2">${icon('folder')}Import letters from a folder</button></div></div></div>`}`;
+    const list = () => {
+      const ql = q.toLowerCase();
+      const rows = lib.filter((t) => (!cat || String(t.category_id) === cat)
+        && (!q || [t.name, t.default_subject, t.category_name, (t.meta.recipientLines || []).join(' '), t.meta.sourceFile].join(' ').toLowerCase().includes(ql)));
+      $('#rl', el).innerHTML = rows.map((t) => `<div class="list-row" data-use="${t.id}"><div class="main-t"><div><b>${esc(t.default_subject || t.name)}</b></div>
+        <div class="muted" style="font-size:12px">${esc((t.meta.recipientLines || []).slice(0, 2).join(', '))}${(t.meta.recipientLines || []).length ? ' · ' : ''}${esc(t.meta.sourceFile || t.name)}</div></div>
+        <span class="badge plain">${esc(LANG_NAME[t.language] || t.language)}</span> <span class="badge info plain">${esc(t.category_name || '')}</span>
+        ${t.meta.refFound && t.meta.dateFound ? '' : '<span class="badge warn plain" title="No reference/date line was found in this letter">Check number/date</span>'}
+        <button class="btn sm accent">${icon('word')}Use this letter</button></div>`).join('') || '<div class="empty">No letters match.</div>';
+      $$('[data-use]', el).forEach((r) => { r.onclick = () => useLetter(lib.find((t) => t.id === Number(r.dataset.use))); });
+    };
+    if (lib.length) {
+      list();
+      const qi = $('#rq', el);
+      qi.oninput = () => { q = qi.value; list(); };
+      qi.focus();
+      $('#rc', el).onchange = (e) => { cat = e.target.value; list(); };
+    }
+    const showImport = async (rep) => {
+      if (!rep) return;
+      const ok = rep.filter((r) => r.ok);
+      const skipped = rep.filter((r) => r.skipped).length;
+      const failed = rep.filter((r) => !r.ok && !r.skipped).length;
+      const warn = ok.filter((r) => !r.refFound || !r.dateFound);
+      await modal({
+        title: `Imported ${ok.length} letter(s)`, size: 'wide',
+        body: `<p>${ok.length} imported${skipped ? `, ${skipped} already there` : ''}${failed ? `, ${failed} could not be read` : ''}.</p>
+          ${warn.length ? `<div class="callout warn">${icon('alert')}<div>In ${warn.length} file(s) no reference/date line was found (usually forms). They can still be used; type the number and date in Word.</div></div><br>` : ''}
+          <table class="tbl"><tr><th>File</th><th>Outward no.</th><th>Date</th><th></th></tr>${rep.map((r) => `<tr><td>${esc(r.file)}</td><td>${r.ok ? (r.refFound ? '✓ automatic' : '—') : ''}</td><td>${r.ok ? (r.dateFound ? '✓ automatic' : '—') : ''}</td><td class="muted">${r.ok ? (r.lineAdded ? 'line added' : '') : esc(r.error || '')}</td></tr>`).join('')}</table>`,
+      });
+      drawReuse();
+    };
+    const importFolder = async () => {
+      const dir = await api('sys', 'pickFolder', { title: 'Choose the folder with your Word letters' });
+      if (dir) showImport(await busy('Importing letters…', () => tryApi('templates', 'importPreviousFolder', dir)));
+    };
+    const importFiles = async () => {
+      const files = await api('sys', 'pickFile', { title: 'Choose Word letters (.docx)', multi: true, filters: [{ name: 'Word', extensions: ['docx'] }] });
+      if (files) showImport(await busy('Importing letters…', () => tryApi('templates', 'importPreviousLetters', files)));
+    };
+    for (const [sel, fn] of [['#b-imp-folder', importFolder], ['#b-imp-folder2', importFolder], ['#b-imp-files', importFiles]]) {
+      const b = $(sel, el);
+      if (b) b.onclick = fn;
+    }
+    bindModeSwitch();
+  }
+
+  async function useLetter(t) {
+    const lines = t.meta.recipientLines || [];
+    const body = `<p class="muted" style="margin-top:0">${esc(t.meta.sourceFile || t.name)}</p>${formHtml([
+      { name: 'letter_date', label: 'Letter date', type: 'date', required: true, default: today() },
+      { name: 'reference_no', label: 'Their reference no. (optional, for the register)' },
+      { name: 'subject', label: 'Subject (for the register)', full: true, default: t.default_subject || t.name },
+      { name: 'recipient_designation', label: 'To (designation)', default: lines[0] || '' },
+      { name: 'recipient_office', label: 'Office', default: lines.slice(1, 3).join(', ') },
+      { name: 'category_id', label: 'Category', type: 'select', options: catOptions(), default: t.category_id },
+    ], {})}<div class="callout info" style="margin-top:12px">${icon('info')}<div>The outward number is filled in automatically. The letter then opens in Word: change anything you need (names, student list, dates in the text), <b>save and close</b> Word, then click <b>Finalize &amp; Archive</b>.</div></div>`;
+    const r = await modal({
+      title: 'Reuse this letter', size: 'wide', body,
+      actions: [{ label: 'Cancel', value: null }, {
+        label: 'Create & open in Word', kind: 'accent', icon: 'word',
+        onClick: async (mb) => {
+          const v = readForm(mb);
+          v.category_id = Number(v.category_id) || null;
+          if (!v.recipient_designation && !v.recipient_office) v.recipient_office = 'As in the letter';
+          return busy('Preparing the letter…', async () => {
+            const d = await api('letters', 'fromPreviousLetter', t.id, v);
+            await api('letters', 'generate', d.id);
+            return { id: d.id };
+          });
+        },
+      }],
+    });
+    if (!r) return;
+    const w = await tryApi('letters', 'openInWord', r.id);
+    if (w && w.warning) toast(w.warning, 'warn', 8000);
+    location.hash = `#/letter/${r.id}`;
   }
 
   function draw() {
+    if (!letter && mode === 'reuse') { drawReuse(); return; }
     const v = values();
     const ro = !editable();
     const title = letter ? (letter.outward_no ? `Letter ${letter.outward_no}` : `Draft #${letter.id}`) : 'Create Letter';
     el.innerHTML = `
       <div class="page-head"><div><h1>${esc(title)}</h1><p>${letter ? `${badge(letter.status)} ${letter.archive_status !== 'None' ? badge(`Archive: ${letter.archive_status}`, letter.archive_status === 'Complete' ? 'ok' : 'err') : ''} ${letter.dispatch_status ? badge(letter.dispatch_status) : ''} ${letter.deleted_at ? badge('Deleted', 'err') : ''}` : 'Fill in the details, generate the Word document, review it in Word, then Finalize & Archive.'}</p></div>
         <div class="actions">${letter ? `<button class="btn" id="b-copy">${icon('copy')}Copy as new letter</button><button class="btn" id="b-history">${icon('history')}History</button>` : ''}</div></div>
+      ${modeSwitch()}
       <div class="split">
         <div>
           ${letter && letter.extra && letter.extra.workStale && letter.status === 'Generated' ? `<div class="callout warn">${icon('alert')}<div>The letter details were changed after the Word document was generated. Click <b>Regenerate Word Document</b> before finalizing (your Word edits will be kept as a copy).</div></div><br>` : ''}
+          ${letter && letter.extra && letter.extra.fromPrevious && letter.archive_status !== 'Complete' ? `<div class="callout info">${icon('copy')}<div>This letter reuses <b>${esc(letter.extra.fromPrevious.name)}</b>. Its text is changed in Word (<b>Open in Word</b>); the letter body box below is not used. The outward number and date are filled in automatically.</div></div><br>` : ''}
           ${letter && letter.pdf_status === 'Failed' ? `<div class="callout err">${icon('alert')}<div><b>PDF generation failed.</b> The final Word document is safely archived and the outward number is kept. ${esc(letter.pdf_error || '')}<br>Fix the cause (for example close Word dialogs or install LibreOffice) and click <b>Retry PDF Generation</b>.</div></div><br>` : ''}
           ${letter && letter.status === 'Cancelled' ? `<div class="callout err">${icon('ban')}<div><b>Cancelled</b> on ${fmtDateTime(letter.cancelled_at)} — ${esc(letter.cancel_reason || '')}. The outward number ${esc(letter.outward_no)} stays in the register.</div></div><br>` : ''}
           <div class="card"><div class="hd"><h3>${icon('template')} Classification & template</h3></div><div class="bd">
             ${formHtml([
               { name: 'category_id', label: 'Category', type: 'select', options: [['', '— Select category —'], ...catOptions(!!letter)], required: true },
               { name: 'subcategory_id', label: 'Subcategory', type: 'select', options: [['', '— None —'], ...subOptions(v.category_id, !!letter)] },
-              { name: 'template_id', label: 'Letter template', type: 'select', options: templateOptions(v.category_id), required: true, hint: 'The template holds your letterhead and layout. Manage templates under Templates.' },
-              { name: 'language', label: 'Letter language', type: 'select', options: LANGS },
+              { name: 'template_id', label: 'Letter template', type: 'select', options: templateOptions(v.category_id, v.language, v.template_id), required: true, hint: 'The template holds your letterhead and layout. Manage templates under Templates.' },
+              { name: 'language', label: 'Letter language', type: 'select', options: LANGS, hint: 'Changing the language switches to the same template in that language (labels and text), when one exists.' },
             ], v)}
           </div></div>
           <div class="card"><div class="hd"><h3>${icon('users')} Recipient</h3><div class="actions">${ro ? '' : `<button class="btn sm" id="b-pick-rec">${icon('search')}Choose from directory</button><button class="btn sm ghost" id="b-save-rec" title="Save these recipient details to the directory">${icon('save')}Save to directory</button>`}</div></div><div class="bd">
@@ -89,6 +216,7 @@ export async function render(el, route) {
         </div>
         <div>${workflowPanel()}</div>
       </div>`;
+    bindModeSwitch();
     if (ro) $$('.split > div:first-child [name]', el).forEach((x) => { if (!x.closest('.dispatch-form')) { x.setAttribute('disabled', ''); } });
     bind();
   }
@@ -301,23 +429,44 @@ export async function render(el, route) {
       dirty = true;
       $('[name="subcategory_id"]', el).innerHTML = [['', '— None —'], ...subOptions(cat.value)].map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join('');
       const t = $('[name="template_id"]', el); const keep = t.value;
-      t.innerHTML = templateOptions(cat.value).map(([v, l]) => `<option value="${v}" ${String(v) === keep ? 'selected' : ''}>${esc(l)}</option>`).join('');
+      t.innerHTML = templateOptions(cat.value, $('[name="language"]', el).value, keep).map(([v, l]) => `<option value="${v}" ${String(v) === keep ? 'selected' : ''}>${esc(l)}</option>`).join('');
+    };
+    // remember the template whose default text is currently in the fields, so it can be swapped
+    let shown = templates.find((x) => String(x.id) === String(($('[name="template_id"]', el) || {}).value)) || null;
+    const useTemplate = (t, { force = false } = {}) => {
+      const sel = $('[name="template_id"]', el);
+      const lang = $('[name="language"]', el);
+      if (!t || !sel) return;
+      lang.value = t.language || lang.value;
+      sel.innerHTML = templateOptions($('[name="category_id"]', el).value, lang.value, t.id).map(([v, l]) => `<option value="${v}" ${String(v) === String(t.id) ? 'selected' : ''}>${esc(l)}</option>`).join('');
+      const body = $('[name="body"]', el); const subj = $('[name="subject"]', el);
+      // replace text only when it is empty or still the previous template's own default text
+      const untouched = (field, key) => !field.value.trim() || (shown && field.value.trim() === String(shown[key] || '').trim());
+      if (t.default_subject && (force || untouched(subj, 'default_subject'))) subj.value = t.default_subject;
+      if (t.default_body && (force || untouched(body, 'default_body'))) body.value = t.default_body;
+      shown = t;
     };
     const sub = $('[name="subcategory_id"]', el);
     if (sub) sub.onchange = () => {
       dirty = true;
-      const match = templates.find((t) => String(t.subcategory_id) === sub.value);
-      if (match && editable()) $('[name="template_id"]', el).value = match.id;
+      if (!editable()) return;
+      const lang = $('[name="language"]', el).value;
+      const forSub = templates.filter((t) => String(t.subcategory_id) === sub.value);
+      const match = forSub.find((t) => t.language === lang) || variantOf(forSub[0], lang) || forSub[0];
+      if (match) useTemplate(match);
     };
     const tpl = $('[name="template_id"]', el);
     if (tpl) tpl.onchange = () => {
       dirty = true;
-      const t = templates.find((x) => String(x.id) === tpl.value);
-      if (t) {
-        $('[name="language"]', el).value = t.language || 'en';
-        const body = $('[name="body"]', el); const subj = $('[name="subject"]', el);
-        if (!subj.value && t.default_subject) subj.value = t.default_subject;
-        if (!body.value && t.default_body) body.value = t.default_body;
+      useTemplate(templates.find((x) => String(x.id) === tpl.value));
+    };
+    const langSel = $('[name="language"]', el);
+    if (langSel) langSel.onchange = () => {
+      dirty = true;
+      const cur = templates.find((x) => String(x.id) === tpl.value);
+      const v = variantOf(cur, langSel.value);
+      if (v) { useTemplate(v); toast(`Switched to the ${LANG_NAME[langSel.value] || langSel.value} version of this template.`, 'info'); } else if (tpl) {
+        tpl.innerHTML = templateOptions($('[name="category_id"]', el).value, langSel.value, tpl.value).map(([val, l]) => `<option value="${val}" ${String(val) === tpl.value ? 'selected' : ''}>${esc(l)}</option>`).join('');
       }
     };
     on('#b-save', () => save());
@@ -383,7 +532,9 @@ export async function render(el, route) {
       if (r) { recipients = await api('recipients', 'list', {}); toast('Saved to the recipient directory.', 'success'); }
     });
     on('#b-tpl-text', () => {
-      const t = templates.find((x) => String(x.id) === $('[name="template_id"]', el).value);
+      let t = templates.find((x) => String(x.id) === $('[name="template_id"]', el).value);
+      const lang = $('[name="language"]', el).value;
+      if (t && t.language !== lang && variantOf(t, lang)) { t = variantOf(t, lang); useTemplate(t, { force: true }); dirty = true; return; }
       if (!t || (!t.default_body && !t.default_subject)) return toast('This template has no saved default text.', 'warn');
       if (t.default_subject) $('[name="subject"]', el).value = t.default_subject;
       if (t.default_body) $('[name="body"]', el).value = t.default_body;

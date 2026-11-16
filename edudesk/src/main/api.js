@@ -14,9 +14,9 @@ const { UserError } = require('../core/util');
 const ALLOWED = {
   categories: ['list', 'save', 'setActive', 'remove', 'reorder', 'saveSub', 'setSubActive', 'removeSub', 'reorderSubs', 'usage'],
   recipients: ['list', 'get', 'save', 'setActive'],
-  templates: ['list', 'get', 'create', 'uploadVersion', 'setCurrentVersion', 'update', 'duplicate', 'remove', 'inspect', 'listSnippets', 'saveSnippet', 'removeSnippet'],
+  templates: ['list', 'get', 'create', 'uploadVersion', 'setCurrentVersion', 'update', 'duplicate', 'remove', 'inspect', 'listSnippets', 'saveSnippet', 'removeSnippet', 'variant', 'importPreviousLetters', 'importPreviousFolder'],
   letters: ['get', 'list', 'saveDraft', 'copyFrom', 'submitForApproval', 'approve', 'sendBack', 'deleteDraft', 'restore', 'preview', 'overrideNumber', 'workStatus',
-    'generate', 'openInWord', 'finalize', 'retryPdf', 'startRevision', 'discardRevision', 'cancel', 'recordDispatch', 'addAttachment', 'removeAttachment', 'recordExternal', 'history'],
+    'generate', 'openInWord', 'fromPreviousLetter', 'finalize', 'retryPdf', 'startRevision', 'discardRevision', 'cancel', 'recordDispatch', 'addAttachment', 'removeAttachment', 'recordExternal', 'history'],
   inward: ['get', 'save', 'setStatus', 'addAttachment', 'removeAttachment', 'softDelete', 'restore', 'createReply', 'history'],
   students: ['list', 'get', 'save', 'remove', 'parseImport', 'importRows'],
   udise: ['listTemplates', 'uploadTemplate', 'activateTemplate', 'saveMapping', 'profileDefaults', 'fromStudent', 'validate', 'prepareSubmission', 'listSubmissions', 'getSubmission', 'previewForm', 'inspectPdf'],

@@ -24,6 +24,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Prepare bundled assets (sample templates, previous letters)
+        working-directory: edudesk
+        run: npm run build:assets
+
       - name: Install LibreOffice and Poppler (needed by the PDF tests)
         continue-on-error: true
         run: |

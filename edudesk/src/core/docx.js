@@ -145,7 +145,7 @@ function renderTemplate(buffer, values) {
  * paragraphs that keep the paragraph and run formatting.
  */
 function splitJustifiedBreaks(xml) {
-  return xml.replace(/<w:p(?: [^>]*)?>(?:(?!<\/w:p>)[\s\S])*?<\/w:p>/g, (p) => {
+  return xml.replace(/<w:p(?: [^>]*?)?(?<!\/)>(?:(?!<\/w:p>)[\s\S])*?<\/w:p>/g, (p) => {
     if (!p.includes('<w:br/>') || !/<w:jc w:val="(both|distribute)"\/>/.test(p)) return p;
     // leave complex paragraphs (text boxes, nested content, fields) untouched
     if (/<w:p[ >]/.test(p.slice(4)) || /txbxContent|<w:fldChar|<mc:AlternateContent/.test(p)) return p;
