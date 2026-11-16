@@ -1,0 +1,8 @@
+Noto Sans Devanagari
+Copyright 2022 The Noto Project Authors (https://github.com/notofonts/devanagari)
+
+The font files NotoSansDevanagari-Regular.ttf and NotoSansDevanagari-Bold.ttf were assembled from the
+@fontsource/noto-sans-devanagari distribution (latin, latin-ext and devanagari subsets merged with
+fontTools). They are licensed under the SIL Open Font License, Version 1.1:
+https://openfontlicense.org/open-font-license-official-text/
+They are used by EduDesk only to typeset Marathi/Hindi text inside UDISE PDF form fields.

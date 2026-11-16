@@ -7,3 +7,10 @@ dist-firefox/
 tests/e2e/.profile*/
 tests/e2e/output/
 tests/e2e/fixtures/build/
+
+# EduDesk
+edudesk/node_modules/
+edudesk/dist/
+edudesk/private/
+edudesk/.test-data/
+edudesk/test/e2e/output/

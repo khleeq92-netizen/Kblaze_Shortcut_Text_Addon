@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: file:; font-src 'self' data: file:; connect-src 'none'; object-src 'none'; frame-src 'none'">
+  <title>EduDesk Correspondence Manager</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="side">
+      <div class="brand"><div class="logo">E</div><div><div class="name">EduDesk</div><div class="sub">Correspondence Manager</div></div></div>
+      <nav class="nav" id="nav"></nav>
+      <div class="foot" id="side-foot"></div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div><div class="title" id="page-title">Dashboard</div><div class="crumb" id="page-crumb"></div></div>
+        <div class="spacer"></div>
+        <div class="searchbox" title="Search letters, numbers, recipients (Ctrl+K)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="global-search" placeholder="Search outward no., subject, recipient…" autocomplete="off">
+          <span class="kbd">Ctrl K</span>
+        </div>
+        <button class="btn primary" id="btn-new-letter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>New Letter</button>
+      </header>
+      <section class="content" id="view"></section>
+    </main>
+  </div>
+  <div class="toasts" id="toasts"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
