@@ -14,3 +14,4 @@ edudesk/dist/
 edudesk/private/
 edudesk/.test-data/
 edudesk/test/e2e/output/
+edudesk/*.zip
