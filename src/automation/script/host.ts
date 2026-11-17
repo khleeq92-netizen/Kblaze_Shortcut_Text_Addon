@@ -31,6 +31,29 @@ export interface ScriptResult {
 
 class Halt extends Error {}
 
+/** Only standard ECMAScript built-ins survive in the sandbox global. sval copies every
+ *  enumerable property of the real global object (and keeps a hidden reference to it);
+ *  without this, scripts could reach window.chrome, storage, fetch, etc. */
+const SAFE_GLOBALS = new Set([
+  'Object', 'Function', 'Array', 'Number', 'parseFloat', 'parseInt', 'Infinity', 'NaN', 'undefined', 'Boolean', 'String', 'Symbol', 'Date', 'Promise', 'RegExp',
+  'Error', 'AggregateError', 'EvalError', 'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError', 'JSON', 'Math', 'Intl', 'ArrayBuffer',
+  'Uint8Array', 'Int8Array', 'Uint16Array', 'Int16Array', 'Uint32Array', 'Int32Array', 'Float32Array', 'Float64Array', 'Uint8ClampedArray', 'BigInt64Array', 'BigUint64Array', 'DataView',
+  'Map', 'BigInt', 'Set', 'WeakMap', 'WeakSet', 'WeakRef', 'Reflect', 'decodeURI', 'decodeURIComponent', 'encodeURI', 'encodeURIComponent', 'isFinite', 'isNaN', 'globalThis', 'window', 'self',
+]);
+function sanitizeGlobal(interp: any) {
+  interp.run('exports.__kfGlobal = globalThis;');
+  const g = interp.exports.__kfGlobal;
+  delete interp.exports.__kfGlobal;
+  const real = globalThis as any;
+  for (const k of Reflect.ownKeys(g)) {
+    try {
+      const v = g[k as any];
+      if (typeof k !== 'string' || !SAFE_GLOBALS.has(k) || (v === real && k !== 'globalThis')) delete g[k as any];
+    } catch { try { delete g[k as any]; } catch { /* non-configurable */ } }
+  }
+  for (const k of ['globalThis', 'window', 'self']) if (g[k] === real) delete g[k];
+}
+
 function safeJson(v: any, depth = 0): any {
   if (v === null || v === undefined) return v ?? null;
   if (typeof v === 'string') return v.length > 20000 ? v.slice(0, 20000) + '…' : v;
@@ -70,7 +93,12 @@ export async function runScriptPayload(p: ScriptPayload, doc: Document): Promise
     if (!e) throw new Error(`Element not found: ${typeof t === 'string' ? t : (t as ElementTarget).value}`);
     return e;
   };
-  const sleep = (ms: number) => new Promise<void>((r) => { check(); setTimeout(r, Math.max(0, Math.min(Number(ms) || 0, deadline - Date.now(), 60_000))); });
+  const sleep = async (ms: number) => {
+    check();
+    const want = Math.max(0, Math.min(Number(ms) || 0, 60_000));
+    await new Promise<void>((r) => setTimeout(r, Math.min(want, Math.max(0, deadline - Date.now()) + 5)));
+    check();
+  };
 
   const kf = Object.freeze({
     vars,
@@ -124,6 +152,7 @@ export async function runScriptPayload(p: ScriptPayload, doc: Document): Promise
   });
 
   const interp = new Sval({ ecmaVer: 'latest' as any, sandBox: true });
+  sanitizeGlobal(interp);
   interp.import({
     kf,
     console: Object.freeze({ log: log('log'), info: log('info'), warn: log('warn'), error: log('error'), debug: log('log') }),

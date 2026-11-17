@@ -65,8 +65,14 @@ describe('sandboxed script host', () => {
   });
   it('has no access to extension or host globals', async () => {
     (globalThis as any).chrome = { runtime: { id: 'secret-extension' } };
-    const r = await run('return [typeof chrome, typeof window, typeof globalThis.chrome, typeof fetch, typeof localStorage];');
-    expect(r.result).toEqual(['undefined', 'undefined', 'undefined', 'undefined', 'undefined']);
+    (globalThis as any).secretGlobal = 'leak';
+    const r = await run(`const g = globalThis;
+      const keys = Reflect.ownKeys(g).map(String);
+      const leaks = keys.filter((k) => { try { const v = g[k]; return v && typeof v === 'object' && (v.chrome || v.secretGlobal || v.indexedDB); } catch { return false; } });
+      return [typeof chrome, typeof g.chrome, typeof fetch, typeof localStorage, typeof indexedDB, typeof secretGlobal, typeof XMLHttpRequest, leaks.length, keys.includes('Math')];`);
+    expect(r.error).toBeUndefined();
+    expect(r.result).toEqual(['undefined', 'undefined', 'undefined', 'undefined', 'undefined', 'undefined', 'undefined', 0, true]);
+    delete (globalThis as any).secretGlobal;
     delete (globalThis as any).chrome;
   });
   it('kf.click refuses submit-type buttons; library functions are available', async () => {

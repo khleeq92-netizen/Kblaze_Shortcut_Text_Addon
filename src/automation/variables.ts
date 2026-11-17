@@ -120,11 +120,14 @@ export function resolveVariables(all: Variable[], ctx: VarContext): ResolvedVars
   if (record) { values.row = { ...record } as any; values.record = values.row; }
   if (ctx.vault) values.vault = { ...ctx.vault };
   const vars = visibleVariables(all, ctx.workspaceId, ctx.scopeRef);
+  const columnKeys = new Set((ctx.datasets || []).flatMap((t) => t.columns.map((c) => c.key)));
   const { order, cycles } = orderVariables(vars);
   const scope: EvalScope = {
     lookup: (name) => {
       if (Object.prototype.hasOwnProperty.call(values, name)) return { found: true, value: values[name] };
       if (name === 'page' && ctx.page) return { found: true, value: ctx.page as any };
+      // a dataset column referenced while no record is selected resolves to empty
+      if (columnKeys.has(name)) return { found: true, value: '' };
       return { found: false, value: null };
     },
     fo: ctx.fo,

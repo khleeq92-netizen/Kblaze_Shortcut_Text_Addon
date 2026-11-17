@@ -202,6 +202,7 @@ export function checkQuality(t: DataTable, opts: { keyColumn?: string; required?
       else if (c.type === 'number' && typeof r.values[c.key] !== 'number' && !RE.number.test(v)) problem = 'not a number';
       else if (c.type === 'url' && !RE.url.test(v)) problem = 'not a URL';
       else if (/aadh?a?a?r/i.test(c.name) && !looksLikeAadhaar(v)) problem = 'Aadhaar must have 12 digits';
+      else if (/e-?mail/i.test(c.name) && !RE.email.test(v)) problem = 'not an email address';
       else if (/(mobile|phone|whatsapp)/i.test(c.name) && v.replace(/\D/g, '').length !== 10 && v.replace(/\D/g, '').length !== 12) problem = 'mobile number should have 10 digits';
       if (problem) rep.invalid.push({ rowId: r.id, rowIndex: i, column: c.key, value: v, problem });
     }

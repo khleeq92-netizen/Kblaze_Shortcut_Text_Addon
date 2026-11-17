@@ -75,6 +75,7 @@ export function buildManifest({ target = 'chrome', version, key }) {
     manifest.background = { service_worker: 'background.js', type: 'module' };
     manifest.minimum_chrome_version = '114';
     manifest.side_panel = { default_path: 'sidepanel/index.html' };
+    manifest.sandbox = { pages: ['sandbox.html'] };
     if (key) manifest.key = key;
   }
   return manifest;

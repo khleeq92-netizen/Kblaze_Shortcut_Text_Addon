@@ -5,9 +5,25 @@ import { uid } from '../../../shared/ids';
 import type { ScriptRecord } from '../../../shared/types';
 import { PageHead, SitesEditor, TabPicker, TagsInput, jsonDownload, send, SearchBox } from './kit';
 import { instrument, hasErrors } from '../../../automation/script/instrument';
-import { runScriptPayload } from '../../../automation/script/host';
+import { api } from '../../../shared/browser';
 import { resolveVariables, formatOptionsFrom } from '../../../automation/variables';
 import { FileCode2, Plus, Trash2, Copy, Download, Save, Play, FlaskConical, BookOpen, ShieldAlert } from 'lucide-react';
+
+/** Executes a script payload in the manifest sandbox page and resolves with its result. */
+export function sandboxRun(payload: any, html: string): Promise<any> {
+  return new Promise((resolve) => {
+    const frame = document.createElement('iframe');
+    frame.style.display = 'none';
+    frame.src = api.runtime.getURL('sandbox.html');
+    const id = Math.random().toString(36).slice(2);
+    const done = (r: any) => { window.removeEventListener('message', onMsg); clearTimeout(to); frame.remove(); resolve(r); };
+    const onMsg = (e: MessageEvent) => { if (e.source === frame.contentWindow && e.data?.channel === 'kf-sandbox-result' && e.data.id === id) done(e.data.result); };
+    const to = setTimeout(() => done({ ok: false, error: { message: 'Sandbox did not respond' }, logs: [] }), (payload.timeoutMs || 15000) + 3000);
+    window.addEventListener('message', onMsg);
+    frame.onload = () => frame.contentWindow?.postMessage({ channel: 'kf-sandbox', id, payload, html }, '*');
+    document.body.appendChild(frame);
+  });
+}
 
 export function newScript(workspaceId: string): ScriptRecord {
   const t = Date.now();
@@ -103,11 +119,10 @@ function ScriptEditor({ script }: { script: ScriptRecord }) {
     if (hasErrors(analysis.problems)) return;
     setBusy(true);
     try {
-      // detached sandbox document — no access to the extension page or any website
-      const doc = new DOMParser().parseFromString(`<!doctype html><html><body>${fixture}</body></html>`, 'text/html');
+      // runs in the extension's sandboxed page: opaque origin, no extension APIs
       const libs = s.scripts.filter((x) => x.library && x.id !== d.id).map((l) => ({ name: l.name, code: instrument(l.code).code })).filter((l) => l.code);
-      const r = await runScriptPayload({ code: analysis.code, libraries: libs, vars: vars(), timeoutMs: Math.min(d.timeoutMs, 15000), maxLoopIterations: d.maxLoopIterations }, doc);
-      setOut({ ...r, where: 'sandbox', html: doc.body.innerHTML.slice(0, 4000) });
+      const r = await sandboxRun({ code: analysis.code, libraries: libs, vars: vars(), timeoutMs: Math.min(d.timeoutMs, 15000), maxLoopIterations: d.maxLoopIterations }, fixture);
+      setOut({ ...r, where: 'sandbox' });
     } finally { setBusy(false); }
   };
   const runOnTab = async () => {

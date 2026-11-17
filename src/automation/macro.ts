@@ -135,7 +135,7 @@ function pressKey(el: Element, key: string) {
 function realClick(el: Element) {
   const W = (el.ownerDocument.defaultView || window) as any;
   const r = (el as HTMLElement).getBoundingClientRect();
-  const init = { bubbles: true, cancelable: true, composed: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, button: 0, view: W };
+  const init = { bubbles: true, cancelable: true, composed: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, button: 0 };
   if (W.PointerEvent) el.dispatchEvent(new W.PointerEvent('pointerdown', init));
   el.dispatchEvent(new W.MouseEvent('mousedown', init));
   if (W.PointerEvent) el.dispatchEvent(new W.PointerEvent('pointerup', init));

@@ -66,12 +66,12 @@ describe('variables', () => {
   });
   it('workspace preset variables resolve: academic year, risk & lot size', () => {
     const col = collegePreset();
-    const c = resolveVariables(col.variables, { fo, now, workspaceId: 'ws_college' });
+    const c = resolveVariables(col.variables, { fo, now, workspaceId: 'ws_college', datasets: col.tables });
     expect(c.errors).toEqual({});
     expect(c.values.academic_year).toBe('2025-26');
     expect(resolveVariables(col.variables, { fo, now: new Date(2026, 2, 1), workspaceId: 'ws_college' }).values.academic_year).toBe('2025-26');
     expect(c.values.college_name).toBe('Dr M.A. Aziz Jr College of Science, Phulambri');
-    const g = resolveVariables(col.variables, { fo, now, workspaceId: 'ws_college', record: { gender: 'Female', student_name: 'asha' } });
+    const g = resolveVariables(col.variables, { fo, now, workspaceId: 'ws_college', datasets: col.tables, record: { gender: 'Female', student_name: 'asha' } });
     expect(g.values.gender_code).toBe('F');
     expect(g.values.full_name_caps).toBe('ASHA');
     const tr = tradingPreset();

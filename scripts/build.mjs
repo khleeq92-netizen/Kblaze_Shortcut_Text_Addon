@@ -72,6 +72,8 @@ for (const [name, entry, format] of [
   ['content', 'src/content/index.ts', 'iife'],
   // injected into the page MAIN world only when the user runs a script (sval interpreter, no eval)
   ['script-host', 'src/script-host/index.ts', 'iife'],
+  // sandboxed page used by the dashboard for script dry runs (no extension privileges)
+  ['sandbox', 'src/sandbox/index.ts', 'iife'],
   ['background', 'src/background/index.ts', 'es'],
 ]) {
   await build({

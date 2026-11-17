@@ -3,20 +3,20 @@ import { playMacro, newRunState, validateMacro, describeStep, type MacroDeps } f
 import type { Macro, MacroStep } from '@/shared/types';
 import { html } from './helpers';
 
-const settings = { stepDelayMs: 0, retries: 0, retryDelayMs: 10, timeoutMs: 400, onError: 'stop' as const, speed: 1 };
+const settings: Macro['settings'] = { stepDelayMs: 0, retries: 0, retryDelayMs: 10, timeoutMs: 400, onError: 'stop', speed: 1 };
 const M = (steps: Partial<MacroStep>[], s: Partial<typeof settings> = {}): Pick<Macro, 'id' | 'name' | 'steps' | 'settings'> => ({ id: 'm', name: 'Test macro', steps: steps.map((x, i) => ({ id: 's' + i, type: 'delay', ...x }) as MacroStep), settings: { ...settings, ...s } });
 function deps(p: Partial<MacroDeps> = {}): MacroDeps & { calls: string[] } {
   const calls: string[] = [];
   return {
     calls, doc: document,
-    renderText: async (t, vars) => t.replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] ?? ({ name: 'Asha' } as any)[k] ?? ''),
-    evalFormula: async (src) => src === 'true',
-    runAutofill: async (id) => { calls.push('autofill:' + id); return true; },
-    runScript: async (id) => { calls.push('script:' + id); return { ok: true, vars: { fromScript: 'yes' } }; },
+    renderText: async (t: string, vars: Record<string, string>) => t.replace(/\{\{(\w+)\}\}/g, (_: string, k: string) => vars[k] ?? ({ name: 'Asha' } as any)[k] ?? ''),
+    evalFormula: async (src: string) => src === 'true',
+    runAutofill: async (id: string) => { calls.push('autofill:' + id); return true; },
+    runScript: async (id: string) => { calls.push('script:' + id); return { ok: true, vars: { fromScript: 'yes' } }; },
     insertSnippet: async () => true,
     nextRecord: async () => { calls.push('next'); return calls.filter((c) => c === 'next').length < 3; },
     confirm: async () => true,
-    navigate: (u) => calls.push('nav:' + u),
+    navigate: (u: string) => calls.push('nav:' + u),
     checkpoint: async () => { calls.push('cp'); },
     isStopped: () => false,
     waitWhilePaused: async () => {},

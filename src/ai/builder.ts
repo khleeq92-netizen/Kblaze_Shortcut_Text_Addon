@@ -181,7 +181,7 @@ type Fetch = typeof fetch;
 async function callAnthropic(apiKey: string, model: string, p: { system: string; user: string }, f?: Fetch): Promise<string> {
   const { default: Anthropic } = await import('@anthropic-ai/sdk');
   // The key is the user's own (stored encrypted on this device) and requests go straight to Anthropic.
-  const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true, ...(f ? { fetch: f as any } : {}) });
+  const client = new Anthropic({ apiKey, authToken: null, dangerouslyAllowBrowser: true, ...(f ? { fetch: f as any } : {}) });
   const res: any = await client.beta.messages.create({
     model: model || DEFAULT_MODELS.anthropic,
     max_tokens: 16000,
