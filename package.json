@@ -14,7 +14,9 @@
     "test:e2e": "node scripts/build.mjs && node tests/e2e/run-e2e.mjs",
     "generate-key": "node scripts/generate-key.mjs",
     "samples": "node scripts/export-samples.mjs",
-    "icons": "node scripts/make-icons.mjs"
+    "icons": "node scripts/make-icons.mjs",
+    "test:rules": "npx -y firebase-tools@13.29.1 emulators:exec --only firestore --project k-flow-rules-test --config firebase/firebase.json \"node --test tests/rules/rules.test.mjs\"",
+    "test:cloud": "npx -y firebase-tools@13.29.1 emulators:exec --only firestore --project k-flow-cloud-test --config firebase/firebase.json \"npx vitest run -c vitest.cloud.config.ts\""
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.9.0",
@@ -27,6 +29,7 @@
     "sval": "^0.6.12"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
     "@lexical/plain-text": "^0.21.0",
     "@lexical/rich-text": "^0.21.0",
     "@types/chrome": "^0.0.287",

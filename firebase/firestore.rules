@@ -86,8 +86,8 @@ service cloud.firestore {
           && small() && hasUpdatedAt() && (can(orgId, 'create') || can(orgId, 'share'));
         allow update: if coll in ['workspaces', 'folders', 'snippets', 'templates', 'autofill', 'macros', 'scripts', 'variables', 'tables']
           && small() && hasUpdatedAt()
-          && ((request.resource.data.deleted == true && resource.data.deleted != true) ? can(orgId, 'delete') : can(orgId, 'edit'));
-        allow delete: if can(orgId, 'delete');
+          && ((request.resource.data.get('deleted', false) == true && resource.data.get('deleted', false) != true) ? can(orgId, 'delete') : can(orgId, 'edit'));
+        allow delete: if coll in ['workspaces', 'folders', 'snippets', 'templates', 'autofill', 'macros', 'scripts', 'variables', 'tables'] && can(orgId, 'delete');
       }
       match /versions/{id} {
         allow read: if isMember(orgId);
