@@ -285,6 +285,7 @@ function TableEditor({ table }: { table: DataTable }) {
             ))}
           </tbody>
         </table>
+        {!draft.rows.length && <div className="kf-empty-ds"><b>No records yet.</b> Import your register from Excel, CSV, JSON or Google Sheets — columns are matched by name. <button className="btn primary sm" onClick={() => setImp(true)}><Upload size={13} /> Import records</button></div>}
         {rows.length > 1000 && <div className="muted" style={{ padding: 10 }}>Showing 1,000 of {rows.length} records — use search to find others.</div>}
       </div>
       <button className="btn sm" style={{ marginTop: 10 }} onClick={() => setDraft({ ...draft, rows: [...draft.rows, { id: uid('row'), values: {} }] })}><Plus size={13} /> Add record</button>

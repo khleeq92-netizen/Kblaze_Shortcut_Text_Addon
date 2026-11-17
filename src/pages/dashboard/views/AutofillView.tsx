@@ -96,7 +96,8 @@ function ProfileEditor({ profile }: { profile: AutofillProfile }) {
   // live value preview with the selected/active record
   const preview = useMemo(() => {
     const row = ds ? (recordId ? ds.rows.find((r) => r.id === recordId) : activeRecord(ds)) : null;
-    const record = ds && row ? rowToRecord(ds, row) : null;
+    // with no records yet, columns preview as empty values instead of "unknown variable"
+    const record = ds ? (row ? rowToRecord(ds, row) : Object.fromEntries(ds.columns.map((c) => [c.key, '']))) : null;
     const fo = formatOptionsFrom(s.settings);
     const vars = resolveVariables(s.variables, { record, datasets: s.tables, fo, workspaceId: d.workspaceId, scopeRef: d.id, vault: null });
     const plan = planAutofill(d, { values: vars.values, fo, url: tabUrl || 'https://example.com/', ctx: { profile: { ...s.settings.profile } as any } });
@@ -128,7 +129,7 @@ function ProfileEditor({ profile }: { profile: AutofillProfile }) {
         <button className="btn danger" disabled={!s.allowed('autofill', profile, 'delete')} onClick={() => setDel(true)}><Trash2 size={15} /></button>
         <button className="btn primary" disabled={!dirty || !canEdit} onClick={save}><Save size={15} /> Save</button>
       </div>
-      {d.starter && <div className="kf-note warn"><AlertTriangle size={16} /> Starter profile: rules find fields by their on-screen label. Open the portal, run <b>Preview</b>, then fix any red field with the field selector (<span className="kbd">Alt+Shift+M</span>) or by editing its selector. Untick “starter” once verified. <label className="check" style={{ marginLeft: 'auto' }}><input type="checkbox" checked={!d.starter} onChange={(e) => upd({ starter: !e.target.checked })} /> Verified</label></div>}
+      {d.starter && <div className="kf-note warn"><AlertTriangle size={16} style={{ flex: 'none' }} /><span className="grow">Starter profile: rules find fields by their on-screen label. Open the portal, run <b>Preview</b>, then fix any red field with the field selector (<span className="kbd">Alt+Shift+M</span>) or by editing its selector. Tick “Verified” once it works.</span> <label className="check" style={{ marginLeft: 'auto' }}><input type="checkbox" checked={!d.starter} onChange={(e) => upd({ starter: !e.target.checked })} /> Verified</label></div>}
       <div className="kf-cols">
         <div>
           <section className="card section">

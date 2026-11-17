@@ -2,13 +2,13 @@
   "name": "k-flow-automation",
   "version": "2.0.0",
   "private": true,
-  "description": "K-Flow Automation - smart text expansion, dynamic templates and browser workflow automation (Manifest V3).",
+  "description": "K-Flow Automation - browser automation platform: form autofill, visual field mapping, macros, sandboxed JavaScript, variables, spreadsheets, text expansion, cloud sync and enterprise administration (Manifest V3).",
   "type": "module",
   "scripts": {
     "dev": "node scripts/build.mjs --watch",
     "build": "node scripts/build.mjs",
     "build:firefox": "node scripts/build.mjs --target=firefox",
-    "package": "node scripts/build.mjs && node scripts/package.mjs && node scripts/package.mjs --unpacked",
+    "package": "node scripts/build.mjs && node scripts/package.mjs && node scripts/package.mjs --unpacked && npm run package:source",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "test:e2e": "node scripts/build.mjs && node tests/e2e/run-e2e.mjs",
@@ -16,7 +16,9 @@
     "samples": "node scripts/export-samples.mjs",
     "icons": "node scripts/make-icons.mjs",
     "test:rules": "npx -y firebase-tools@13.29.1 emulators:exec --only firestore --project k-flow-rules-test --config firebase/firebase.json \"node --test tests/rules/rules.test.mjs\"",
-    "test:cloud": "npx -y firebase-tools@13.29.1 emulators:exec --only firestore --project k-flow-cloud-test --config firebase/firebase.json \"npx vitest run -c vitest.cloud.config.ts\""
+    "test:cloud": "npx -y firebase-tools@13.29.1 emulators:exec --only firestore --project k-flow-cloud-test --config firebase/firebase.json \"npx vitest run -c vitest.cloud.config.ts\"",
+    "package:source": "git archive --format=zip --prefix=k-flow-automation/ -o release/k-flow-automation-source-$npm_package_version.zip HEAD",
+    "test:all": "npm run typecheck && npm test && npm run test:rules && npm run test:cloud && npm run test:e2e"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.9.0",
