@@ -37,7 +37,7 @@ export function FolderDialog({ folder, parentId = null, onClose }: { folder?: Fo
       </div>
       <div className="field">
         <label className="label">Colour</label>
-        <div className="row">{COLORS.map((c) => <button key={c} type="button" onClick={() => setColor(c)} style={{ width: 24, height: 24, borderRadius: 6, background: c, border: c === color ? '3px solid var(--qth-text)' : '0', cursor: 'pointer' }} aria-label={c} />)}</div>
+        <div className="row">{COLORS.map((c) => <button key={c} type="button" onClick={() => setColor(c)} style={{ width: 24, height: 24, borderRadius: 6, background: c, border: c === color ? '3px solid var(--kf-text)' : '0', cursor: 'pointer' }} aria-label={c} />)}</div>
       </div>
     </Modal>
   );

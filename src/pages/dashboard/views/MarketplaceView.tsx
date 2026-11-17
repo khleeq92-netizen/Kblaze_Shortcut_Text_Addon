@@ -90,7 +90,7 @@ export function MarketplaceView() {
         </>
       )}
       {tab !== 'collections' && !configured && <Empty icon={<Store size={32} />} title="Community marketplace needs cloud features">The marketplace is optional. Configure Firebase in <a href="#/settings?tab=cloud">Settings → Cloud & Account</a> to browse and publish community templates. The ready-made collections work without it.</Empty>}
-      {tab !== 'collections' && configured && err && <div className="locked" style={{ color: 'var(--qth-danger)' }}>{err}</div>}
+      {tab !== 'collections' && configured && err && <div className="locked" style={{ color: 'var(--kf-danger)' }}>{err}</div>}
       {tab === 'browse' && configured && (
         <>
           <div className="row" style={{ marginBottom: 10 }}><div className="search" style={{ maxWidth: 320 }}><Search size={15} /><input className="input" placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} /></div></div>

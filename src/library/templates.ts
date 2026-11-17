@@ -1,4 +1,4 @@
-// Built-in template library. Every template uses the QuickText command syntax
+// Built-in template library. Every template uses the K-Flow command syntax
 // (see docs/TEMPLATE_SYNTAX.md) and is covered by tests/unit/library.test.ts.
 import type { ContentType } from '../shared/types';
 import { LIBRARY_PRO } from './templates-pro';

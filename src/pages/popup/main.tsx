@@ -14,19 +14,19 @@ import type { Snippet, DataTable, Settings, Workflow, SyncState } from '../../sh
 import { Copy, ExternalLink, Play, Search, Crosshair, Power, Check, Cloud, PanelRight } from 'lucide-react';
 
 const css = `
-body{width:380px;min-height:420px;background:var(--qth-bg)}
-.top{display:flex;align-items:center;gap:8px;padding:12px;background:linear-gradient(135deg,#4f46e5,#0ea5e9);color:#fff}
+body{width:380px;min-height:420px;background:var(--kf-bg)}
+.top{display:flex;align-items:center;gap:8px;padding:12px;background:var(--kf-brand-grad);color:#fff}
 .top b{flex:1;font-size:15px}
 .top .btn{background:rgba(255,255,255,.18);border-color:transparent;color:#fff}
 .sec{padding:10px 12px}
 .list{list-style:none;margin:0;padding:0;max-height:250px;overflow:auto}
 .list li{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px}
-.list li:hover{background:var(--qth-surface-2)}
+.list li:hover{background:var(--kf-surface-2)}
 .list .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:550}
 .tabs{display:flex;gap:4px;margin-bottom:8px}
-.tabs button{all:unset;cursor:pointer;padding:4px 10px;border-radius:7px;font-weight:600;font-size:12.5px;color:var(--qth-muted)}
-.tabs button.on{background:var(--qth-primary-soft);color:var(--qth-primary)}
-.foot{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-top:1px solid var(--qth-border);font-size:12px}
+.tabs button{all:unset;cursor:pointer;padding:4px 10px;border-radius:7px;font-weight:600;font-size:12.5px;color:var(--kf-muted)}
+.tabs button.on{background:var(--kf-primary-soft);color:var(--kf-primary)}
+.foot{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-top:1px solid var(--kf-border);font-size:12px}
 `;
 
 function App() {
@@ -37,7 +37,8 @@ function App() {
   const [host, setHost] = useState('');
   const [tabId, setTabId] = useState<number | null>(null);
   const [q, setQ] = useState('');
-  const [tab, setTab] = useState<'snippets' | 'autopilot'>('snippets');
+  const [tab, setTab] = useState<'snippets' | 'automate'>('automate');
+  const [page, setPage] = useState<any>(null);
   const [msg, setMsg] = useState('');
   const [sync, setSync] = useState<SyncState | null>(null);
   const [cloud, setCloud] = useState(false);
@@ -56,6 +57,7 @@ function App() {
       if (t?.id !== undefined) setTabId(t.id);
       // Host is only known if the content script answers (no "tabs" permission needed).
       if (t?.id !== undefined) api.tabs.sendMessage(t.id, { type: MSG.ping }, { frameId: 0 }).then((r: any) => setHost(r?.host || ''), () => setHost(''));
+      api.runtime.sendMessage({ type: 'kf/automation/forPage' }).then((r: any) => setPage(r && !r.kind ? r : null), () => setPage(null));
     })();
   }, []);
 
@@ -72,7 +74,7 @@ function App() {
       const r: any = await api.tabs.sendMessage(tabId, { type: MSG.insertSnippet, snippetId: s.id }, { frameId: 0 });
       if (r?.ok) window.close();
       else flash(r?.error === 'no-field' ? 'Click into a text field on the page first' : 'Could not insert here');
-    } catch { flash('QuickText cannot run on this page'); }
+    } catch { flash('K-Flow cannot run on this page'); }
   };
   const copy = async (s: Snippet) => {
     if (!settings) return;
@@ -85,13 +87,9 @@ function App() {
       flash('Copied to clipboard');
     } catch { flash('Clipboard blocked'); }
   };
-  const run = async (w: Workflow) => {
-    if (tabId === null) return;
-    try { await api.tabs.sendMessage(tabId, { type: MSG.runWorkflow, id: w.id }, { frameId: 0 }); window.close(); } catch { flash('Autopilot cannot run on this page'); }
-  };
-  const pick = async () => {
-    if (tabId === null) return;
-    try { await api.tabs.sendMessage(tabId, { type: MSG.startPicker }, { frameId: 0 }); window.close(); } catch { flash('Cannot pick elements on this page'); }
+  const act = async (msg: any, close = true) => {
+    try { const r: any = await api.runtime.sendMessage(msg); if (r?.kind === 'error') throw new Error(r.message); if (close) window.close(); return r; }
+    catch (e: any) { flash(/Receiving end/.test(e?.message) ? 'Reload the page once so K-Flow can work on it' : e?.message || 'Not available on this page'); }
   };
   const blocked = settings && host ? isSiteBlocked(settings, host) : false;
   const toggleSite = async () => {
@@ -106,21 +104,21 @@ function App() {
     <>
       <style>{css}</style>
       <div className="top">
-        <b>⚡ QuickText Hub</b>
+        <b>K-Flow Automation</b>
         <button className="btn sm" title={settings?.expansionEnabled ? 'Pause all expansion' : 'Resume expansion'} onClick={toggleAll}><Power size={14} /> {settings?.expansionEnabled ? 'On' : 'Off'}</button>
         {(api as any).sidePanel?.open && <button className="btn sm" title="Open side panel (Alt+Shift+S)" onClick={async () => { const w = await api.windows.getCurrent(); await (api as any).sidePanel.open({ windowId: w.id }); window.close(); }}><PanelRight size={14} /></button>}
         <button className="btn sm" onClick={() => dash()} title="Open dashboard"><ExternalLink size={14} /></button>
       </div>
       {host && (
-        <div className="sec row" style={{ justifyContent: 'space-between', borderBottom: '1px solid var(--qth-border)' }}>
+        <div className="sec row" style={{ justifyContent: 'space-between', borderBottom: '1px solid var(--kf-border)' }}>
           <span className="muted" style={{ fontSize: 12.5 }}>{blocked ? 'Expansion disabled on' : 'Active on'} <b>{host}</b></span>
           <button className="btn sm" onClick={toggleSite}>{blocked ? 'Enable here' : 'Disable here'}</button>
         </div>
       )}
       <div className="sec">
         <div className="tabs">
+          <button className={tab === 'automate' ? 'on' : ''} onClick={() => setTab('automate')}>This page</button>
           <button className={tab === 'snippets' ? 'on' : ''} onClick={() => setTab('snippets')}>Snippets</button>
-          <button className={tab === 'autopilot' ? 'on' : ''} onClick={() => setTab('autopilot')}>Autopilot</button>
         </div>
         {tab === 'snippets' ? (
           <>
@@ -142,20 +140,21 @@ function App() {
           </>
         ) : (
           <>
-            <ul className="list">
-              {workflows.map((w) => (
-                <li key={w.id}>
-                  <span className="nm">{w.name}</span>
-                  <span className="badge">{w.steps.length} steps</span>
-                  <button className="btn sm primary" onClick={() => run(w)}><Play size={13} /> Run</button>
-                </li>
-              ))}
-              {!workflows.length && <li className="muted">No workflows yet</li>}
-            </ul>
-            <div className="row" style={{ marginTop: 8 }}>
-              <button className="btn sm" onClick={pick}><Crosshair size={14} /> Pick element on page</button>
-              <button className="btn sm" onClick={() => dash('/autopilot')}>Manage workflows</button>
-            </div>
+            {!page ? <div className="muted" style={{ padding: 8 }}>Open a website to automate it.</div> : !page.allowed ? <div className="badge warn">{page.reason}</div> : (
+              <>
+                <div className="row" style={{ gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
+                  <button className="btn sm primary" onClick={() => act({ type: 'kf/autofill/run', profileId: page.profiles.find((p: any) => p.matches)?.id })} disabled={!page.profiles.some((p: any) => p.matches)}><Play size={13} /> Autofill page</button>
+                  <button className="btn sm" onClick={() => act({ type: 'kf/mapper/start' })}><Crosshair size={14} /> Map fields</button>
+                  {page.recording ? <button className="btn sm danger" onClick={() => act({ type: 'kf/rec/stop', save: true })}>■ Stop recording</button> : <button className="btn sm" onClick={() => act({ type: 'kf/rec/start' })}>● Record</button>}
+                </div>
+                <ul className="list">
+                  {page.profiles.filter((p: any) => p.matches).map((p: any) => <li key={p.id}><span className="nm">📝 {p.name}</span><button className="btn ghost sm" onClick={() => act({ type: 'kf/autofill/run', profileId: p.id, preview: true })}>Preview</button><button className="btn sm primary" onClick={() => act({ type: 'kf/autofill/run', profileId: p.id })}>Fill</button></li>)}
+                  {page.macros.filter((m: any) => m.matches || m.anySite).slice(0, 8).map((m: any) => <li key={m.id}><span className="nm">🎬 {m.name}</span><button className="btn sm" onClick={() => act({ type: 'kf/macro/start', macroId: m.id })}><Play size={12} /> Run</button></li>)}
+                  {!page.profiles.some((p: any) => p.matches) && !page.macros.length && <li className="muted">No automations for {page.host} yet — use Map fields or Record.</li>}
+                </ul>
+                {page.official && <div className="hint">Official portal: K-Flow will ask before every action button.</div>}
+              </>
+            )}
           </>
         )}
         {msg && <div className="badge primary" style={{ marginTop: 8 }}>{msg}</div>}

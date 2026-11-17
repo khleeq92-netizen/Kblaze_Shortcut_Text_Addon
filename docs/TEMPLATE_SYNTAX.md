@@ -1,4 +1,4 @@
-# QuickText Hub template syntax
+# K-Flow Automation template syntax
 
 Snippets are plain text (or rich HTML) with **commands** inside `{{ … }}`.
 You never have to type these by hand — the editor's **Insert field / command** button

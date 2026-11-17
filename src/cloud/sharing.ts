@@ -9,7 +9,7 @@ import { api } from '../shared/browser';
 
 import { CODE_PREFIX, decodeShareCode, bundleOf, makeShareCode } from '../shared/shareCode';
 export { bundleOf, makeShareCode };
-const SHARE_PREFIX = 'QTHS-';
+const SHARE_PREFIX = 'KFS-';
 
 export function shareLink(shareId: string) {
   return api.runtime.getURL(`dashboard/index.html#/import?share=${shareId}`);
@@ -42,19 +42,19 @@ export async function deleteShare(id: string) {
   if (fb) await deleteDoc(doc(fb.db, 'shares', id));
 }
 
-/** Accepts an offline code, a QTHS-<id> code, or a dashboard import link. Returns a validated bundle. */
+/** Accepts an offline code, a KFS-<id> code, or a dashboard import link. Returns a validated bundle. */
 export async function resolveShare(input: string): Promise<{ bundle: ExportBundle; title: string; from: string }> {
   const s = input.trim();
   if (s.startsWith(CODE_PREFIX)) {
     const bundle = await decodeShareCode(s);
     return { bundle, title: `${bundle.snippets.length} shared snippet(s)`, from: 'share code' };
   }
-  const m = /(?:QTHS-|[?&]share=)([A-Za-z0-9]{10,40})/.exec(s);
-  if (!m) throw new Error('This is not a QuickText share link or code.');
+  const m = /(?:KFS-|[?&]share=)([A-Za-z0-9]{10,40})/.exec(s);
+  if (!m) throw new Error('This is not a K-Flow share link or code.');
   const fb = await getFirebase();
   if (!fb) throw new Error('Cloud share links need cloud features configured (Settings → Cloud & Account).');
   const snap = await getDoc(doc(fb.db, 'shares', m[1])).catch((e) => { throw new Error(e?.code === 'permission-denied' ? 'You do not have access to this share (it may be restricted — sign in with an invited email).' : e.message); });
   if (!snap.exists()) throw new Error('Share not found or deleted.');
   const d = snap.data() as any;
-  return { bundle: parseImport(d.payload), title: d.title, from: d.ownerName || 'a QuickText user' };
+  return { bundle: parseImport(d.payload), title: d.title, from: d.ownerName || 'a K-Flow user' };
 }

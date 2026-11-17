@@ -4,7 +4,11 @@ import { DB_NAME, DB_VERSION, STORAGE_KEYS } from './constants';
 import type { CollectionName, UsageRecord } from './types';
 import { api } from './browser';
 
-export const STORES: (CollectionName | 'usage' | 'meta')[] = ['snippets', 'folders', 'tables', 'workflows', 'templates', 'usage', 'meta'];
+export const STORES: (CollectionName | 'usage' | 'meta' | 'executions' | 'audit' | 'versions' | 'keys')[] = [
+  'snippets', 'folders', 'tables', 'workflows', 'templates', 'usage', 'meta',
+  'workspaces', 'autofill', 'macros', 'scripts', 'variables', 'vault', 'executions', 'audit', 'versions', 'keys',
+];
+const LOG_STORES = new Set(['executions', 'audit', 'versions']);
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 let idbFactory: IDBFactory | null = null;
@@ -23,7 +27,12 @@ export function openDB(): Promise<IDBDatabase> {
       for (const s of STORES) {
         if (db.objectStoreNames.contains(s)) continue;
         if (s === 'usage') db.createObjectStore(s, { keyPath: 'snippetId' });
-        else if (s === 'meta') db.createObjectStore(s);
+        else if (s === 'meta' || s === 'keys') db.createObjectStore(s);
+        else if (LOG_STORES.has(s)) {
+          const store = db.createObjectStore(s, { keyPath: 'id' });
+          store.createIndex(s === 'executions' ? 'startedAt' : 'at', s === 'executions' ? 'startedAt' : 'at');
+          if (s === 'versions') store.createIndex('recordId', 'recordId');
+        }
         else {
           const store = db.createObjectStore(s, { keyPath: 'id' });
           store.createIndex('updatedAt', 'updatedAt');
@@ -105,12 +114,37 @@ export async function listRecords<T extends { deleted?: boolean }>(store: Collec
   return includeDeleted ? all : all.filter((r) => !r.deleted);
 }
 
-export async function saveRecords<T extends { id: string; updatedAt: number; createdAt: number }>(store: CollectionName, records: T[], opts: { touch?: boolean; origin?: 'local' | 'sync' } = {}): Promise<T[]> {
+const VERSIONED = new Set<CollectionName>(['snippets', 'autofill', 'macros', 'scripts', 'variables', 'workspaces', 'templates', 'workflows']);
+export const VERSIONS_KEPT = 25;
+let versionActor = 'local';
+export function setVersionActor(a: string) { versionActor = a || 'local'; }
+
+export async function saveRecords<T extends { id: string; updatedAt: number; createdAt: number }>(store: CollectionName, records: T[], opts: { touch?: boolean; origin?: 'local' | 'sync'; snapshot?: boolean } = {}): Promise<T[]> {
   const now = Date.now();
-  const out = records.map((r) => (opts.touch === false ? r : { ...r, createdAt: r.createdAt || now, updatedAt: now }));
+  const out = records.map((r: any) => (opts.touch === false ? r : { ...r, createdAt: r.createdAt || now, updatedAt: now, version: (r.version || 0) + 1 }));
   await putMany(store, out);
+  if (VERSIONED.has(store) && opts.origin !== 'sync' && opts.snapshot !== false) await snapshotVersions(store, out);
   await notifyChanged([store], opts.origin || 'local');
   return out;
+}
+
+async function snapshotVersions(store: CollectionName, records: any[]) {
+  try {
+    const entries = records.filter((r) => !r.deleted).map((r) => ({ id: `${r.id}@${r.version || 1}@${r.updatedAt}`, collection: store, recordId: r.id, version: r.version || 1, at: r.updatedAt, actor: versionActor, name: r.name || r.id, snapshot: r }));
+    if (!entries.length) return;
+    await putMany('versions', entries);
+    const db = await openDB();
+    for (const rid of new Set(entries.map((e) => e.recordId))) {
+      const list = await wrap(db.transaction('versions', 'readonly').objectStore('versions').index('recordId').getAll(rid)) as any[];
+      if (list.length > VERSIONS_KEPT) await hardDelete('versions', list.sort((a, b) => a.at - b.at).slice(0, list.length - VERSIONS_KEPT).map((v) => v.id));
+    }
+  } catch { /* history is best-effort */ }
+}
+
+export async function listVersions(recordId: string): Promise<any[]> {
+  const db = await openDB();
+  const list = await wrap(db.transaction('versions', 'readonly').objectStore('versions').index('recordId').getAll(recordId)) as any[];
+  return list.sort((a, b) => b.at - a.at);
 }
 
 /** Soft-delete (tombstone) so the deletion can sync. */

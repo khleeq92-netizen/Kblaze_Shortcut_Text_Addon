@@ -9,7 +9,7 @@ export async function loadSettings(): Promise<Settings> {
 }
 export async function saveSettings(patch: Partial<Settings>): Promise<Settings> {
   const cur = await loadSettings();
-  const next = mergeSettings({ ...cur, ...patch, profile: { ...cur.profile, ...(patch.profile || {}) } });
+  const next = mergeSettings({ ...cur, ...patch, profile: { ...cur.profile, ...(patch.profile || {}) }, automation: { ...cur.automation, ...(patch.automation || {}) }, ai: { ...cur.ai, ...(patch.ai || {}) }, security: { ...cur.security, ...(patch.security || {}) } });
   (next as any).updatedAt = Date.now();
   await new Promise<void>((res) => api.storage.local.set({ [STORAGE_KEYS.settings]: next }, () => res()));
   return next;

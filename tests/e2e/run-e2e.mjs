@@ -52,7 +52,7 @@ const ONLY = process.env.ONLY ? new RegExp(process.env.ONLY, 'i') : null;
 async function test(name, fn) {
   if (ONLY && !ONLY.test(name)) return;
   const t0 = Date.now();
-  await page?.evaluate(() => document.querySelectorAll('qth-overlay-root').forEach((e) => e.remove())).catch(() => {});
+  await page?.evaluate(() => document.querySelectorAll('kf-overlay-root').forEach((e) => e.remove())).catch(() => {});
   try { await fn(); results.push({ name, ok: true, ms: Date.now() - t0 }); console.log('  ✓', name); }
   catch (e) { results.push({ name, ok: false, error: String(e?.message || e) }); console.log('  ✗', name, '\n     ', String(e?.message || e).split('\n')[0]); }
 }
@@ -82,13 +82,13 @@ const testSnippets = [
   S('t_math', ';calc', '{{= 6 * 7}} items on {{today; format=YYYY}}'),
 ];
 await dash.evaluate(async (snips) => {
-  const db = await new Promise((res, rej) => { const r = indexedDB.open('quicktext-hub-db', 1); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  const db = await new Promise((res, rej) => { const r = indexedDB.open('k-flow-db', 1); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
   await new Promise((res) => { const tx = db.transaction('snippets', 'readwrite'); snips.forEach((s) => tx.objectStore('snippets').put(s)); tx.oncomplete = res; });
-  await chrome.storage.local.set({ 'qth.revision': { at: Date.now(), collections: ['snippets'] } });
+  await chrome.storage.local.set({ 'kf.revision': { at: Date.now(), collections: ['snippets'] } });
 }, testSnippets);
 const setSettings = (patch) => dash.evaluate(async (p) => {
-  const cur = (await chrome.storage.local.get('qth.settings'))['qth.settings'] || {};
-  await chrome.storage.local.set({ 'qth.settings': { ...cur, ...p, profile: { name: 'Test User', email: 'test@example.com', signature: 'Best,\nTest User', phone: '', company: 'Acme', title: '', website: '', ...(cur.profile || {}) } } });
+  const cur = (await chrome.storage.local.get('kf.settings'))['kf.settings'] || {};
+  await chrome.storage.local.set({ 'kf.settings': { ...cur, ...p, profile: { name: 'Test User', email: 'test@example.com', signature: 'Best,\nTest User', phone: '', company: 'Acme', title: '', website: '', ...(cur.profile || {}) } } });
 }, patch);
 await setSettings({});
 
@@ -107,18 +107,18 @@ const val = (sel) => page.$eval(sel, (e) => e.value);
 const txt = (sel) => page.$eval(sel, (e) => e.innerText);
 async function clear() {
   await page.evaluate(() => {
-    document.querySelectorAll('qth-overlay-root').forEach((e) => e.remove());
+    document.querySelectorAll('kf-overlay-root').forEach((e) => e.remove());
     for (const id of ['input', 'textarea', 'controlled', 'password']) document.getElementById(id).value = '';
     document.getElementById('ce').innerHTML = '';
     document.getElementById('gmail').innerHTML = '<div><br></div>';
   });
 }
 
-console.log(`\nQuickText Hub E2E (extension ${extId})\n`);
+console.log(`\nK-Flow Automation E2E (extension ${extId})\n`);
 
 await test('sample data is seeded on install (/ty, /sig, /payment, /trade)', async () => {
   const n = await dash.evaluate(async () => {
-    const db = await new Promise((res) => { const r = indexedDB.open('quicktext-hub-db', 1); r.onsuccess = () => res(r.result); });
+    const db = await new Promise((res) => { const r = indexedDB.open('k-flow-db', 1); r.onsuccess = () => res(r.result); });
     return new Promise((res) => { const q = db.transaction('snippets').objectStore('snippets').getAll(); q.onsuccess = () => res(q.result.map((s) => s.shortcut)); });
   });
   for (const s of ['/ty', '/sig', '/payment', '/trade']) assert(n.includes(s), 'missing ' + s);
@@ -207,7 +207,7 @@ await test('same-origin iframe editor', async () => {
 });
 await test('fill-in form: overlay opens, validates required field, inserts result', async () => {
   await clear(); await typeInto('#textarea', ';pay');
-  const frameEl = await page.waitForSelector('qth-overlay-root', { state: 'attached', timeout: 4000 });
+  const frameEl = await page.waitForSelector('kf-overlay-root', { state: 'attached', timeout: 4000 });
   assert(frameEl, 'no overlay');
   const of = await until(() => page.frames().find((f) => !f.isDetached() && f.url().includes('/overlay/index.html')), 4000, 'overlay frame');
   await of.waitForSelector('.qform input');
@@ -218,7 +218,7 @@ await test('fill-in form: overlay opens, validates required field, inserts resul
   assert(await of.$('.err'), 'required error should show for empty amount');
   await inputs[1].fill('1250');
   await of.click('button:has-text("Insert")');
-  if (process.env.DEBUG) { await sleep(1000); console.log('   overlay?', await page.evaluate(() => !!document.querySelector('qth-overlay-root')), 'value:', JSON.stringify(await val('#textarea')), 'ovErr:', await of.evaluate(() => document.body.innerText.slice(0, 400)).catch((e) => 'detached')); }
+  if (process.env.DEBUG) { await sleep(1000); console.log('   overlay?', await page.evaluate(() => !!document.querySelector('kf-overlay-root')), 'value:', JSON.stringify(await val('#textarea')), 'ovErr:', await of.evaluate(() => document.body.innerText.slice(0, 400)).catch((e) => 'detached')); }
   await until(async () => (await val('#textarea')).includes('Ada'), 4000, 'insertion');
   eq(await val('#textarea'), 'Dear Ada, pay $1,250.00 by 31/01/2030.');
 });
@@ -232,7 +232,7 @@ await test('snippet assistant: hotkey opens picker, search + Enter inserts', asy
   await sleep(150);
   // Enter inserts and closes the picker, so its frame can vanish mid-keypress; judge by the result.
   await of.press('.ov-search', 'Enter', { timeout: 2000 }).catch(() => {});
-  if (process.env.DEBUG) { await sleep(1500); console.log('   DBG overlay open:', await page.evaluate(() => !!document.querySelector('qth-overlay-root')), 'frame detached:', of.isDetached(), 'value:', JSON.stringify(await val('#input')), 'search:', of.isDetached() ? '-' : await of.$eval('.ov-search', (e) => e.value + ' items=' + document.querySelectorAll('.ov-list li').length).catch(() => '?')); }
+  if (process.env.DEBUG) { await sleep(1500); console.log('   DBG overlay open:', await page.evaluate(() => !!document.querySelector('kf-overlay-root')), 'frame detached:', of.isDetached(), 'value:', JSON.stringify(await val('#input')), 'search:', of.isDetached() ? '-' : await of.$eval('.ov-search', (e) => e.value + ' items=' + document.querySelectorAll('.ov-list li').length).catch(() => '?')); }
   await until(async () => (await val('#input')).includes('Thank you'), 4000, 'insert from picker');
   eq(await val('#input'), 'Note: Thank you so much! 🙏');
 });
@@ -262,10 +262,10 @@ await test('Autopilot: fills by label, selects option, ticks box, asks before su
       { id: 'e', type: 'check', target: { kind: 'label', value: 'I agree' }, checked: true },
       { id: 'f', type: 'click', target: { kind: 'label', value: 'Send message' } },
     ] };
-    const db = await new Promise((res) => { const r = indexedDB.open('quicktext-hub-db', 1); r.onsuccess = () => res(r.result); });
+    const db = await new Promise((res) => { const r = indexedDB.open('k-flow-db', 1); r.onsuccess = () => res(r.result); });
     await new Promise((res) => { const tx = db.transaction('workflows', 'readwrite'); tx.objectStore('workflows').put(wf); tx.oncomplete = res; });
     const [tab] = await chrome.tabs.query({ url: 'http://127.0.0.1/*' });
-    await chrome.tabs.sendMessage(tab.id, { type: 'qth/runWorkflow', id: 'wf_e2e' }, { frameId: 0 });
+    await chrome.tabs.sendMessage(tab.id, { type: 'kf/runWorkflow', id: 'wf_e2e' }, { frameId: 0 });
   });
   const of = await until(() => page.frames().find((f) => !f.isDetached() && f.url().includes('/overlay/index.html')), 8000, 'confirmation dialog');
   await of.waitForSelector('button:has-text("Approve")');
@@ -281,7 +281,7 @@ await test('Autopilot: fills by label, selects option, ticks box, asks before su
 await test('Autopilot: cancelling the confirmation stops the workflow', async () => {
   await sleep(800); // let the previous run finish
   await page.evaluate(() => { document.getElementById('submitted').textContent = ''; });
-  await dash.evaluate(async () => { const [tab] = await chrome.tabs.query({ url: 'http://127.0.0.1/*' }); await chrome.tabs.sendMessage(tab.id, { type: 'qth/runWorkflow', id: 'wf_e2e' }, { frameId: 0 }); });
+  await dash.evaluate(async () => { const [tab] = await chrome.tabs.query({ url: 'http://127.0.0.1/*' }); await chrome.tabs.sendMessage(tab.id, { type: 'kf/runWorkflow', id: 'wf_e2e' }, { frameId: 0 }); });
   const of = await until(() => page.frames().find((f) => !f.isDetached() && f.url().includes('/overlay/index.html')), 8000, 'confirmation dialog');
   await of.click('button:has-text("Cancel")');
   await sleep(500);
@@ -383,7 +383,7 @@ await test('side panel insert path: rendered text is inserted into the focused f
   await page.keyboard.type('Note: ', { delay: 20 });
   const r = await dash.evaluate(async () => {
     const [tab] = await chrome.tabs.query({ url: 'http://127.0.0.1/*' });
-    return chrome.tabs.sendMessage(tab.id, { type: 'qth/insertText', payload: { text: 'From side panel\nline 2', html: '', isRich: false, cursorBack: null } }, { frameId: 0 });
+    return chrome.tabs.sendMessage(tab.id, { type: 'kf/insertText', payload: { text: 'From side panel\nline 2', html: '', isRich: false, cursorBack: null } }, { frameId: 0 });
   });
   assert(r && r.ok, JSON.stringify(r));
   eq(await val('#textarea'), 'Note: From side panel\nline 2');

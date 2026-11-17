@@ -117,15 +117,15 @@ export function parseImport(text: string): ExportBundle {
   let data: any;
   try { data = JSON.parse(text); } catch { throw new ImportError('File is not valid JSON.'); }
   const now = Date.now();
-  if (Array.isArray(data)) return { format: 'quicktext-hub', version: 1, exportedAt: now, snippets: data.slice(0, 20000).map((d) => normalizeSnippet(d, now)), folders: [] };
+  if (Array.isArray(data)) return { format: 'k-flow', version: 1, exportedAt: now, snippets: data.slice(0, 20000).map((d) => normalizeSnippet(d, now)), folders: [] };
   if (data && typeof data === 'object' && !data.snippets && !data.format) {
     const entries = Object.entries(data).filter(([, v]) => typeof v === 'string');
     if (!entries.length) throw new ImportError('No snippets found in file.');
-    return { format: 'quicktext-hub', version: 1, exportedAt: now, folders: [], snippets: entries.map(([k, v]) => normalizeSnippet({ shortcut: k, name: k, content: v }, now)) };
+    return { format: 'k-flow', version: 1, exportedAt: now, folders: [], snippets: entries.map(([k, v]) => normalizeSnippet({ shortcut: k, name: k, content: v }, now)) };
   }
   if (!data || typeof data !== 'object' || !Array.isArray(data.snippets)) throw new ImportError('Unrecognised file format.');
   return {
-    format: 'quicktext-hub',
+    format: 'k-flow',
     version: 1,
     exportedAt: num(data.exportedAt, now),
     snippets: data.snippets.slice(0, 20000).map((d: any) => normalizeSnippet(d, now)),

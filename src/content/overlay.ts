@@ -12,6 +12,7 @@ export type OverlayResult =
   | { type: 'submit'; text: string; html: string; isRich: boolean; cursorBack: number | null; snippetId: string }
   | { type: 'confirm'; ok: boolean }
   | { type: 'runWorkflow'; workflowId: string }
+  | { type: 'mapped'; profileId: string; ruleId: string; more: boolean }
   | { type: 'cancel' };
 
 type Current =
@@ -25,7 +26,7 @@ function needsWindow(): boolean {
 
 // Results from the popup-window overlay arrive via the background worker.
 api.runtime.onMessage.addListener((msg: any, sender) => {
-  if (sender.id !== api.runtime.id || msg?.type !== 'qth/overlayResult') return false;
+  if (sender.id !== api.runtime.id || msg?.type !== 'kf/overlayResult') return false;
   if (current && current.kind === 'window' && current.nonce === msg.nonce) closeOverlay(msg.result || { type: 'cancel' });
   return false;
 });
@@ -46,7 +47,7 @@ export function closeOverlay(result: OverlayResult = { type: 'cancel' }) {
     c.win.removeEventListener('keydown', c.keyGuard, true);
     c.host.remove();
   } else if (result.type === 'cancel') {
-    api.runtime.sendMessage({ type: 'qth/closeOverlayWindow', nonce: c.nonce }).catch?.(() => {});
+    api.runtime.sendMessage({ type: 'kf/closeOverlayWindow', nonce: c.nonce }).catch?.(() => {});
   }
   c.resolve(result);
 }
@@ -55,11 +56,11 @@ export function overlayOpen() {
   return !!current;
 }
 
-export async function openOverlay(opts: { mode: 'picker' | 'form' | 'confirm'; nonce?: string; anchor?: DOMRect; doc?: Document; page: any; payload?: any; snippetId?: string }): Promise<OverlayResult> {
+export async function openOverlay(opts: { mode: 'picker' | 'form' | 'confirm' | 'mapField'; nonce?: string; anchor?: DOMRect; doc?: Document; page: any; payload?: any; snippetId?: string }): Promise<OverlayResult> {
   closeOverlay();
   let nonce = opts.nonce;
   if (!nonce) {
-    const r: any = await api.runtime.sendMessage({ type: 'qth/openOverlay', mode: opts.mode, page: opts.page, payload: opts.payload, snippetId: opts.snippetId });
+    const r: any = await api.runtime.sendMessage({ type: 'kf/openOverlay', mode: opts.mode, page: opts.page, payload: opts.payload, snippetId: opts.snippetId });
     nonce = r?.nonce;
   }
   if (!nonce) return { type: 'cancel' };
@@ -67,19 +68,19 @@ export async function openOverlay(opts: { mode: 'picker' | 'form' | 'confirm'; n
     const n = nonce;
     return new Promise<OverlayResult>((resolve) => {
       current = { kind: 'window', resolve, nonce: n };
-      api.runtime.sendMessage({ type: 'qth/openOverlayWindow', nonce: n, mode: opts.mode }).then((r: any) => { if (!r?.ok) closeOverlay(); }, () => closeOverlay());
+      api.runtime.sendMessage({ type: 'kf/openOverlayWindow', nonce: n, mode: opts.mode }).then((r: any) => { if (!r?.ok) closeOverlay(); }, () => closeOverlay());
     });
   }
   // The overlay must live in the top document of this frame; position near the anchor.
   const win = hostWindow();
   const hdoc = win.document;
-  const host = hdoc.createElement('qth-overlay-root');
+  const host = hdoc.createElement('kf-overlay-root');
   host.style.cssText = 'all:initial;position:fixed;inset:0;z-index:2147483647;';
   const shadow = host.attachShadow({ mode: 'closed' });
   const backdrop = hdoc.createElement('div');
   backdrop.style.cssText = `position:fixed;inset:0;background:${opts.mode === 'confirm' ? 'rgba(15,23,42,.35)' : 'transparent'};`;
   const frame = hdoc.createElement('iframe');
-  const width = opts.mode === 'picker' ? 440 : 480;
+  const width = opts.mode === 'picker' ? 440 : opts.mode === 'mapField' ? 500 : 480;
   const a = opts.anchor ? (win === window ? opts.anchor : toTopRect(opts.anchor, opts.doc || document)) : null;
   const W = win.innerWidth, H = win.innerHeight;
   let left = a ? a.left : (W - width) / 2;
@@ -87,6 +88,7 @@ export async function openOverlay(opts: { mode: 'picker' | 'form' | 'confirm'; n
   let top = a ? a.bottom + 6 : 80;
   const initialH = opts.mode === 'picker' ? 380 : 420;
   if (opts.mode === 'confirm') { left = (W - width) / 2; top = Math.max(40, H / 2 - 140); }
+  else if (opts.mode === 'mapField') { left = Math.max(8, W - width - 16); top = 60; }
   else if (top + initialH > H - 8) top = Math.max(8, (a ? a.top : H) - initialH - 6);
   frame.style.cssText = `position:fixed;left:${left}px;top:${top}px;width:${width}px;height:${initialH}px;border:0;border-radius:14px;box-shadow:0 18px 48px rgba(0,0,0,.28);background:transparent;color-scheme:normal;`;
   frame.setAttribute('allow', 'clipboard-write');

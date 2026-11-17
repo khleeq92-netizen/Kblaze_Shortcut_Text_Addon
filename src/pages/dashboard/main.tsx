@@ -9,19 +9,29 @@ import { SnippetsView } from './views/SnippetsView';
 import { TemplatesView } from './views/TemplatesView';
 import { DataHubView } from './views/DataHubView';
 import { MarketplaceView } from './views/MarketplaceView';
-import { AutopilotView } from './views/AutopilotView';
+import { OverviewView } from './views/OverviewView';
+import { AutofillView } from './views/AutofillView';
+import { MacrosView } from './views/MacrosView';
+import { ScriptsView } from './views/ScriptsView';
+import { VariablesView } from './views/VariablesView';
+import { VaultView } from './views/VaultView';
+import { BuilderView } from './views/BuilderView';
+import { HistoryView, AuditView } from './views/HistoryView';
+import { OrgView } from './views/OrgView';
+import { BackupView } from './views/BackupView';
+import { WorkspacesView } from './views/WorkspacesView';
 import { StatsView } from './views/StatsView';
 import { SettingsView } from './views/SettingsView';
-import { TeamView } from './views/TeamView';
 import { ImportView, WelcomeView } from './views/ImportView';
 import { FolderDialog } from './views/FolderDialog';
-import { Search, Plus, FolderPlus, Store as StoreIc, BarChart3, UserCircle2, Moon, Sun } from 'lucide-react';
+import { Search, Plus, FolderPlus, Store as StoreIc, UserCircle2, Moon, Sun, FormInput, Clapperboard, FileCode2, Database as DatabaseIc, Braces, Zap, Wand2 } from 'lucide-react';
 
 function Topbar() {
   const { settings, setSettings } = useStore();
   const { user } = useCloud();
   const [path, qs, go] = useRoute();
   const [folderOpen, setFolderOpen] = useState(false);
+  const [create, setCreate] = useState(false);
   const q = path === '/search' ? qs.get('q') || '' : '';
   const dark = document.documentElement.dataset.theme === 'dark';
   return (
@@ -30,17 +40,29 @@ function Topbar() {
         <Search size={16} />
         <input
           className="input"
-          placeholder="Search snippets by name, shortcut or content…  ( / )"
+          placeholder="Search snippets…  ( / )"
           value={q}
           id="global-search"
           onChange={(e) => go('/search?q=' + encodeURIComponent(e.target.value))}
         />
       </div>
       <div className="grow" />
-      <button className="btn primary" onClick={() => go('/new')}><Plus size={16} /> New snippet</button>
-      <button className="btn" onClick={() => setFolderOpen(true)}><FolderPlus size={16} /> New folder</button>
+      <div className="kf-create">
+        <button className="btn primary" onClick={() => setCreate(!create)}><Plus size={16} /> Create</button>
+        {create && (
+          <div className="kf-create-menu" onMouseLeave={() => setCreate(false)}>
+            <button onClick={() => { setCreate(false); go('/autofill?new=1'); }}><FormInput size={15} /> Autofill profile</button>
+            <button onClick={() => { setCreate(false); go('/macros'); }}><Clapperboard size={15} /> Macro / recording</button>
+            <button onClick={() => { setCreate(false); go('/scripts'); }}><FileCode2 size={15} /> Script</button>
+            <button onClick={() => { setCreate(false); go('/data'); }}><DatabaseIc size={15} /> Dataset import</button>
+            <button onClick={() => { setCreate(false); go('/variables'); }}><Braces size={15} /> Variable</button>
+            <button onClick={() => { setCreate(false); go('/new'); }}><Zap size={15} /> Snippet</button>
+            <button onClick={() => { setCreate(false); setFolderOpen(true); }}><FolderPlus size={15} /> Snippet folder</button>
+            <button onClick={() => { setCreate(false); go('/builder'); }}><Wand2 size={15} /> With AI builder</button>
+          </div>
+        )}
+      </div>
       <button className="btn ghost" title="Template marketplace" onClick={() => go('/marketplace')}><StoreIc size={17} /></button>
-      <button className="btn ghost" title="Usage statistics" onClick={() => go('/stats')}><BarChart3 size={17} /></button>
       <button className="btn ghost" title="Toggle dark mode" onClick={() => setSettings({ theme: dark ? 'light' : 'dark' })}>{dark ? <Sun size={17} /> : <Moon size={17} />}</button>
       <button className="btn ghost" title="Account settings" onClick={() => go('/settings?tab=cloud')}>
         {user?.photoURL ? <img src={user.photoURL} width={22} height={22} style={{ borderRadius: '50%' }} alt="" /> : <UserCircle2 size={19} />}
@@ -57,13 +79,24 @@ function Routes() {
     case 'templates': return <TemplatesView />;
     case 'data': return <DataHubView tableId={seg[1]} />;
     case 'marketplace': return <MarketplaceView />;
-    case 'autopilot': return <AutopilotView workflowId={seg[1]} />;
+    case 'overview': return <OverviewView />;
+    case 'autofill': return <AutofillView id={seg[1]} />;
+    case 'macros': case 'autopilot': return <MacrosView id={seg[1]} />;
+    case 'scripts': return <ScriptsView id={seg[1]} />;
+    case 'variables': return <VariablesView />;
+    case 'vault': return <VaultView />;
+    case 'builder': return <BuilderView />;
+    case 'history': return <HistoryView />;
+    case 'audit': return <AuditView />;
+    case 'org': case 'team': return <OrgView />;
+    case 'backup': return <BackupView />;
+    case 'workspaces': return <WorkspacesView />;
     case 'stats': return <StatsView />;
     case 'settings': return <SettingsView />;
-    case 'team': return <TeamView />;
     case 'import': return <ImportView />;
     case 'welcome': return <WelcomeView />;
-    default: return <SnippetsView />;
+    case 'snippets': case 'pinned': case 'favorites': case 'recent': case 'folder': case 'search': case 'new': return <SnippetsView />;
+    default: return <OverviewView />;
   }
 }
 

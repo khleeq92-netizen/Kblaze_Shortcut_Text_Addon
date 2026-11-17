@@ -4,7 +4,7 @@ import { sanitizeHtml, htmlToText } from '@/shared/html';
 
 describe('import validation', () => {
   it('accepts our bundle format', () => {
-    const b = parseImport(JSON.stringify({ format: 'quicktext-hub', version: 1, snippets: [{ name: 'A', shortcut: '/a', content: 'x' }], folders: [{ name: 'F' }] }));
+    const b = parseImport(JSON.stringify({ format: 'k-flow', version: 1, snippets: [{ name: 'A', shortcut: '/a', content: 'x' }], folders: [{ name: 'F' }] }));
     expect(b.snippets[0].shortcut).toBe('/a');
     expect(b.folders[0].name).toBe('F');
   });

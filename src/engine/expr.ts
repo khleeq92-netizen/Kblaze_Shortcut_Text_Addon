@@ -1,4 +1,4 @@
-// QuickText formula language: a small, safe (no eval) expression language.
+// K-Flow formula language: a small, safe (no eval) expression language.
 //   numbers 12.5   strings "a" 'b'   true false null   lists [1,2]
 //   + - * / % ^   & (concat)   = == != <> < <= > >=   and or not   ?: none
 //   name, name.field, list.field (maps over lists), fn(args)

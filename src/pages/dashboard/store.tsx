@@ -7,7 +7,13 @@ import { STORAGE_KEYS } from '../../shared/constants';
 import { uid } from '../../shared/ids';
 import { limitOf, hasFeature, type Feature } from '../../shared/plans';
 import { applyTheme } from '../../ui/theme';
-import type { Snippet, Folder, DataTable, Workflow, UserTemplate, UsageRecord, Settings, CloudConfig, ExportBundle } from '../../shared/types';
+import type { Snippet, Folder, DataTable, Workflow, UserTemplate, UsageRecord, Settings, CloudConfig, ExportBundle, Workspace, AutofillProfile, Macro, ScriptRecord, Variable, VaultEntry, CollectionName } from '../../shared/types';
+import { protectTable, unprotectTable } from '../../data/protect';
+import { masterKey } from '../../security/vault';
+import { audit } from '../../shared/history';
+import { getOrgState, canOnRecord, orgCan, type OrgState } from '../../shared/orgState';
+import type { Action, Resource } from '../../security/permissions';
+import { WS_GENERAL } from '../../library/workspaces';
 
 export interface AppData {
   ready: boolean;
@@ -19,7 +25,18 @@ export interface AppData {
   usage: Map<string, UsageRecord>;
   settings: Settings;
   cloud: CloudConfig;
+  workspaces: Workspace[];
+  autofill: AutofillProfile[];
+  macros: Macro[];
+  scripts: ScriptRecord[];
+  variables: Variable[];
+  vault: VaultEntry[];
+  org: OrgState | null;
+  vaultUnlocked: boolean;
+  lockedValues: number;
 }
+
+const RES: Partial<Record<CollectionName, Resource>> = { autofill: 'autofill', macros: 'macros', scripts: 'scripts', snippets: 'snippets', templates: 'templates', variables: 'variables', tables: 'datasets', workspaces: 'workspaces', folders: 'folders' };
 
 interface Store extends AppData {
   reload: () => Promise<void>;
@@ -41,6 +58,15 @@ interface Store extends AppData {
   limit: (k: 'snippets' | 'folders' | 'tables' | 'workflows' | 'libraryTemplates') => number;
   toast: (msg: string, kind?: 'ok' | 'error') => void;
   toasts: { id: number; msg: string; kind: 'ok' | 'error' }[];
+  /** Active workspace record. */
+  ws: Workspace;
+  /** True when a record belongs to the active workspace (records without one belong to General). */
+  inWs: (r: { workspaceId?: string }) => boolean;
+  saveRec: <T extends { id: string }>(coll: CollectionName, rec: T, opts?: { quiet?: boolean; action?: string }) => Promise<T>;
+  deleteRec: (coll: CollectionName, ids: string[], name?: string) => Promise<void>;
+  /** RBAC check for a record (personal records are always allowed). */
+  allowed: (coll: CollectionName, rec: any, action: Action) => boolean;
+  orgAllowed: (action: Action, resource?: Resource) => boolean;
 }
 
 const Ctx = createContext<Store | null>(null);
@@ -57,12 +83,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const tid = useRef(0);
 
   const reload = useCallback(async () => {
-    const [snippets, folders, tables, workflows, templates, usage, settings, cloud] = await Promise.all([
+    const [snippets, folders, rawTables, workflows, templates, usage, settings, cloud, workspaces, autofill, macros, scripts, variables, vault, org] = await Promise.all([
       listRecords<Snippet>('snippets'), listRecords<Folder>('folders'), listRecords<DataTable>('tables'), listRecords<Workflow>('workflows'),
       listRecords<UserTemplate>('templates'), getAll<UsageRecord>('usage'), loadSettings(), loadCloudConfig(),
+      listRecords<Workspace>('workspaces'), listRecords<AutofillProfile>('autofill'), listRecords<Macro>('macros'), listRecords<ScriptRecord>('scripts'), listRecords<Variable>('variables'), listRecords<VaultEntry>('vault'), getOrgState(),
     ]);
     applyTheme(settings.theme);
-    setData({ ready: true, snippets, folders: folders.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name)), tables, workflows, templates, usage: new Map(usage.map((u) => [u.snippetId, u])), settings, cloud });
+    const mk = await masterKey();
+    let lockedValues = 0;
+    const tables = await Promise.all(rawTables.map(async (t) => { const u = await unprotectTable(t, mk); lockedValues += u.locked || 0; return u; }));
+    setData({ ready: true, snippets, folders: folders.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name)), tables, workflows, templates, usage: new Map(usage.map((u) => [u.snippetId, u])), settings, cloud,
+      workspaces: workspaces.sort((a, b) => a.createdAt - b.createdAt), autofill, macros, scripts, variables, vault, org, vaultUnlocked: !!mk, lockedValues });
   }, []);
 
   useEffect(() => {
@@ -88,8 +119,32 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const s = data.settings;
     const can = (f: Feature) => hasFeature(s.plan, f, s.enforcePlanLimits);
     const limit = (k: any) => limitOf(s.plan, k, s.enforcePlanLimits);
+    const ws = data.workspaces.find((w) => w.id === s.activeWorkspaceId) || data.workspaces.find((w) => w.id === WS_GENERAL) || data.workspaces[0] || ({ id: WS_GENERAL, name: 'General Productivity', kind: 'general', color: '#7c3aed', icon: 'Sparkles', expansionActive: true, domains: [], officialDomains: [], createdAt: 0, updatedAt: 0 } as Workspace);
+    const inWs = (r: { workspaceId?: string }) => (r.workspaceId || WS_GENERAL) === ws.id;
+    const allowed = (coll: CollectionName, rec: any, action: Action) => canOnRecord(data.org, rec, action, RES[coll] || 'autofill');
     return {
       ...data,
+      ws,
+      inWs,
+      allowed,
+      orgAllowed: (action, resource) => orgCan(data.org, action, resource),
+      saveRec: async (coll, rec, opts = {}) => {
+        const existing = (await getAll<any>(coll)).find((x) => x.id === rec.id && !x.deleted);
+        if (existing && !allowed(coll, existing, 'edit')) throw new Error('Your organization role does not allow editing this item');
+        if (!existing && (rec as any).orgId && !allowed(coll, rec, 'create')) throw new Error('Your organization role does not allow creating shared items');
+        const toSave: any = coll === 'tables' ? await protectTable(rec as any) : { ...rec, workspaceId: (rec as any).workspaceId ?? ws.id };
+        const [saved] = await saveRecords(coll, [toSave]);
+        if (!opts.quiet) await audit(opts.action || (existing ? 'edit' : 'create'), coll, { resourceId: rec.id, name: (rec as any).name, workspaceId: toSave.workspaceId, orgId: toSave.orgId });
+        await reload();
+        return (coll === 'tables' ? rec : saved) as any;
+      },
+      deleteRec: async (coll, ids, name) => {
+        const all = await getAll<any>(coll);
+        for (const id of ids) { const r = all.find((x) => x.id === id); if (r && !allowed(coll, r, 'delete')) throw new Error('Your organization role does not allow deleting this item'); }
+        await deleteRecords(coll, ids);
+        await audit('delete', coll, { resourceId: ids.join(','), name });
+        await reload();
+      },
       toasts,
       toast,
       reload,
@@ -99,7 +154,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       saveSnippet: async (p) => {
         const existing = p.id ? data.snippets.find((x) => x.id === p.id) : undefined;
         if (!existing && data.snippets.length >= limit('snippets')) throw new Error(`Your plan allows ${limit('snippets')} snippets. Change the plan in Settings → Plan.`);
-        const base = existing || emptySnippet();
+        const base = existing || { ...emptySnippet(), workspaceId: ws.id };
         const next = { ...base, ...p, id: base.id } as Snippet;
         const [saved] = await saveRecords('snippets', [next]);
         return saved;
@@ -110,7 +165,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         const existing = p.id ? data.folders.find((x) => x.id === p.id) : undefined;
         if (!existing && data.folders.length >= limit('folders')) throw new Error(`Your plan allows ${limit('folders')} folders.`);
         const t = Date.now();
-        const base: Folder = existing || { id: uid('fld'), name: 'New folder', parentId: null, order: data.folders.length, createdAt: t, updatedAt: t, teamId: null };
+        const base: Folder = existing || { id: uid('fld'), name: 'New folder', parentId: null, order: data.folders.length, createdAt: t, updatedAt: t, teamId: null, workspaceId: ws.id };
         const [saved] = await saveRecords('folders', [{ ...base, ...p, id: base.id } as Folder]);
         return saved;
       },
@@ -132,7 +187,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       },
       saveTable: async (t) => {
         if (!data.tables.some((x) => x.id === t.id) && data.tables.length >= limit('tables')) throw new Error(`Your plan allows ${limit('tables')} Data Hub tables.`);
-        await saveRecords('tables', [t]);
+        await saveRecords('tables', [await protectTable({ ...t, workspaceId: t.workspaceId ?? ws.id })]);
       },
       deleteTable: async (id) => deleteRecords('tables', [id]),
       saveWorkflow: async (w) => {
@@ -180,14 +235,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     };
   }, [data, toasts, toast, reload]);
 
-  if (!store) return <div style={{ padding: 40 }} className="muted">Loading QuickText Hub…</div>;
+  if (!store) return <div style={{ padding: 40 }} className="muted">Loading K-Flow Automation…</div>;
   return <Ctx.Provider value={store}>{children}</Ctx.Provider>;
 }
 
 // ---------- tiny hash router
 export function useRoute(): [string, URLSearchParams, (to: string) => void] {
   const parse = () => {
-    const h = location.hash.slice(1) || '/snippets';
+    const h = location.hash.slice(1) || '/overview';
     const [path, qs] = h.split('?');
     return { path, qs: new URLSearchParams(qs || '') };
   };

@@ -67,6 +67,8 @@ export interface RenderContext {
   fo?: Partial<FormatOptions>;
   now?: Date;
   features?: { forms?: boolean; formulas?: boolean; conditionals?: boolean };
+  /** Named values (K-Flow variables, dataset record columns) resolved before fill-in prompts. */
+  globals?: Record<string, any>;
 }
 
 export interface RenderResult {
@@ -82,7 +84,7 @@ export interface RenderResult {
   isRich: boolean;
 }
 
-const CURSOR = '⁣⁣QTHCURSOR⁣⁣';
+const CURSOR = '⁣⁣KFCURSOR⁣⁣';
 const FIELD_CMDS: Record<string, FieldType> = {
   text: 'text', input: 'text', textarea: 'textarea', paragraph: 'textarea', multiline: 'textarea',
   select: 'select', dropdown: 'select', choice: 'select', checkbox: 'checkbox', toggle: 'toggle', switch: 'toggle',
@@ -147,9 +149,10 @@ function collectDefs(nodes: TNode[], ctx: RenderContext, defs: Defs, repeat: str
   walk(nodes);
 }
 
-function resolveImplicit(defs: Defs) {
+function resolveImplicit(defs: Defs, globals?: Record<string, any>) {
   for (const { name: r, repeat } of defs.pendingRefs) {
     if (defs.fields.has(r) || defs.sets.has(r) || defs.repeats.has(r) || defs.implicit.has(r) || BUILTIN_ROOTS.has(r)) continue;
+    if (globals && Object.prototype.hasOwnProperty.call(globals, r)) continue;
     if (repeat) {
       const scope = defs.repeats.get(repeat)!;
       if (!scope.fields.has(r) && !scope.sets.has(r)) scope.fields.set(r, { type: 'text', args: { main: r, opts: {}, flags: new Set() }, start: -1, end: -1 });
@@ -178,7 +181,8 @@ export function render(source: string, contentType: 'text' | 'html', ctx: Render
   }
   const defs: Defs = { fields: new Map(), sets: new Set(), repeats: new Map(), implicit: new Set(), pendingRefs: [] };
   collectDefs(ast, ctx, defs, null, 0, new Set());
-  resolveImplicit(defs);
+  resolveImplicit(defs, ctx.globals);
+  const globals = ctx.globals || {};
 
   const vars: Record<string, Value> = {};
   const dataObj: Record<string, Value> = {};
@@ -268,6 +272,7 @@ export function render(source: string, contentType: 'text' | 'html', ctx: Render
     // A field referenced before (or outside the branch of) its definition still belongs in the form.
     if (fd) { try { register(name, fd.type, fd.args, 0, fd.start, fd.end, false, true); } catch { /* forms disabled */ } }
     if (fd) return { found: true, value: typedValue(fd.type, rawFieldValue(name, fd.type, fd.args), fd.args) };
+    if (Object.prototype.hasOwnProperty.call(globals, name)) return { found: true, value: globals[name] as Value };
     if (defs.implicit.has(name)) {
       try { register(name, 'text', { main: name, opts: {}, flags: new Set() }, 0, undefined, undefined, true, true); } catch { /* forms disabled */ }
       return { found: true, value: values[name] ?? '' };

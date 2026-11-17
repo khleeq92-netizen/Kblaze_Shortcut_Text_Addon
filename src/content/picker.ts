@@ -45,7 +45,7 @@ export function startPicker() {
   toast('Click an element to capture it for Autopilot (Esc to cancel)', { ms: 5000 });
   const move = (e: MouseEvent) => {
     const el = document.elementFromPoint(e.clientX, e.clientY);
-    if (el && !el.tagName.startsWith('QTH-')) highlight(el, el.tagName.toLowerCase());
+    if (el && !el.tagName.startsWith('KF-')) highlight(el, el.tagName.toLowerCase());
   };
   const stop = () => {
     active = false;

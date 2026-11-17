@@ -40,7 +40,7 @@ Use a test account; never automate real payments.
 | M4 | Outlook.com / any CRM note field | `/payment` → toggle overdue → fill | form appears near caret; text inserted |
 | M5 | LinkedIn / X post composer | `/launch` | multi-line post inserted |
 | M6 | Any site | Ctrl+Shift+Space | assistant opens at caret; Esc closes and caret is restored |
-| M7 | Right-click in a textarea | *Insert QuickText snippet…* | assistant opens |
+| M7 | Right-click in a textarea | *Insert K-Flow snippet…* | assistant opens |
 | M8 | Settings → Text expansion → delimiter mode | type `/ty.` | expands and keeps `.` |
 | M9 | Popup on a site → Disable here | type `/ty` | no expansion; *Enable here* restores |
 | M10 | Autopilot demo workflow on a contact form | Popup → Autopilot → Run | fields filled; confirmation before submit; Stop works |
@@ -52,5 +52,5 @@ Use a test account; never automate real payments.
 
 ## Loading check
 
-`chrome://extensions` → Developer mode → Load unpacked → `dist/` (or `release/quicktext-hub-unpacked/`).
+`chrome://extensions` → Developer mode → Load unpacked → `dist/` (or `release/k-flow-unpacked/`).
 The E2E suite performs exactly this load and fails if the manifest, service worker or content script has errors.

@@ -12,7 +12,7 @@ export function ImportView() {
   return (
     <div className="page">
       <div className="page-head"><h2>Import shared snippets</h2></div>
-      {open && <ImportDialog initialCode={share ? 'QTHS-' + share : ''} onClose={() => { setOpen(false); go('/snippets'); }} />}
+      {open && <ImportDialog initialCode={share ? 'KFS-' + share : ''} onClose={() => { setOpen(false); go('/snippets'); }} />}
     </div>
   );
 }
@@ -24,11 +24,11 @@ export function WelcomeView() {
   const [sig, setSig] = useState(settings.profile.signature);
   return (
     <div className="page" style={{ maxWidth: 860 }}>
-      <div className="page-head"><h2>Welcome to QuickText Hub ⚡</h2></div>
-      <p className="muted" style={{ fontSize: 15 }}>Type short shortcuts anywhere on the web and QuickText Hub replaces them with full text, smart forms and calculations. Everything works locally — an account is optional.</p>
+      <div className="page-head"><h2>Welcome to K-Flow Automation ⚡</h2></div>
+      <p className="muted" style={{ fontSize: 15 }}>Type short shortcuts anywhere on the web and K-Flow Automation replaces them with full text, smart forms and calculations. Everything works locally — an account is optional.</p>
       <div className="grid-3" style={{ margin: '18px 0' }}>
         <div className="card section"><Keyboard /><h3>Type a shortcut</h3><div className="muted">Try <span className="kbd">/sig</span>, <span className="kbd">/payment</span> or <span className="kbd">/trade</span> in any text box.</div></div>
-        <div className="card section"><MousePointerClick /><h3>Or pick from a list</h3><div className="muted">Press <span className="kbd">{settings.assistantHotkey}</span> or right-click → “Insert QuickText snippet…”.</div></div>
+        <div className="card section"><MousePointerClick /><h3>Or pick from a list</h3><div className="muted">Press <span className="kbd">{settings.assistantHotkey}</span> or right-click → “Insert K-Flow snippet…”.</div></div>
         <div className="card section"><Zap /><h3>Automate forms</h3><div className="muted">Autopilot fills repetitive web forms, always asking before submitting.</div></div>
       </div>
       <Section title="Personalise your snippets" desc="Used by {{me.name}} and {{me.signature}} (e.g. the /sig snippet). You can change this later in Settings.">

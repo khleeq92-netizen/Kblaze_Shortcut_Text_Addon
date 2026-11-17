@@ -1,4 +1,4 @@
-// QuickText Hub content script: detects shortcuts as the user types and
+// K-Flow Automation content script: detects shortcuts as the user types and
 // replaces them with snippet output. It only ever reads the few characters
 // directly before the caret in the focused field — never page content.
 import { api } from '../shared/browser';
@@ -8,15 +8,15 @@ import { replaceBeforeCaret, state as insertState, Payload } from './insert';
 import { findMatch, ShortcutEntry, MatchSettings } from './match';
 import { openOverlay, overlayOpen, closeOverlay } from './overlay';
 import { toast, copyToast, showFab, hideFab } from './ui';
-import { runWorkflow } from './autopilot';
 import { startPicker } from './picker';
+import { initAutomation } from './automation';
 import { isGoogleDocsFrame, TypedBuffer, gdocsReplace } from './gdocs';
 
-declare global { interface Window { __qthLoaded?: boolean } }
+declare global { interface Window { __kfLoaded?: boolean } }
 
 (() => {
-  if (window.__qthLoaded) return;
-  window.__qthLoaded = true;
+  if (window.__kfLoaded) return;
+  window.__kfLoaded = true;
 
   interface IndexSettings extends MatchSettings {
     expansionEnabled: boolean; blocked: boolean; keepDelimiter: boolean; assistantHotkey: string; showFloatingButton: boolean; showToasts: boolean; googleDocsExperimental: boolean;
@@ -51,7 +51,7 @@ declare global { interface Window { __qthLoaded?: boolean } }
   async function expandInto(t: EditTarget, snippetId: string, deleteCount: number, typed: string, keepSuffix: string): Promise<boolean> {
     const res = await send<any>({ type: MSG.expand, snippetId, page: page() });
     if (!res) return false;
-    if (res.kind === 'error') { toast(`QuickText: ${res.message}`, { error: true, ms: 6000 }); return false; }
+    if (res.kind === 'error') { toast(`K-Flow: ${res.message}`, { error: true, ms: 6000 }); return false; }
     let payload: Payload;
     let saved: SavedCaret | null = null;
     if (res.kind === 'form') {
@@ -74,7 +74,7 @@ declare global { interface Window { __qthLoaded?: boolean } }
     }
     const result = await replaceBeforeCaret(t, deleteCount, payload);
     if (result === 'failed') {
-      copyToast(payload.text, "QuickText couldn't insert into this editor.");
+      copyToast(payload.text, "K-Flow couldn't insert into this editor.");
       return false;
     }
     return true;
@@ -157,23 +157,16 @@ declare global { interface Window { __qthLoaded?: boolean } }
   }
   function onFocusOut() { setTimeout(() => { if (!getEditTarget(deepActiveElement())) hideFab(); }, 200); }
 
-  // ---------- workflows
+  // ---------- automations (autofill, macros, recorder, field selector)
+  const automation = initAutomation(send, async (snippetId) => {
+    const t = getEditTarget(deepActiveElement());
+    if (!t) throw new Error('No text field is focused');
+    return expandInto(t, snippetId, 0, '', '');
+  });
   async function startWorkflow(id: string) {
-    const wf = await send<any>({ type: MSG.getWorkflow, id });
-    if (!wf) { toast('Workflow not found', { error: true }); return; }
-    await runWorkflow(wf, {
-      renderText: async (content) => {
-        if (!content.includes('{{')) return content;
-        const r = await send<any>({ type: 'qth/renderText', content, page: page() });
-        if (!r || r.error) throw new Error(r?.error || 'Could not render text');
-        return r.text;
-      },
-      expandSnippet: async (snippetId) => {
-        const t = getEditTarget(deepActiveElement());
-        if (!t) throw new Error('No text field is focused');
-        return expandInto(t, snippetId, 0, '', '');
-      },
-    });
+    // legacy Autopilot workflows were migrated to macros with id mac_<id>
+    const r = await send<any>({ type: 'kf/macro/start', macroId: id.startsWith('mac_') ? id : 'mac_' + id.replace(/^wf_/, '') });
+    if (r?.message) toast(r.message, { error: true });
   }
 
   // ---------- Google Docs (experimental)
@@ -223,6 +216,7 @@ declare global { interface Window { __qthLoaded?: boolean } }
 
   api.runtime.onMessage.addListener((msg: any, sender, sendResponse) => {
     if (sender.id !== api.runtime.id || !msg?.type) return false;
+    if (typeof msg.type === 'string' && /^kf\/(autofill|macro|rec|mapper|scan|refresh)/.test(msg.type)) return automation.onMessage(msg, sendResponse);
     switch (msg.type) {
       case MSG.ping:
         sendResponse({ ok: true, host: location.hostname, top: window === window.top });

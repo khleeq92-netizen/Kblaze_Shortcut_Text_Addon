@@ -1,2 +1,2 @@
-declare const __QTH_TARGET__: 'chrome' | 'firefox';
-declare const __QTH_VERSION__: string;
+declare const __KF_TARGET__: 'chrome' | 'firefox';
+declare const __KF_VERSION__: string;

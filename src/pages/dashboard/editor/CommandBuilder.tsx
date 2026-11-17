@@ -40,13 +40,13 @@ function ConditionInput({ value, onChange, names }: { value: string; onChange: (
       {rows.map((r, i) => (
         <div className="row" key={i} style={{ marginBottom: 6 }}>
           {i > 0 && <select className="select" style={{ width: 70 }} value={join} onChange={(e) => { setJoin(e.target.value as any); build(rows, e.target.value as any); }}><option value="and">and</option><option value="or">or</option></select>}
-          <input className="input" list="qth-names" placeholder="field" value={r.field} onChange={(e) => { const n = rows.map((x, j) => (j === i ? { ...x, field: e.target.value } : x)); setRows(n); build(n); }} />
+          <input className="input" list="kf-names" placeholder="field" value={r.field} onChange={(e) => { const n = rows.map((x, j) => (j === i ? { ...x, field: e.target.value } : x)); setRows(n); build(n); }} />
           <select className="select" value={r.op} onChange={(e) => { const n = rows.map((x, j) => (j === i ? { ...x, op: e.target.value } : x)); setRows(n); build(n); }}>{OPS.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}</select>
           {!['empty', 'notempty'].includes(r.op) && <input className="input" placeholder="value" value={r.val} onChange={(e) => { const n = rows.map((x, j) => (j === i ? { ...x, val: e.target.value } : x)); setRows(n); build(n); }} />}
           {rows.length > 1 && <button type="button" className="btn ghost icon sm" onClick={() => { const n = rows.filter((_, j) => j !== i); setRows(n); build(n); }}><Trash2 size={14} /></button>}
         </div>
       ))}
-      <datalist id="qth-names">{names.map((n) => <option key={n} value={n} />)}</datalist>
+      <datalist id="kf-names">{names.map((n) => <option key={n} value={n} />)}</datalist>
       <div className="row">
         <button type="button" className="btn sm" onClick={() => setRows([...rows, { field: names[0] || '', op: '=', val: '' }])}><Plus size={13} /> Add rule</button>
         <button type="button" className="btn sm ghost" onClick={() => setRaw(true)}><Code2 size={13} /> Write formula</button>
@@ -163,7 +163,7 @@ export function CommandBuilder({ onInsert, onClose, names, initial }: { onInsert
           <div className="muted" style={{ marginBottom: 12 }}>{def.desc}</div>
           {def.params.map((p) => (
             <div className="field" key={p.key}>
-              {p.type !== 'bool' && <label className="label">{p.label}{p.required && <span style={{ color: 'var(--qth-danger)' }}> *</span>}</label>}
+              {p.type !== 'bool' && <label className="label">{p.label}{p.required && <span style={{ color: 'var(--kf-danger)' }}> *</span>}</label>}
               <ParamInput p={p} value={vals[p.key]} onChange={(v) => setVals({ ...vals, [p.key]: v })} names={names} />
               {p.help && <div className="hint">{p.help}</div>}
             </div>

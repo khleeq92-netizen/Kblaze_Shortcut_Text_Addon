@@ -1,18 +1,18 @@
-# ⚡ QuickText Hub
+# ⚡ K-Flow Automation
 
 Smart text expansion, dynamic fill-in templates, a built-in data hub and user-approved
 browser workflow automation — as a Chrome Manifest V3 extension (React + TypeScript),
 local-first with optional Firebase sync.
 
-> Independent product with its own branding, storage namespace (`quicktext-hub-db`,
-> `qth.*` keys), message channel (`qth/*`), DOM elements (`qth-*`), Firebase app name and
+> Independent product with its own branding, storage namespace (`k-flow-db`,
+> `kf.*` keys), message channel (`kf/*`), DOM elements (`kf-*`), Firebase app name and
 > configuration. It can be installed side by side with Jot Hub or any other extension.
 
 ---
 
 ## Install (no build needed)
 
-1. Unzip `release/quicktext-hub-chrome-1.0.0.zip` (or use the ready folder `release/quicktext-hub-unpacked/`).
+1. Unzip `release/k-flow-chrome-1.0.0.zip` (or use the ready folder `release/k-flow-unpacked/`).
 2. Open `chrome://extensions`, switch on **Developer mode**.
 3. **Load unpacked** → select the unzipped folder (it contains `manifest.json`).
 4. The dashboard opens with a short welcome. Type `/ty` in any text box to try it.
@@ -32,7 +32,7 @@ npm run build          # → dist/  (load this folder unpacked)
 ```
 
 ```bash
-npm run package        # → release/quicktext-hub-chrome-<version>.zip
+npm run package        # → release/k-flow-chrome-<version>.zip
 ```
 
 ```bash
@@ -56,7 +56,7 @@ Other scripts: `npm run dev` (watch build), `npm run build:firefox` (→ `dist-f
 * Search by name, shortcut, content or tag; Pinned, Favorites, Recently used views.
 * Enable/disable per snippet; per-snippet trigger mode; tags and descriptions.
 * **Bulk** select → enable, disable, favourite, move, export, share, delete.
-* Import (QuickText JSON, JSON arrays, `{ "shortcut": "text" }` maps) with copy / merge / replace; export any list.
+* Import (K-Flow JSON, JSON arrays, `{ "shortcut": "text" }` maps) with copy / merge / replace; export any list.
 * Plain-text editor with command highlighting, or **rich text** editor (bold, lists, links, headings…).
 * Per-snippet usage count, last used, created/updated.
 
@@ -78,9 +78,9 @@ Other scripts: `npm run dev` (watch build), `npm run build:firefox` (→ `dist-f
 | Same-origin iframes (TinyMCE-style) | content script in all frames | ✅ |
 | Google Docs | **experimental**, opt-in (Settings → Text expansion) | ❌ not automatically testable — see limitations |
 
-  If an editor refuses the insertion, QuickText shows a notification with **Copy text** instead of failing silently.
+  If an editor refuses the insertion, K-Flow shows a notification with **Copy text** instead of failing silently.
 * **Manual selection:** snippet assistant (default **Ctrl+Shift+Space**, configurable), right-click
-  → *Insert QuickText snippet…*, browser command (Alt+Shift+Q), popup *Insert/Copy*, optional floating ⚡ button.
+  → *Insert K-Flow snippet…*, browser command (Alt+Shift+Q), popup *Insert/Copy*, optional floating ⚡ button.
 
 ### Dynamic templates & command engine
 Fields (text, multiline, dropdown, multi-select, checkbox, toggle, date, time, date-time, number, currency,
@@ -148,7 +148,7 @@ enforced by Firestore rules), team analytics and an append-only audit log.
 | Cloud share links | Firebase + sign-in | Offline share codes work |
 | Community marketplace & moderation | Firebase + deployed rules/indexes; `admins/{uid}` docs for moderators | Built-in collections work |
 | Teams, roles, team analytics, audit log | Firebase + Business/Enterprise plan setting | Hidden |
-| Stable extension ID | `npm run generate-key` → `QTH_EXTENSION_KEY` | ID depends on folder path |
+| Stable extension ID | `npm run generate-key` → `KF_EXTENSION_KEY` | ID depends on folder path |
 | Payments / subscriptions | Not implemented by design | Plans are a local setting |
 
 Step-by-step: **[docs/FIREBASE_SETUP.md](docs/FIREBASE_SETUP.md)** · schema & rules: **[docs/FIRESTORE_SCHEMA.md](docs/FIRESTORE_SCHEMA.md)**, `firebase/firestore.rules`.

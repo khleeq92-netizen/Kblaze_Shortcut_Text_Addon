@@ -1,8 +1,8 @@
 {
-  "name": "quicktext-hub",
-  "version": "1.0.0",
+  "name": "k-flow-automation",
+  "version": "2.0.0",
   "private": true,
-  "description": "QuickText Hub - smart text expansion, dynamic templates and browser workflow automation (Manifest V3).",
+  "description": "K-Flow Automation - smart text expansion, dynamic templates and browser workflow automation (Manifest V3).",
   "type": "module",
   "scripts": {
     "dev": "node scripts/build.mjs --watch",
@@ -17,21 +17,26 @@
     "icons": "node scripts/make-icons.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.9.0",
+    "acorn": "^8.15.0",
+    "fflate": "^0.8.2",
     "firebase": "^11.10.0",
     "lucide-react": "^0.460.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "sval": "^0.6.12"
   },
   "devDependencies": {
+    "@lexical/plain-text": "^0.21.0",
+    "@lexical/rich-text": "^0.21.0",
     "@types/chrome": "^0.0.287",
     "@types/node": "^22.10.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "fake-indexeddb": "^6.0.1",
     "jsdom": "^25.0.1",
     "lexical": "^0.21.0",
-    "@lexical/plain-text": "^0.21.0",
-    "@lexical/rich-text": "^0.21.0",
     "quill": "^2.0.3",
     "typescript": "^5.7.2",
     "vite": "^6.0.3",

@@ -1,16 +1,16 @@
 # Firebase setup (optional cloud features)
 
-QuickText Hub is local-first: **everything works without Firebase**. Configure it only if
+K-Flow Automation is local-first: **everything works without Firebase**. Configure it only if
 you want sign-in, automatic backup/sync across devices, cloud share links, the community
 marketplace or team workspaces.
 
-QuickText Hub uses its **own** Firebase project/app configuration, a named Firebase app
-(`quicktext-hub`) and its own storage namespace, so it never interferes with Jot Hub or any
+K-Flow Automation uses its **own** Firebase project/app configuration, a named Firebase app
+(`k-flow`) and its own storage namespace, so it never interferes with Jot Hub or any
 other extension — even if both point to the same Firebase project.
 
 ## 1. Create the project
 
-1. <https://console.firebase.google.com> → **Add project** (e.g. `quicktext-hub`).
+1. <https://console.firebase.google.com> → **Add project** (e.g. `k-flow`).
 2. **Build → Firestore Database → Create database** (production mode, nearest region).
 3. **Build → Authentication → Get started → Sign-in method**: enable **Email/Password** and **Google**.
 
@@ -34,7 +34,7 @@ URIs keep working:
 npm run generate-key
 ```
 
-Put the printed `QTH_EXTENSION_KEY=…` line in `.env` and rebuild. The script also prints
+Put the printed `KF_EXTENSION_KEY=…` line in `.env` and rebuild. The script also prints
 the resulting extension ID and redirect URI. (When published to the Chrome Web Store, use
 the store's ID instead.)
 
@@ -45,7 +45,7 @@ Firebase console → **Authentication → Settings → Authorized domains → Ad
 
 ## 5. Google Sign-In (OAuth client)
 
-Extensions cannot use Firebase's popup flow, so QuickText Hub uses
+Extensions cannot use Firebase's popup flow, so K-Flow Automation uses
 `chrome.identity.launchWebAuthFlow` and exchanges the Google ID token with Firebase.
 
 1. Google Cloud console (same project) → **APIs & Services → Credentials → Create

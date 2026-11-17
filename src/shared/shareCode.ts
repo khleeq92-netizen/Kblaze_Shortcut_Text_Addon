@@ -2,7 +2,7 @@
 import type { ExportBundle } from './types';
 import { parseImport } from './validate';
 
-export const CODE_PREFIX = 'QTH1.';
+export const CODE_PREFIX = 'KF1.';
 
 function b64url(bytes: Uint8Array) {
   let s = '';
@@ -23,7 +23,7 @@ export async function makeShareCode(bundle: ExportBundle): Promise<string> {
 
 export async function decodeShareCode(code: string): Promise<ExportBundle> {
   const s = code.trim();
-  if (!s.startsWith(CODE_PREFIX)) throw new Error('Not a QuickText share code');
+  if (!s.startsWith(CODE_PREFIX)) throw new Error('Not a K-Flow share code');
   let json: string;
   try { json = new TextDecoder().decode(await pipe(fromB64url(s.slice(CODE_PREFIX.length).replace(/\s+/g, '')), new DecompressionStream('deflate-raw'))); }
   catch { throw new Error('This share code is damaged or incomplete.'); }
@@ -31,5 +31,5 @@ export async function decodeShareCode(code: string): Promise<ExportBundle> {
 }
 
 export function bundleOf(snippets: any[], folders: any[]): ExportBundle {
-  return { format: 'quicktext-hub', version: 1, exportedAt: Date.now(), snippets: snippets.map((s) => ({ ...s, teamId: null })), folders: folders.map((f) => ({ ...f, teamId: null })) };
+  return { format: 'k-flow', version: 1, exportedAt: Date.now(), snippets: snippets.map((s) => ({ ...s, teamId: null })), folders: folders.map((f) => ({ ...f, teamId: null })) };
 }

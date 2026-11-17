@@ -29,9 +29,9 @@ export function ImportDialog({ onClose, targetFolder = null, initialCode = '' }:
     try {
       const s = code.trim();
       let res: { bundle: ExportBundle; title: string; from: string };
-      if (s.startsWith('QTH1.')) { const b = await decodeShareCode(s); res = { bundle: b, title: `${b.snippets.length} snippet(s)`, from: 'a share code' }; }
+      if (s.startsWith('KF1.')) { const b = await decodeShareCode(s); res = { bundle: b, title: `${b.snippets.length} snippet(s)`, from: 'a share code' }; }
       else if (mod) res = await mod.sharing.resolveShare(s);
-      else throw new Error('Cloud share links need cloud features configured (Settings → Cloud & Account). Offline codes (QTH1.…) always work.');
+      else throw new Error('Cloud share links need cloud features configured (Settings → Cloud & Account). Offline codes (KF1.…) always work.');
       setBundle(res.bundle); setMeta(`“${res.title}” from ${res.from}`); setMode('copy');
     } catch (e: any) { setErr(e.message); }
   };
@@ -48,9 +48,9 @@ export function ImportDialog({ onClose, targetFolder = null, initialCode = '' }:
       {!bundle ? (
         <>
           <button className="btn" onClick={fromFile}><FileUp size={15} /> Choose a JSON file…</button>
-          <div className="hint">QuickText Hub exports, a JSON array of snippets, or a simple {'{ "shortcut": "text" }'} map.</div>
+          <div className="hint">K-Flow Automation exports, a JSON array of snippets, or a simple {'{ "shortcut": "text" }'} map.</div>
           <div className="label" style={{ marginTop: 16 }}>…or paste a share code / link</div>
-          <textarea className="textarea mono" rows={3} value={code} onChange={(e) => setCode(e.target.value)} placeholder="QTH1.…  or  QTHS-…" />
+          <textarea className="textarea mono" rows={3} value={code} onChange={(e) => setCode(e.target.value)} placeholder="KF1.…  or  KFS-…" />
           <button className="btn" onClick={fromCode} disabled={!code.trim()}><ClipboardPaste size={15} /> Read share</button>
         </>
       ) : (
@@ -63,7 +63,7 @@ export function ImportDialog({ onClose, targetFolder = null, initialCode = '' }:
             <label className="label">How to import</label>
             <label className="check"><input type="radio" checked={mode === 'copy'} onChange={() => setMode('copy')} /> Add as new copies (never overwrites)</label><br />
             <label className="check"><input type="radio" checked={mode === 'merge'} onChange={() => setMode('merge')} /> Merge — update matching snippets if the imported version is newer</label><br />
-            <label className="check"><input type="radio" checked={mode === 'replace'} onChange={() => setMode('replace')} /> <span style={{ color: 'var(--qth-danger)' }}>Replace all my snippets and folders</span></label>
+            <label className="check"><input type="radio" checked={mode === 'replace'} onChange={() => setMode('replace')} /> <span style={{ color: 'var(--kf-danger)' }}>Replace all my snippets and folders</span></label>
           </div>
           <div className="field">
             <label className="label">Put snippets without a folder into</label>

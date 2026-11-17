@@ -1,4 +1,4 @@
-// Creates release/quicktext-hub-<version>.zip from dist/ (uses the system "zip" if present,
+// Creates release/k-flow-<version>.zip from dist/ (uses the system "zip" if present,
 // otherwise a minimal built-in ZIP writer).
 import fs from 'node:fs';
 import path from 'node:path';
@@ -14,13 +14,13 @@ const src = path.join(root, target === 'firefox' ? 'dist-firefox' : 'dist');
 const outDir = path.join(root, 'release');
 fs.mkdirSync(outDir, { recursive: true });
 if (unpacked) {
-  const dest = path.join(outDir, `quicktext-hub-unpacked${target === 'firefox' ? '-firefox' : ''}`);
+  const dest = path.join(outDir, `k-flow-unpacked${target === 'firefox' ? '-firefox' : ''}`);
   fs.rmSync(dest, { recursive: true, force: true });
   fs.cpSync(src, dest, { recursive: true });
   console.log('Unpacked extension folder:', path.relative(root, dest));
   process.exit(0);
 }
-const out = path.join(outDir, `quicktext-hub-${target}-${pkg.version}.zip`);
+const out = path.join(outDir, `k-flow-${target}-${pkg.version}.zip`);
 fs.rmSync(out, { force: true });
 
 function walk(dir, base = '') {

@@ -30,7 +30,7 @@ export function ShareDialog({ snippetIds, folderId, onClose }: { snippetIds?: st
 
   return (
     <Modal title={`Share “${title}”`} onClose={onClose} width={620}>
-      <p className="muted" style={{ marginTop: 0 }}>{list.length} snippet(s){fset.length ? ` in ${fset.length} folder(s)` : ''}. Recipients import a copy into their own QuickText Hub; your originals stay private.</p>
+      <p className="muted" style={{ marginTop: 0 }}>{list.length} snippet(s){fset.length ? ` in ${fset.length} folder(s)` : ''}. Recipients import a copy into their own K-Flow Automation; your originals stay private.</p>
       <div className="section card" style={{ boxShadow: 'none' }}>
         <div className="section-head"><div><h3><KeyRound size={15} /> Offline share code</h3><div className="muted" style={{ fontSize: 13 }}>Works without an account. The code contains the snippets themselves — send it by email or chat.</div></div></div>
         {code ? (
@@ -47,7 +47,7 @@ export function ShareDialog({ snippetIds, folderId, onClose }: { snippetIds?: st
           : link ? (
             <>
               <div className="field"><label className="label">Share code</label><div className="row"><input className="input mono" readOnly value={link.code} /><button className="btn" onClick={() => copy(link.code)}><Copy size={14} /></button></div></div>
-              <div className="field"><label className="label">Direct link (for people with QuickText Hub installed)</label><div className="row"><input className="input mono" readOnly value={link.link} /><button className="btn" onClick={() => copy(link.link)}><Copy size={14} /></button></div></div>
+              <div className="field"><label className="label">Direct link (for people with K-Flow Automation installed)</label><div className="row"><input className="input mono" readOnly value={link.link} /><button className="btn" onClick={() => copy(link.link)}><Copy size={14} /></button></div></div>
             </>
           ) : (
             <>

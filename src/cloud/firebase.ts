@@ -1,6 +1,6 @@
 // Firebase bootstrap. Loaded lazily (dynamic import) by the dashboard only, so the
 // content script, background worker and popup never ship Firebase.
-// Uses a dedicated named app ("quicktext-hub") and its own IndexedDB persistence,
+// Uses a dedicated named app ("k-flow") and its own IndexedDB persistence,
 // so it never collides with another extension's Firebase project.
 import { initializeApp, getApps, deleteApp, type FirebaseApp } from 'firebase/app';
 import {

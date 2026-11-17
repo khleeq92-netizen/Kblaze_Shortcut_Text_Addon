@@ -4,10 +4,42 @@ import { useCloud } from '../cloud';
 import { FolderDialog } from './FolderDialog';
 import { ConfirmModal } from '../common';
 import type { Folder } from '../../../shared/types';
-import { FileText, Folder as FolderIc, FolderOpen, Star, Clock, LayoutTemplate, Database, Store, Settings, Zap, Pin, BarChart3, Users, ChevronRight, ChevronDown, Plus, Pencil, Trash2, Cloud, CloudOff } from 'lucide-react';
+import { FileText, Folder as FolderIc, FolderOpen, Star, Clock, LayoutTemplate, Database, Store, Settings, Zap, Pin, BarChart3, Users, ChevronRight, ChevronDown, Plus, Pencil, Trash2, Cloud, CloudOff,
+  LayoutDashboard, FormInput, Clapperboard, FileCode2, Braces, KeyRound, Wand2, History, ScrollText, Building2, HardDriveDownload, Layers, GraduationCap, CandlestickChart, Sparkles, Briefcase, Building, HeartPulse, ShoppingBag, Landmark } from 'lucide-react';
 
-export const DND_SNIPPETS = 'application/x-qth-snippets';
-export const DND_FOLDER = 'application/x-qth-folder';
+const WS_ICONS: Record<string, any> = { GraduationCap, CandlestickChart, Sparkles, Briefcase, Building2: Building, HeartPulse, ShoppingBag, Landmark };
+export function WsIcon({ name, size = 16 }: { name: string; size?: number }) {
+  const I = WS_ICONS[name] || Layers;
+  return <I size={size} />;
+}
+
+function WorkspaceSwitcher() {
+  const { workspaces, ws, setSettings } = useStore();
+  const [, , go] = useRoute();
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="kf-wsw">
+      <button className="kf-wsw-btn" style={{ ['--ws' as any]: ws.color }} onClick={() => setOpen(!open)} id="kf-ws-switch">
+        <span className="kf-wsw-ic"><WsIcon name={ws.icon} /></span>
+        <span className="grow" style={{ textAlign: 'left', overflow: 'hidden' }}><span className="kf-wsw-l">Workspace</span><b>{ws.name}</b></span>
+        <ChevronDown size={14} />
+      </button>
+      {open && (
+        <div className="kf-wsw-menu" onMouseLeave={() => setOpen(false)}>
+          {workspaces.filter((w) => !w.archived).map((w) => (
+            <button key={w.id} className={w.id === ws.id ? 'on' : ''} style={{ ['--ws' as any]: w.color }} onClick={() => { setSettings({ activeWorkspaceId: w.id }); setOpen(false); }}>
+              <span className="kf-wsw-ic sm"><WsIcon name={w.icon} size={14} /></span>{w.name}
+            </button>
+          ))}
+          <button className="manage" onClick={() => { go('/workspaces'); setOpen(false); }}><Layers size={14} /> Manage workspaces</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export const DND_SNIPPETS = 'application/x-kf-snippets';
+export const DND_FOLDER = 'application/x-kf-folder';
 
 function useDrop(onDropSnippets: (ids: string[]) => void, onDropFolder?: (id: string) => void) {
   const [over, setOver] = useState(false);
@@ -89,9 +121,9 @@ function FolderNode({ f, depth }: { f: Folder; depth: number }) {
           title={`Delete "${f.name}"?`}
           danger
           confirmLabel="Delete folder"
-          message={<>Snippets and subfolders inside will be moved up one level. <br /><label className="check" style={{ marginTop: 10 }}><input type="checkbox" id="qth-del-contents" /> Delete its snippets and subfolders too</label></>}
+          message={<>Snippets and subfolders inside will be moved up one level. <br /><label className="check" style={{ marginTop: 10 }}><input type="checkbox" id="kf-del-contents" /> Delete its snippets and subfolders too</label></>}
           onConfirm={async () => {
-            const all = (document.getElementById('qth-del-contents') as HTMLInputElement)?.checked;
+            const all = (document.getElementById('kf-del-contents') as HTMLInputElement)?.checked;
             await deleteFolder(f.id, all ? 'delete-contents' : 'move-up');
             go('/snippets');
             toast('Folder deleted');
@@ -104,7 +136,7 @@ function FolderNode({ f, depth }: { f: Folder; depth: number }) {
 }
 
 export function Sidebar() {
-  const { snippets, folders, usage, saveSnippets, saveFolders, tables, workflows, settings, can, toast } = useStore();
+  const { snippets, folders, usage, saveSnippets, saveFolders, tables, toast } = useStore();
   const { configured, user, sync } = useCloud();
   const [path, , go] = useRoute();
   const [newFolder, setNewFolder] = useState(false);
@@ -118,27 +150,48 @@ export function Sidebar() {
     </div>
   );
   const recent = [...usage.values()].filter((u) => snippets.some((s) => s.id === u.snippetId)).length;
-  const dot = !configured ? 'var(--qth-muted)' : !user ? 'var(--qth-warning)' : sync.status === 'error' ? 'var(--qth-danger)' : sync.status === 'syncing' ? 'var(--qth-accent)' : 'var(--qth-success)';
+  const dot = !configured ? 'var(--kf-muted)' : !user ? 'var(--kf-warning)' : sync.status === 'error' ? 'var(--kf-danger)' : sync.status === 'syncing' ? 'var(--kf-accent)' : 'var(--kf-success)';
+  const isText = /^\/(snippets|pinned|favorites|recent|folder|search|new|templates|marketplace|stats)/.test(path);
+  const inWs = useStore().inWs;
+  const st = useStore();
+  const wsFolders = folders.filter((f) => !f.parentId && (inWs(f) || f.orgId));
   return (
     <aside className="sidebar">
-      <div className="brand"><div className="logo">⚡</div>QuickText Hub</div>
+      <div className="brand"><div className="logo">K</div><div><div>K-Flow</div><div className="brand-sub">Automation</div></div></div>
+      <WorkspaceSwitcher />
       <nav className="nav">
+        {item('/overview', <LayoutDashboard size={16} />, 'Dashboard')}
+        <div className="nav-sep">Automate</div>
+        {item('/autofill', <FormInput size={16} />, 'Autofill profiles', st.autofill.filter(inWs).filter((p) => !p.name.startsWith('[Draft]')).length)}
+        {item('/macros', <Clapperboard size={16} />, 'Macros', st.macros.filter(inWs).length)}
+        {item('/scripts', <FileCode2 size={16} />, 'Scripts', st.scripts.filter(inWs).length)}
+        {!st.org?.policies.disableAI && item('/builder', <Wand2 size={16} />, 'AI builder')}
+        <div className="nav-sep">Data</div>
+        {item('/data', <Database size={16} />, 'Datasets', tables.filter(inWs).length)}
+        {item('/variables', <Braces size={16} />, 'Variables', st.variables.filter((v) => !v.workspaceId || inWs(v)).length)}
+        {item('/vault', <KeyRound size={16} />, 'Vault', st.vault.length)}
+        <div className="nav-sep">Text</div>
         <div className={'nav-item' + (path === '/snippets' || path === '/' ? ' on' : '') + (rootDrop.over ? ' drop' : '')} onClick={() => go('/snippets')} {...rootDrop.props}>
-          <FileText size={16} /><span>My Snippets</span><span className="count">{snippets.length}</span>
+          <FileText size={16} /><span>Snippets</span><span className="count">{snippets.filter(inWs).length}</span>
         </div>
-        {item('/pinned', <Pin size={16} />, 'Pinned', snippets.filter((s) => s.pinned).length)}
-        {item('/favorites', <Star size={16} />, 'Favorites', snippets.filter((s) => s.favorite).length)}
-        {item('/recent', <Clock size={16} />, 'Recently used', recent)}
-        <div className="nav-sep">Folders <button className="btn ghost icon sm" title="New folder" onClick={() => setNewFolder(true)}><Plus size={13} /></button></div>
-        {folders.filter((f) => !f.parentId).map((f) => <FolderNode key={f.id} f={f} depth={0} />)}
-        {!folders.length && <div className="muted" style={{ padding: '2px 10px', fontSize: 12.5 }}>No folders yet</div>}
-        <div className="nav-sep">Workspace</div>
-        {item('/templates', <LayoutTemplate size={16} />, 'Templates')}
-        {item('/data', <Database size={16} />, 'Data Hub', tables.length)}
-        {item('/autopilot', <Zap size={16} />, 'Autopilot', workflows.length)}
+        {isText && <>
+          {item('/pinned', <Pin size={16} />, 'Pinned', snippets.filter((s) => s.pinned).length)}
+          {item('/favorites', <Star size={16} />, 'Favorites', snippets.filter((s) => s.favorite).length)}
+          {item('/recent', <Clock size={16} />, 'Recently used', recent)}
+          <div className="nav-sep sub">Folders <button className="btn ghost icon sm" title="New folder" onClick={() => setNewFolder(true)}><Plus size={13} /></button></div>
+          {wsFolders.map((f) => <FolderNode key={f.id} f={f} depth={0} />)}
+          {!wsFolders.length && <div className="muted" style={{ padding: '2px 10px', fontSize: 12.5 }}>No folders in this workspace</div>}
+        </>}
+        {item('/templates', <LayoutTemplate size={16} />, 'Template library')}
         {item('/marketplace', <Store size={16} />, 'Marketplace')}
-        {item('/stats', <BarChart3 size={16} />, 'Usage statistics')}
-        {can('teams') && item('/team', <Users size={16} />, 'Team')}
+        <div className="nav-sep">Monitor</div>
+        {item('/history', <History size={16} />, 'Execution history')}
+        {item('/audit', <ScrollText size={16} />, 'Audit log')}
+        {item('/stats', <BarChart3 size={16} />, 'Text usage')}
+        <div className="nav-sep">Admin</div>
+        {item('/org', <Building2 size={16} />, 'Organization')}
+        {item('/workspaces', <Layers size={16} />, 'Workspaces', st.workspaces.length)}
+        {item('/backup', <HardDriveDownload size={16} />, 'Backup & recovery')}
         {item('/settings', <Settings size={16} />, 'Settings')}
       </nav>
       <div className="side-foot row" style={{ justifyContent: 'space-between' }}>
@@ -146,7 +199,7 @@ export function Sidebar() {
           <span className="sync-dot" style={{ background: dot }} />
           {!configured ? <><CloudOff size={13} /> Local only</> : !user ? 'Not signed in' : sync.status === 'syncing' ? 'Syncing…' : sync.status === 'error' ? 'Sync error' : <><Cloud size={13} /> Synced {sync.lastSyncAt ? new Date(sync.lastSyncAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</>}
         </span>
-        <span className="badge primary">{settings.plan.toUpperCase()}</span>
+        {st.org ? <span className="badge primary" title={st.org.orgName}>{st.org.role}</span> : <span className="badge">personal</span>}
       </div>
       {newFolder && <FolderDialog onClose={() => setNewFolder(false)} />}
     </aside>

@@ -1,4 +1,4 @@
-// Production build for QuickText Hub.
+// Production build for K-Flow Automation.
 //   node scripts/build.mjs [--target=chrome|firefox] [--watch]
 import { build } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -28,7 +28,7 @@ function loadEnv() {
 }
 const env = loadEnv();
 const alias = { '@': path.join(root, 'src') };
-const define = { __QTH_TARGET__: JSON.stringify(target), __QTH_VERSION__: JSON.stringify(pkg.version) };
+const define = { __KF_TARGET__: JSON.stringify(target), __KF_VERSION__: JSON.stringify(pkg.version) };
 const common = {
   configFile: false,
   envDir: root,
@@ -70,6 +70,8 @@ await build({
 // 3. Background - single ES module file (service worker / Firefox event page).
 for (const [name, entry, format] of [
   ['content', 'src/content/index.ts', 'iife'],
+  // injected into the page MAIN world only when the user runs a script (sval interpreter, no eval)
+  ['script-host', 'src/script-host/index.ts', 'iife'],
   ['background', 'src/background/index.ts', 'es'],
 ]) {
   await build({
@@ -80,7 +82,7 @@ for (const [name, entry, format] of [
       target: 'es2021',
       sourcemap: false,
       minify: true,
-      lib: { entry: path.join(root, entry), formats: [format], name: 'QuickTextHub_' + name, fileName: () => name + '.js' },
+      lib: { entry: path.join(root, entry), formats: [format], name: 'KFlow_' + name.replace(/-/g, '_'), fileName: () => name + '.js' },
       rollupOptions: { output: { inlineDynamicImports: true } },
       watch: watch ? {} : null,
     },
@@ -89,6 +91,6 @@ for (const [name, entry, format] of [
 
 // 4. Static files + manifest.
 fs.cpSync(path.join(root, 'public'), outDir, { recursive: true });
-const manifest = buildManifest({ target, version: pkg.version, key: env.QTH_EXTENSION_KEY || undefined });
+const manifest = buildManifest({ target, version: pkg.version, key: env.KF_EXTENSION_KEY || undefined });
 fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
-console.log(`QuickText Hub built for ${target} -> ${path.relative(root, outDir)}`);
+console.log(`K-Flow Automation built for ${target} -> ${path.relative(root, outDir)}`);

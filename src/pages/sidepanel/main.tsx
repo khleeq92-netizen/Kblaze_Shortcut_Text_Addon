@@ -1,4 +1,4 @@
-// QuickText side panel: browse & search snippets, fill forms inline (no popup
+// K-Flow side panel: browse & search snippets, fill forms inline (no popup
 // needed on WhatsApp Web), insert into the page or copy, run Autopilot, and
 // create snippets quickly — stays open while you work.
 import React, { useEffect, useMemo, useState } from 'react';
@@ -16,15 +16,89 @@ import { FormRenderer, hasErrors } from '../../ui/FormRenderer';
 import { htmlToText, sanitizeHtml } from '../../shared/html';
 import { uid } from '../../shared/ids';
 import type { Snippet, Folder, DataTable, Settings, Workflow, UsageRecord } from '../../shared/types';
-import { Search, Copy, CornerDownLeft, ExternalLink, Play, Plus, Star, Pin, ChevronDown, ChevronRight, Power, Crosshair } from 'lucide-react';
+import { Search, Copy, CornerDownLeft, ExternalLink, Play, Plus, Star, Pin, ChevronDown, ChevronRight, Power, Crosshair, Eye, Circle, Pause, Square, SkipForward, SkipBack, FileCode2, Clapperboard, FormInput } from 'lucide-react';
+import { resolveVariables, formatOptionsFrom } from '../../automation/variables';
+import { unprotectTable } from '../../data/protect';
+import { masterKey } from '../../security/vault';
+import { recordLabel } from '../../data/sources';
+import type { Workspace, Variable } from '../../shared/types';
 
-interface Data { settings: Settings; snippets: Snippet[]; folders: Folder[]; tables: DataTable[]; workflows: Workflow[]; usage: Map<string, UsageRecord> }
+interface Data { settings: Settings; snippets: Snippet[]; folders: Folder[]; tables: DataTable[]; workflows: Workflow[]; usage: Map<string, UsageRecord>; workspaces: Workspace[]; globals: Record<string, any> }
 
 async function loadData(): Promise<Data> {
-  const [settings, snippets, folders, tables, workflows, usage] = await Promise.all([
-    loadSettings(), listRecords<Snippet>('snippets'), listRecords<Folder>('folders'), listRecords<DataTable>('tables'), listRecords<Workflow>('workflows'), getAll<UsageRecord>('usage'),
+  const [settings, snippets, folders, raw, workflows, usage, workspaces, variables] = await Promise.all([
+    loadSettings(), listRecords<Snippet>('snippets'), listRecords<Folder>('folders'), listRecords<DataTable>('tables'), listRecords<Workflow>('workflows'), getAll<UsageRecord>('usage'), listRecords<Workspace>('workspaces'), listRecords<Variable>('variables'),
   ]);
-  return { settings, snippets: snippets.filter((s) => s.enabled), folders, tables, workflows: workflows.filter((w) => w.enabled), usage: new Map(usage.map((u) => [u.snippetId, u])) };
+  const mk = await masterKey();
+  const tables = await Promise.all(raw.map((t) => unprotectTable(t, mk)));
+  const ws = settings.activeWorkspaceId;
+  const r = resolveVariables(variables, { datasets: tables, fo: formatOptionsFrom(settings), workspaceId: ws, vault: null });
+  const { row, record, vault, ...globals } = r.values as any;
+  const inWs = (x: { workspaceId?: string }) => (x.workspaceId || 'ws_general') === ws;
+  return { settings, snippets: snippets.filter((s) => s.enabled && inWs(s)), folders: folders.filter(inWs), tables, workflows: workflows.filter((w) => w.enabled), usage: new Map(usage.map((u) => [u.snippetId, u])), workspaces, globals };
+}
+
+function send<T = any>(msg: any): Promise<T> {
+  return api.runtime.sendMessage(msg).then((r: any) => { if (r?.kind === 'error') throw new Error(r.message); return r; });
+}
+
+/** Automations for the current page: autofill (with record stepping), macros, scripts, recorder, field selector. */
+function PagePanel({ data, flash }: { data: Data; flash: (m: string, err?: boolean) => void }) {
+  const [info, setInfo] = useState<any>(null);
+  const [all, setAll] = useState(false);
+  const load = () => send<any>({ type: 'kf/automation/forPage' }).then(setInfo).catch(() => setInfo(null));
+  useEffect(() => {
+    load();
+    const iv = setInterval(load, 2500);
+    const onAct = () => load();
+    api.tabs.onActivated.addListener(onAct);
+    return () => { clearInterval(iv); api.tabs.onActivated.removeListener(onAct); };
+  }, []);
+  const err = (e: any) => flash(/Receiving end|Could not establish/.test(e?.message) ? 'Reload this page once so K-Flow can work on it.' : e?.message || String(e), true);
+  if (!info) return <div className="muted" style={{ padding: 16 }}>Open a website to see its automations.</div>;
+  if (!info.allowed) return <div className="sp-warn">{info.reason}</div>;
+  const profiles = info.profiles.filter((p: any) => all || p.matches);
+  const macros = info.macros.filter((m: any) => all || m.matches || m.anySite);
+  const scripts = info.scripts.filter((x: any) => all || x.matches || x.anySite);
+  const fill = (id: string, preview = false) => send({ type: 'kf/autofill/run', profileId: id, preview }).then((r: any) => r?.report && flash(`${preview ? 'Preview' : 'Filled'}: ${r.report.filled} ok · ${r.report.failed} problem(s)`, r.report.failed > 0)).catch(err);
+  const move = (datasetId: string, dir: 'next' | 'prev') => send<any>({ type: 'kf/dataset/move', datasetId, dir }).then((r) => { flash(r.ok ? `Record ${r.index + 1}/${r.total}: ${r.label}` : 'No more records', !r.ok); }).catch(err);
+  return (
+    <>
+      {info.official && <div className="sp-warn">Official portal — K-Flow fills fields but asks before every action button. Submit the form yourself.</div>}
+      {info.run && (
+        <div className="sp-run">
+          <b className="grow">▶ {info.run.name}</b><span className="badge">{info.run.status} · step {Number(info.run.step) + 1}</span>
+          {info.run.status === 'paused' ? <button className="btn sm" onClick={() => send({ type: 'kf/macro/control', action: 'resume' }).then(load)}><Play size={12} /></button> : <button className="btn sm" onClick={() => send({ type: 'kf/macro/control', action: 'pause' }).then(load)}><Pause size={12} /></button>}
+          <button className="btn sm danger" onClick={() => send({ type: 'kf/macro/control', action: 'stop' }).then(load)}><Square size={12} /></button>
+        </div>
+      )}
+      <div className="sp-tools">
+        <button className="btn sm" onClick={() => send({ type: 'kf/mapper/start' }).then(() => flash('Click a field on the page to map it')).catch(err)}><Crosshair size={13} /> Map fields</button>
+        {info.recording ? <>
+          <button className="btn sm danger" onClick={() => send({ type: 'kf/rec/stop', save: true }).then((r: any) => flash(r.saved ? `Macro saved (${r.steps} steps)` : 'Nothing recorded', !r.saved)).catch(err)}><Square size={12} /> Stop ({info.recording.steps})</button>
+          <button className="btn sm" onClick={() => send({ type: 'kf/rec/pause', paused: !info.recording.paused }).then(load)}>{info.recording.paused ? 'Resume' : 'Pause'}</button>
+        </> : <button className="btn sm" onClick={() => send({ type: 'kf/rec/start' }).then(() => { flash('Recording — use the page normally'); load(); }).catch(err)}><Circle size={12} color="#ef4444" /> Record macro</button>}
+        <label className="check" style={{ marginLeft: 'auto', fontSize: 12 }}><input type="checkbox" checked={all} onChange={(e) => setAll(e.target.checked)} /> show all</label>
+      </div>
+      <div className="sp-sec"><FormInput size={13} /> Autofill</div>
+      {profiles.map((p: any) => {
+        const ds = p.datasetId ? data.tables.find((t) => t.id === p.datasetId) : null;
+        return (
+          <div className="sp-item" key={p.id}>
+            <div className="sp-item-head"><span className="nm">{p.name}</span>{p.starter && <span className="badge warn">verify</span>}<span className="badge">{p.rules}</span></div>
+            {ds && <div className="sp-rec"><button className="btn ghost icon sm" onClick={() => move(ds.id, 'prev')}><SkipBack size={12} /></button><span className="grow">{ds.rows.length ? recordLabel(ds, ds.currentRowId || ds.rows[0].id) : 'dataset empty'}</span><button className="btn ghost icon sm" onClick={() => move(ds.id, 'next')}><SkipForward size={12} /></button></div>}
+            <div className="row" style={{ gap: 6 }}><button className="btn sm" onClick={() => fill(p.id, true)}><Eye size={12} /> Preview</button><button className="btn sm primary" onClick={() => fill(p.id)}><Play size={12} /> Fill</button>{p.shortcut && <span className="kbd">{p.shortcut}</span>}</div>
+          </div>
+        );
+      })}
+      {!profiles.length && <div className="muted sp-empty">No profile for {info.host}. Use <b>Map fields</b> to create one.</div>}
+      <div className="sp-sec"><Clapperboard size={13} /> Macros</div>
+      {macros.map((m: any) => <div className="sp-item" key={m.id}><div className="sp-item-head"><span className="nm">{m.name}</span><span className="badge">{m.steps} steps</span><button className="btn sm primary" onClick={() => send({ type: 'kf/macro/start', macroId: m.id }).then(() => { flash('Macro started'); load(); }).catch(err)}><Play size={12} /> Run</button></div></div>)}
+      {!macros.length && <div className="muted sp-empty">No macros for this page.</div>}
+      {scripts.length > 0 && <div className="sp-sec"><FileCode2 size={13} /> Scripts</div>}
+      {scripts.map((x: any) => <div className="sp-item" key={x.id}><div className="sp-item-head"><span className="nm">{x.name}</span><button className="btn sm" onClick={() => send<any>({ type: 'kf/script/run', scriptId: x.id }).then((r) => flash(r.ok ? `✓ ${x.name}${r.result !== undefined && r.result !== null ? ' → ' + JSON.stringify(r.result).slice(0, 60) : ''}` : `✗ ${r.error?.message}`, !r.ok)).catch(err)}><Play size={12} /> Run</button></div></div>)}
+    </>
+  );
 }
 
 async function activeTab() {
@@ -35,7 +109,7 @@ async function activeTab() {
 function SnippetCard({ s, data, open, onToggle, flash, page }: { s: Snippet; data: Data; open: boolean; onToggle: () => void; flash: (m: string, err?: boolean) => void; page: any }) {
   const [values, setValues] = useState<Record<string, any>>({});
   const [showErrors, setShowErrors] = useState(false);
-  const out = useMemo(() => (open ? render(s.content, s.contentType, buildRenderContext({ settings: data.settings, snippets: data.snippets, tables: data.tables, values, page })) : null), [open, s, values, data, page]);
+  const out = useMemo(() => (open ? render(s.content, s.contentType, { ...buildRenderContext({ settings: data.settings, snippets: data.snippets, tables: data.tables, values, page }), globals: data.globals }) : null), [open, s, values, data, page]);
   const ready = () => {
     if (!out) return null;
     if (out.errors.length) { flash(out.errors[0], true); return null; }
@@ -53,7 +127,7 @@ function SnippetCard({ s, data, open, onToggle, flash, page }: { s: Snippet; dat
       if (r?.ok) { await recordUsage(s.id); flash('Inserted ✓'); setValues({}); setShowErrors(false); }
       else if (r?.error === 'no-field') flash('Click into the text box on the page first, then press Insert.', true);
       else { await copy(); }
-    } catch { flash('QuickText can’t insert on this page — copied instead.', true); await copy(); }
+    } catch { flash('K-Flow can’t insert on this page — copied instead.', true); await copy(); }
   };
   const copy = async () => {
     const o = ready();
@@ -121,7 +195,7 @@ function QuickAdd({ data, flash, done }: { data: Data; flash: (m: string, err?: 
 
 function App() {
   const [data, setData] = useState<Data | null>(null);
-  const [tab, setTab] = useState<'snippets' | 'autopilot' | 'add'>('snippets');
+  const [tab, setTab] = useState<'page' | 'snippets' | 'add'>('page');
   const [q, setQ] = useState('');
   const [view, setView] = useState<string>('all');
   const [open, setOpen] = useState<string | null>(null);
@@ -169,29 +243,21 @@ function App() {
   if (!data) return <div className="muted" style={{ padding: 20 }}>Loading…</div>;
   const blocked = host ? isSiteBlocked(data.settings, host) : false;
   const dash = (h = '') => api.tabs.create({ url: api.runtime.getURL('dashboard/index.html' + (h ? '#' + h : '')) });
-  const runWf = async (w: Workflow) => {
-    const t = await activeTab();
-    try { await api.tabs.sendMessage(t!.id!, { type: MSG.runWorkflow, id: w.id }, { frameId: 0 }); flash('Running ' + w.name); } catch { flash('Autopilot can’t run on this page', true); }
-  };
-  const pick = async () => {
-    const t = await activeTab();
-    try { await api.tabs.sendMessage(t!.id!, { type: MSG.startPicker }, { frameId: 0 }); flash('Click an element on the page'); } catch { flash('Can’t pick elements on this page', true); }
-  };
-
   return (
     <div className="sp">
       <div className="sp-top">
-        <b>⚡ QuickText Hub</b>
+        <b className="sp-brand"><span>K</span> K-Flow</b>
+        <select className="select sp-ws" value={data.settings.activeWorkspaceId} onChange={(e) => saveSettings({ activeWorkspaceId: e.target.value })} title="Workspace">{data.workspaces.filter((w) => !w.archived).map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}</select>
         <button className="btn sm" title={data.settings.expansionEnabled ? 'Pause shortcut expansion' : 'Resume'} onClick={() => saveSettings({ expansionEnabled: !data.settings.expansionEnabled })}><Power size={13} /> {data.settings.expansionEnabled ? 'On' : 'Off'}</button>
         <button className="btn sm" title="Open dashboard" onClick={() => dash()}><ExternalLink size={13} /></button>
       </div>
       <div className="sp-site">
         {host ? <><span className="grow">{blocked ? 'Disabled on' : 'Page:'} <b>{host}</b></span><button className="btn sm" onClick={() => saveSettings({ blockedSites: blocked ? data.settings.blockedSites.filter((b) => !isSiteBlocked({ ...data.settings, blockedSites: [b] }, host)) : [...data.settings.blockedSites, host] })}>{blocked ? 'Enable here' : 'Disable here'}</button></>
-          : <span className="muted">This page can’t be used with QuickText (browser page) — Copy still works.</span>}
+          : <span className="muted">This page can’t be used with K-Flow (browser page) — Copy still works.</span>}
       </div>
       <div className="sp-tabs">
+        <button className={tab === 'page' ? 'on' : ''} onClick={() => setTab('page')}>This page</button>
         <button className={tab === 'snippets' ? 'on' : ''} onClick={() => setTab('snippets')}>Snippets ({data.snippets.length})</button>
-        <button className={tab === 'autopilot' ? 'on' : ''} onClick={() => setTab('autopilot')}>Autopilot</button>
         <button className={tab === 'add' ? 'on' : ''} onClick={() => setTab('add')}>+ Quick add</button>
       </div>
       <div className="sp-body">
@@ -213,18 +279,7 @@ function App() {
             {!list.length && <div className="muted" style={{ padding: 20, textAlign: 'center' }}>No snippets found. <a href="#" onClick={(e) => { e.preventDefault(); dash('/templates'); }}>Browse templates</a></div>}
           </>
         )}
-        {tab === 'autopilot' && (
-          <>
-            {data.workflows.map((w) => (
-              <div className="sp-item" key={w.id}><div className="sp-item-head"><span className="nm">{w.name}</span><span className="badge">{w.steps.length} steps</span><button className="btn sm primary" onClick={() => runWf(w)}><Play size={12} /> Run</button></div>{w.description && <div className="pv">{w.description}</div>}</div>
-            ))}
-            {!data.workflows.length && <div className="muted">No workflows yet.</div>}
-            <div className="row" style={{ marginTop: 10 }}>
-              <button className="btn sm" onClick={pick}><Crosshair size={13} /> Pick element</button>
-              <button className="btn sm" onClick={() => dash('/autopilot')}>Manage workflows</button>
-            </div>
-          </>
-        )}
+        {tab === 'page' && <PagePanel data={data} flash={flash} />}
         {tab === 'add' && <QuickAdd data={data} flash={flash} done={() => setTab('snippets')} />}
       </div>
       {msg && <div className={'sp-msg' + (msg.err ? ' err' : '')}>{msg.m}</div>}

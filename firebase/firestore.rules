@@ -1,21 +1,119 @@
 rules_version = '2';
-// QuickText Hub — Firestore security rules.
+// K-Flow Automation — Firestore security rules.
 // Deploy:  firebase deploy --only firestore:rules,firestore:indexes
+//
+// Model
+//   users/{uid}/...            personal data (strictly per user)
+//   users/{uid}/backups/...    encrypted backups (ciphertext only)
+//   orgs/{orgId}               organization: members, invitations, permissions, policies
+//   orgs/{orgId}/{coll}/{id}   shared automations / templates / datasets (RBAC per action)
+//   orgs/{orgId}/audit|activity append-only logs, versions = shared-profile history
+//   orgs/{orgId}/devices/{id}  device registry (admins can revoke)
+//   shares, marketplace        public sharing (unchanged from the text-expansion module)
 service cloud.firestore {
   match /databases/{database}/documents {
 
     function signedIn() { return request.auth != null; }
     function isUser(uid) { return signedIn() && request.auth.uid == uid; }
     function myEmail() { return signedIn() && request.auth.token.email != null ? request.auth.token.email.lower() : ''; }
+    function emailKey() { return myEmail().replace('\\.', ','); }
     function isAdmin() { return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
     function small() { return request.resource.size() < 1000 * 1000; }
+    function hasUpdatedAt() { return request.resource.data.updatedAt is number; }
 
-    // ---------- Personal data: strictly per user ----------
+    // ---------- Personal data ----------
     match /users/{uid}/{coll}/{docId} {
       allow read, delete: if isUser(uid);
-      allow create, update: if isUser(uid)
-        && coll in ['snippets', 'folders', 'tables', 'workflows', 'templates', 'meta']
-        && request.resource.data.updatedAt is number;
+      allow create, update: if isUser(uid) && small()
+        && coll in ['snippets', 'folders', 'tables', 'workflows', 'templates', 'workspaces', 'autofill', 'macros', 'scripts', 'variables', 'vault', 'meta']
+        && (coll == 'meta' || hasUpdatedAt());
+    }
+    match /users/{uid}/backups/{backupId} {
+      allow read, delete: if isUser(uid);
+      allow create, update: if isUser(uid) && small()
+        && request.resource.data.keyType == 'vault' && request.resource.data.iv is string && request.resource.data.chunks is int;
+      match /chunks/{n} {
+        allow read, delete: if isUser(uid);
+        allow create, update: if isUser(uid) && small() && request.resource.data.data is string;
+      }
+    }
+
+    // ---------- Organizations ----------
+    function org(o) { return get(/databases/$(database)/documents/orgs/$(o)).data; }
+    function isOwner(o) { return signedIn() && org(o).ownerUid == request.auth.uid; }
+    function roleOf(o) { return signedIn() && request.auth.uid in org(o).members ? org(o).members[request.auth.uid] : ''; }
+    function isMember(o) { return roleOf(o) != ''; }
+    // Role names other than these never grant anything (an admin cannot mint a second "owner").
+    function realRole(o) { return roleOf(o) in ['admin', 'manager', 'staff', 'viewer']; }
+    function denied(o, action) { return request.auth.uid in org(o).deny && action in org(o).deny[request.auth.uid]; }
+    function granted(o, action) { return request.auth.uid in org(o).allow && action in org(o).allow[request.auth.uid]; }
+    function can(o, action) {
+      return isOwner(o) || (realRole(o) && !denied(o, action) && (action in org(o).perm[roleOf(o)] || granted(o, action)));
+    }
+    function manages(o) { return isOwner(o) || (roleOf(o) == 'admin' && !denied(o, 'manageMembers')); }
+
+    match /orgs/{orgId} {
+      allow read: if signedIn() && (request.auth.uid in resource.data.members || myEmail() in resource.data.inviteEmails);
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.members[request.auth.uid] == 'owner'
+        && request.resource.data.members.size() == 1
+        && request.resource.data.memberUids == [request.auth.uid]
+        && request.resource.data.perm is map && request.resource.data.policies is map;
+      allow update: if
+        // owner: anything except giving away ownership through a plain update
+        (isOwner(orgId) && request.resource.data.ownerUid == resource.data.ownerUid && request.resource.data.members[resource.data.ownerUid] == 'owner')
+        // admins manage members, invitations, permissions and policies — never the owner or the owner's entry
+        || (manages(orgId) && !isOwner(orgId)
+          && request.resource.data.ownerUid == resource.data.ownerUid
+          && request.resource.data.members[resource.data.ownerUid] == 'owner'
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members', 'memberUids', 'memberEmails', 'inviteEmails', 'invites', 'permissions', 'perm', 'deny', 'allow', 'policies', 'name', 'updatedAt']))
+        // an invited user adds exactly themselves with the invited role
+        || (signedIn() && myEmail() in resource.data.inviteEmails
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members', 'memberUids', 'memberEmails', 'inviteEmails', 'invites', 'updatedAt'])
+          && request.resource.data.members.diff(resource.data.members).affectedKeys().hasOnly([request.auth.uid])
+          && request.resource.data.members[request.auth.uid] == resource.data.invites[emailKey()])
+        // a member may leave (remove only themselves)
+        || (signedIn() && request.auth.uid in resource.data.members && resource.data.ownerUid != request.auth.uid
+          && !(request.auth.uid in request.resource.data.members)
+          && request.resource.data.members.diff(resource.data.members).affectedKeys().hasOnly([request.auth.uid]));
+      allow delete: if isOwner(orgId);
+
+      // Shared resources: read by members, create/edit/delete per RBAC action.
+      match /{coll}/{docId} {
+        allow read: if isMember(orgId) && coll in ['workspaces', 'folders', 'snippets', 'templates', 'autofill', 'macros', 'scripts', 'variables', 'tables'];
+        allow create: if coll in ['workspaces', 'folders', 'snippets', 'templates', 'autofill', 'macros', 'scripts', 'variables', 'tables']
+          && small() && hasUpdatedAt() && (can(orgId, 'create') || can(orgId, 'share'));
+        allow update: if coll in ['workspaces', 'folders', 'snippets', 'templates', 'autofill', 'macros', 'scripts', 'variables', 'tables']
+          && small() && hasUpdatedAt()
+          && ((request.resource.data.deleted == true && resource.data.deleted != true) ? can(orgId, 'delete') : can(orgId, 'edit'));
+        allow delete: if can(orgId, 'delete');
+      }
+      match /versions/{id} {
+        allow read: if isMember(orgId);
+        allow create: if isMember(orgId) && (can(orgId, 'edit') || can(orgId, 'create') || can(orgId, 'share')) && small();
+        allow update, delete: if false;
+      }
+      match /audit/{id} {
+        allow read: if can(orgId, 'viewAudit');
+        allow create: if (isMember(orgId) || (signedIn() && myEmail() in org(orgId).inviteEmails))
+          && request.resource.data.uid == request.auth.uid && request.resource.data.at is number;
+        allow update, delete: if false; // append-only
+      }
+      match /activity/{id} {
+        allow read: if can(orgId, 'viewAudit');
+        allow create: if isMember(orgId) && request.resource.data.uid == request.auth.uid && small();
+        allow update, delete: if false;
+      }
+      match /devices/{deviceId} {
+        allow read: if (isMember(orgId) && resource.data.uid == request.auth.uid) || can(orgId, 'manageDevices');
+        // members register / heartbeat their own device but can never un-revoke it
+        allow create: if isMember(orgId) && request.resource.data.uid == request.auth.uid && request.resource.data.revoked == false;
+        allow update: if (isMember(orgId) && resource.data.uid == request.auth.uid && request.resource.data.uid == request.auth.uid
+                          && request.resource.data.revoked == resource.data.revoked)
+                      || can(orgId, 'manageDevices');
+        allow delete: if can(orgId, 'manageDevices');
+      }
     }
 
     // ---------- Share links ----------
@@ -38,7 +136,7 @@ service cloud.firestore {
     // ---------- Marketplace (moderated) ----------
     match /admins/{uid} {
       allow read: if isUser(uid);
-      allow write: if false; // manage admins from the Firebase console only
+      allow write: if false; // manage moderators from the Firebase console only
     }
     match /marketplace/{id} {
       allow read: if resource.data.status == 'approved'
@@ -50,56 +148,11 @@ service cloud.firestore {
         && request.resource.data.downloads == 0
         && request.resource.data.title is string && request.resource.data.title.size() <= 120
         && request.resource.data.content is string && request.resource.data.content.size() <= 50000;
-      // Moderators change status; anyone signed in may only increment downloads by one.
       allow update: if (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'moderationNote', 'moderatedAt', 'moderatorUid']))
         || (signedIn() && resource.data.status == 'approved'
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['downloads'])
             && request.resource.data.downloads == resource.data.downloads + 1);
       allow delete: if isAdmin() || (signedIn() && resource.data.authorUid == request.auth.uid);
-    }
-
-    // ---------- Teams (Business / Enterprise) ----------
-    function team(teamId) { return get(/databases/$(database)/documents/teams/$(teamId)).data; }
-    function roleIn(teamId) { return signedIn() && request.auth.uid in team(teamId).members ? team(teamId).members[request.auth.uid] : ''; }
-    function canEdit(teamId) { return roleIn(teamId) in ['owner', 'admin', 'editor']; }
-    function canAdmin(teamId) { return roleIn(teamId) in ['owner', 'admin']; }
-
-    match /teams/{teamId} {
-      allow read: if signedIn() && (request.auth.uid in resource.data.members || myEmail() in resource.data.inviteEmails);
-      allow create: if signedIn()
-        && request.resource.data.ownerUid == request.auth.uid
-        && request.resource.data.members[request.auth.uid] == 'owner'
-        && request.resource.data.members.size() == 1
-        && request.resource.data.memberUids == [request.auth.uid];
-      allow update: if
-        // admins manage members and invites, but cannot change the owner
-        (canAdmin(teamId)
-          && request.resource.data.ownerUid == resource.data.ownerUid
-          && request.resource.data.members[resource.data.ownerUid] == 'owner')
-        // an invited user may add exactly themselves with the invited role
-        || (signedIn() && myEmail() in resource.data.inviteEmails
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members', 'memberUids', 'memberEmails', 'inviteEmails', 'inviteRoles'])
-          && request.resource.data.members.diff(resource.data.members).affectedKeys().hasOnly([request.auth.uid])
-          && request.resource.data.members[request.auth.uid] == resource.data.inviteRoles[myEmail().replace('\\.', ',')])
-        // a member may leave (remove only themselves)
-        || (signedIn() && request.auth.uid in resource.data.members && resource.data.members[request.auth.uid] != 'owner'
-          && !(request.auth.uid in request.resource.data.members)
-          && request.resource.data.members.diff(resource.data.members).affectedKeys().hasOnly([request.auth.uid]));
-      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
-
-      match /{coll}/{docId} {
-        allow read: if roleIn(teamId) != '' && coll in ['snippets', 'folders'];
-        allow write: if canEdit(teamId) && coll in ['snippets', 'folders'] && (request.resource == null || small());
-      }
-      match /audit/{id} {
-        allow read: if canAdmin(teamId);
-        allow create: if roleIn(teamId) != '' || (signedIn() && myEmail() in team(teamId).inviteEmails);
-        allow update, delete: if false; // append-only
-      }
-      match /usage/{uid} {
-        allow read: if canAdmin(teamId) || isUser(uid);
-        allow write: if isUser(uid) && roleIn(teamId) != '';
-      }
     }
   }
 }

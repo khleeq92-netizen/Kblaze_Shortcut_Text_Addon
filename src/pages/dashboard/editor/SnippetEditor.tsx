@@ -183,7 +183,7 @@ export function SnippetEditor({ snippet, isNew, onDone }: { snippet: Snippet; is
             {tab === 'preview' && <button className="btn ghost sm" onClick={() => setValues({})} title="Reset form values"><RotateCcw size={13} /> Reset</button>}
           </div>
           <div className="panel-body">
-            {out.errors.length > 0 && <div className="locked" style={{ marginBottom: 10, color: 'var(--qth-danger)' }}>{out.errors.map((e, i) => <div key={i}>⚠ {e}</div>)}</div>}
+            {out.errors.length > 0 && <div className="locked" style={{ marginBottom: 10, color: 'var(--kf-danger)' }}>{out.errors.map((e, i) => <div key={i}>⚠ {e}</div>)}</div>}
             {tab === 'preview' ? (
               <>
                 {out.form.length > 0 && (
@@ -194,7 +194,7 @@ export function SnippetEditor({ snippet, isNew, onDone }: { snippet: Snippet; is
                     </div>
                   </>
                 )}
-                {out.validation.length > 0 && <div className="hint" style={{ color: 'var(--qth-warning)', marginBottom: 8 }}>{out.validation.length} validation message(s) — insertion is blocked until resolved.</div>}
+                {out.validation.length > 0 && <div className="hint" style={{ color: 'var(--kf-warning)', marginBottom: 8 }}>{out.validation.length} validation message(s) — insertion is blocked until resolved.</div>}
                 <div className="label">Output {out.cursor !== null && <span className="badge">cursor at {out.cursor}</span>}</div>
                 {out.isRich ? <div className="preview-box" dangerouslySetInnerHTML={{ __html: sanitizeHtml(out.html) }} /> : <div className="preview-box">{out.text || <span className="muted">Nothing to show yet</span>}</div>}
               </>

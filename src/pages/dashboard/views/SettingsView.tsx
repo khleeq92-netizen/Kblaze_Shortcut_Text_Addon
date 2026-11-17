@@ -11,9 +11,96 @@ import { FUNCTIONS } from '../../../engine/expr';
 import { formatDate } from '../../../engine/dates';
 import { api } from '../../../shared/browser';
 import type { PlanId, Settings } from '../../../shared/types';
+import { getApiKey, setApiKey, hasApiKey } from '../../../ai/keys';
+import { DEFAULT_MODELS } from '../../../ai/builder';
 import { Cloud, LogOut, RefreshCw, Download, Upload, KeyRound, Mail, AlertTriangle } from 'lucide-react';
 
-const TABS = [['general', 'General'], ['expansion', 'Text expansion'], ['profile', 'Profile'], ['format', 'Formats'], ['cloud', 'Cloud & Account'], ['backup', 'Backup & restore'], ['plan', 'Plan'], ['syntax', 'Syntax guide'], ['privacy', 'Privacy & security']] as const;
+const TABS = [['general', 'General'], ['automation', 'Automation'], ['security', 'Security'], ['ai', 'AI'], ['expansion', 'Text expansion'], ['profile', 'Profile'], ['format', 'Formats'], ['cloud', 'Cloud & Account'], ['backup', 'Backup & restore'], ['plan', 'Plan'], ['syntax', 'Syntax guide'], ['privacy', 'Privacy & security']] as const;
+
+const list = (v: string) => v.split(/[\n,]/).map((x) => x.trim()).filter(Boolean);
+
+function AutomationTab() {
+  const { settings: s, setSettings } = useStore();
+  const a = s.automation;
+  const set = (p: Partial<Settings['automation']>) => setSettings({ automation: { ...a, ...p } });
+  return (
+    <>
+      <Section title="Autofill & macros" desc="Defaults used by every profile and macro (each can override).">
+        <div className="grid-3">
+          <div className="field"><label className="label">Wait for dynamic fields up to (ms)</label><input className="input" type="number" value={a.waitTimeoutMs} onChange={(e) => set({ waitTimeoutMs: Number(e.target.value) })} /></div>
+          <div className="field"><label className="label">Default macro step delay (ms)</label><input className="input" type="number" value={a.stepDelayMs} onChange={(e) => set({ stepDelayMs: Number(e.target.value) })} /></div>
+          <div className="field"><label className="label">Keep execution history entries</label><input className="input" type="number" value={a.historyLimit} onChange={(e) => set({ historyLimit: Math.max(50, Number(e.target.value)) })} /></div>
+        </div>
+        <div className="field"><label className="label">In-page shortcut: autofill this page</label><input className="input mono" style={{ maxWidth: 240 }} value={a.autofillHotkey} onChange={(e) => set({ autofillHotkey: e.target.value })} /><div className="hint">Browser-level shortcuts (Alt+Shift+F autofill, Alt+Shift+M field selector) can be changed at chrome://extensions/shortcuts.</div></div>
+        <Switch checked={a.highlight} onChange={(v) => set({ highlight: v })} label="Highlight fields while filling" /><br />
+        <Switch checked={a.autoRunEnabled} onChange={(v) => set({ autoRunEnabled: v })} label="Allow profiles set to “run when the page loads”" /><br />
+        <Switch checked={a.respectExistingValues} onChange={(v) => set({ respectExistingValues: v })} label="Never overwrite fields that already have a value (unless the rule says “Overwrite”)" />
+      </Section>
+    </>
+  );
+}
+
+function SecurityTab() {
+  const { settings: s, setSettings, vaultUnlocked } = useStore();
+  const sec = s.security;
+  const set = (p: Partial<Settings['security']>) => setSettings({ security: { ...sec, ...p } });
+  const [allow, setAllow] = useState(sec.automationAllowlist.join('\n'));
+  const [official, setOfficial] = useState(sec.officialDomains.join('\n'));
+  return (
+    <>
+      <Section title="Domain allowlist" desc="If set, autofill, macros and scripts run only on these domains (and their subdomains). Leave empty to allow every site except blocked ones.">
+        <textarea className="textarea mono" rows={4} value={allow} onChange={(e) => setAllow(e.target.value)} onBlur={() => set({ automationAllowlist: list(allow) })} placeholder={'udiseplus.gov.in\n11thadmission.org.in\nshikshadesk.com'} />
+      </Section>
+      <Section title="Official / government portals" desc="On these domains K-Flow asks for your approval before any action button (save, next, submit, confirm) — forms are never submitted automatically.">
+        <textarea className="textarea mono" rows={4} value={official} onChange={(e) => setOfficial(e.target.value)} onBlur={() => set({ officialDomains: list(official) })} />
+      </Section>
+      <Section title="Scripts, vault & logging">
+        <Switch checked={sec.scriptsEnabled} onChange={(v) => set({ scriptsEnabled: v })} label="Allow custom JavaScript (sandboxed, no extension privileges)" /><br />
+        <div className="field" style={{ marginTop: 10 }}><label className="label">Lock the vault after (minutes of inactivity)</label><input className="input" type="number" min={1} max={480} style={{ maxWidth: 160 }} value={sec.vaultAutoLockMin} onChange={(e) => set({ vaultAutoLockMin: Number(e.target.value) })} /></div>
+        <Switch checked={sec.auditEnabled} onChange={(v) => set({ auditEnabled: v })} label="Keep a local audit log" /><br />
+        <Switch checked={sec.syncSensitive} onChange={(v) => set({ syncSensitive: v })} label="Sync sensitive dataset columns to the cloud (re-encrypted with the vault passphrase)" />
+        {sec.syncSensitive && !vaultUnlocked && <div className="hint">Sensitive datasets are skipped until the vault is unlocked.</div>}
+      </Section>
+      <Section title="What K-Flow never does">
+        <ul className="muted" style={{ margin: 0, paddingLeft: 18, fontSize: 13 }}>
+          <li>Solve, bypass or fill CAPTCHA / reCAPTCHA, or OTP / two-factor codes.</li>
+          <li>Submit forms, pay or delete without an explicit confirmation from you.</li>
+          <li>Store passwords, Aadhaar numbers or other sensitive values in plain text, or log field values.</li>
+          <li>Give user scripts access to extension APIs, the vault or other sites.</li>
+          <li>Place or modify trades — the trading workspace prepares messages and reports only.</li>
+        </ul>
+      </Section>
+    </>
+  );
+}
+
+function AITab() {
+  const { settings: s, setSettings, toast, org } = useStore();
+  const ai = s.ai;
+  const set = (p: Partial<Settings['ai']>) => setSettings({ ai: { ...ai, ...p } });
+  const [key, setKey] = useState('');
+  const [has, setHas] = useState(false);
+  useEffect(() => { hasApiKey(ai.provider).then(setHas); setKey(''); }, [ai.provider]);
+  return (
+    <Section title="AI-assisted automation builder" desc="Optional. Every automation feature works without AI; the builder also has an offline matcher.">
+      {org?.policies.disableAI && <div className="kf-note warn">Your organization has disabled the AI builder.</div>}
+      <div className="grid-2">
+        <div className="field"><label className="label">Provider</label><select className="select" value={ai.provider} onChange={(e) => set({ provider: e.target.value as any, model: DEFAULT_MODELS[e.target.value] || '' })}>
+          <option value="none">None (offline matcher only)</option><option value="anthropic">Anthropic (Claude)</option><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="openai-compatible">OpenAI-compatible endpoint</option></select></div>
+        <div className="field"><label className="label">Model</label><input className="input mono" value={ai.model} placeholder={DEFAULT_MODELS[ai.provider] || 'model name'} onChange={(e) => set({ model: e.target.value })} disabled={ai.provider === 'none'} /></div>
+      </div>
+      {ai.provider === 'openai-compatible' && <div className="field"><label className="label">Base URL</label><input className="input mono" value={ai.baseUrl} placeholder="https://your-endpoint/v1" onChange={(e) => set({ baseUrl: e.target.value })} /></div>}
+      {ai.provider !== 'none' && (
+        <div className="field"><label className="label">API key {has && <span className="badge success">saved (encrypted on this device)</span>}</label>
+          <div className="row"><input className="input" type="password" autoComplete="off" value={key} placeholder={has ? '•••••••• (enter to replace)' : 'Paste your API key'} onChange={(e) => setKey(e.target.value)} />
+            <button className="btn primary" disabled={!key} onClick={async () => { await setApiKey(ai.provider, key); setKey(''); setHas(true); toast('API key saved'); }}>Save key</button>
+            {has && <button className="btn" onClick={async () => { await setApiKey(ai.provider, ''); setHas(false); toast('API key removed'); }}>Remove</button>}</div>
+          <div className="hint">Encrypted with this device's key, never synced, sent only to the provider you selected.</div></div>
+      )}
+      <Switch checked={ai.allowPageContext} onChange={(v) => set({ allowPageContext: v })} label="Include dropdown options of the scanned form (labels only, never values)" />
+    </Section>
+  );
+}
 
 function General() {
   const { settings: s, setSettings } = useStore();
@@ -26,13 +113,13 @@ function General() {
       <Switch checked={s.showToasts} onChange={(v) => setSettings({ showToasts: v })} label="Show notifications on web pages (errors, autopilot progress)" />
     </Section>
     <Section title="Side panel" desc="Keep your snippets open beside any website. Fill in forms right in the panel and press Insert — ideal for WhatsApp Web and long working sessions.">
-      <div className="field"><label className="label">Clicking the QuickText toolbar icon opens</label>
+      <div className="field"><label className="label">Clicking the K-Flow toolbar icon opens</label>
         <label className="check"><input type="radio" checked={s.actionOpens !== 'sidepanel'} onChange={() => setSettings({ actionOpens: 'popup' })} /> The quick popup</label><br />
         <label className="check"><input type="radio" checked={s.actionOpens === 'sidepanel'} onChange={() => setSettings({ actionOpens: 'sidepanel' })} /> The side panel</label>
       </div>
       <div className="row">
         {(api as any).sidePanel?.open && <button className="btn primary" onClick={async () => { const w = await api.windows.getCurrent(); await (api as any).sidePanel.open({ windowId: w.id }); }}>Open side panel now</button>}
-        <span className="hint">Also: <span className="kbd">Alt+Shift+S</span>, right-click → “Open QuickText side panel”, or the panel button in the popup.</span>
+        <span className="hint">Also: <span className="kbd">Alt+Shift+S</span>, right-click → “Open K-Flow side panel”, or the panel button in the popup.</span>
       </div>
     </Section>
     </>
@@ -71,7 +158,7 @@ function Expansion() {
             }} onChange={() => {}} />
             <button className="btn" onClick={() => setSettings({ assistantHotkey: hk })} disabled={hk === s.assistantHotkey}>Save</button>
           </div>
-          <div className="hint">Click the box and press a key combination. Also available: right-click → “Insert QuickText snippet…”, and the browser command (chrome://extensions/shortcuts, default Alt+Shift+Q).</div>
+          <div className="hint">Click the box and press a key combination. Also available: right-click → “Insert K-Flow snippet…”, and the browser command (chrome://extensions/shortcuts, default Alt+Shift+Q).</div>
         </div>
         <Switch checked={s.showFloatingButton} onChange={(v) => setSettings({ showFloatingButton: v })} label="Show a floating ⚡ button in focused text fields" />
       </Section>
@@ -146,7 +233,7 @@ function CloudTab() {
 
   return (
     <>
-      <Section title="Account" desc="Optional. QuickText Hub works fully offline; sign in to back up and sync across devices.">
+      <Section title="Account" desc="Optional. K-Flow Automation works fully offline; sign in to back up and sync across devices.">
         {!configured ? <div className="muted">Add your Firebase configuration below to enable accounts and sync.</div>
           : loading ? <div className="muted">Connecting…</div>
           : user ? (
@@ -157,7 +244,7 @@ function CloudTab() {
                 <button className="btn" onClick={() => run(() => mod!.signOut(), 'Signed out')}><LogOut size={14} /> Sign out</button>
               </div>
               <div className="row" style={{ marginBottom: 10 }}>
-                <span className="grow">Status: <b>{sync.status}</b>{sync.lastSyncAt && <> · last sync {new Date(sync.lastSyncAt).toLocaleString()}</>}{sync.lastError && <span style={{ color: 'var(--qth-danger)' }}> · {sync.lastError}</span>}</span>
+                <span className="grow">Status: <b>{sync.status}</b>{sync.lastSyncAt && <> · last sync {new Date(sync.lastSyncAt).toLocaleString()}</>}{sync.lastError && <span style={{ color: 'var(--kf-danger)' }}> · {sync.lastError}</span>}</span>
                 <button className="btn primary" disabled={sync.status === 'syncing'} onClick={() => run(syncNow, 'Synchronised')}><RefreshCw size={14} className={sync.status === 'syncing' ? 'spin' : ''} /> Sync now</button>
               </div>
               <div className="grid-2">
@@ -212,7 +299,7 @@ function Backup() {
   const [pending, setPending] = useState<any>(null);
   const exportAll = async () => {
     const [snippets, folders, tables, workflows, templates] = await Promise.all([listRecords('snippets'), listRecords('folders'), listRecords('tables'), listRecords('workflows'), listRecords('templates')]);
-    download(`quicktext-hub-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify({ format: 'quicktext-hub', version: 1, exportedAt: Date.now(), snippets, folders, tables, workflows, templates, settings }, null, 2));
+    download(`k-flow-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify({ format: 'k-flow', version: 1, exportedAt: Date.now(), snippets, folders, tables, workflows, templates, settings }, null, 2));
     toast('Backup downloaded');
   };
   const restore = async () => {
@@ -335,10 +422,10 @@ function Privacy() {
   return (
     <Section title="Privacy & security">
       <ul style={{ lineHeight: 1.8, marginTop: 0 }}>
-        <li>All data is stored locally in this browser (IndexedDB database <span className="mono">quicktext-hub-db</span>, settings under <span className="mono">qth.*</span>). Nothing leaves your device unless you configure and sign in to cloud sync.</li>
+        <li>All data is stored locally in this browser (IndexedDB database <span className="mono">k-flow-db</span>, settings under <span className="mono">kf.*</span>). Nothing leaves your device unless you configure and sign in to cloud sync.</li>
         <li>The page script only reads the few characters right before your cursor in the field you are typing in, to detect shortcuts. It never reads other page content, and no browsing history is collected.</li>
         <li>Snippet content stays inside the extension; web pages only receive the final inserted text. Fill-in forms and confirmations open in an isolated extension frame that pages cannot read or click.</li>
-        <li>Expansion never runs in password fields. You can disable QuickText Hub per site.</li>
+        <li>Expansion never runs in password fields. You can disable K-Flow Automation per site.</li>
         <li>Imported files and share codes are validated, size-limited and rich HTML is sanitized (scripts, event handlers and javascript: links are removed).</li>
         <li>Autopilot only runs when you start it, shows every step, can be stopped, and always asks before submitting forms, sending, purchasing, deleting or typing into password/payment fields.</li>
         <li>Cloud data is isolated per user by Firestore security rules (<span className="mono">firebase/firestore.rules</span>); shared items are readable only via their link or by the listed accounts.</li>
@@ -353,11 +440,14 @@ export function SettingsView() {
   const tab = qs.get('tab') || 'general';
   return (
     <div className="page" style={{ maxWidth: 1100 }}>
-      <div className="page-head"><h2>Settings</h2><span className="muted">v{__QTH_VERSION__}</span></div>
+      <div className="page-head"><h2>Settings</h2><span className="muted">v{__KF_VERSION__}</span></div>
       <div className="row wrap" style={{ gap: 4, marginBottom: 16 }}>
         {TABS.map(([id, l]) => <button key={id} className={'tabbtn' + (tab === id ? ' on' : '')} onClick={() => go('/settings?tab=' + id)}>{l}</button>)}
       </div>
       {tab === 'general' && <General />}
+      {tab === 'automation' && <AutomationTab />}
+      {tab === 'security' && <SecurityTab />}
+      {tab === 'ai' && <AITab />}
       {tab === 'expansion' && <Expansion />}
       {tab === 'profile' && <Profile />}
       {tab === 'format' && <Formats />}

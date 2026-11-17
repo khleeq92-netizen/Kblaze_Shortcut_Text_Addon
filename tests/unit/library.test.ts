@@ -3,7 +3,9 @@ import { LIBRARY, LIBRARY_CATEGORIES } from '@/library/templates';
 import { render } from '@/engine';
 import { sampleData } from '@/library/seed';
 
-const data = Object.fromEntries(sampleData().tables.map((t) => [t.key, { columns: t.columns.map((c) => c.key), rows: t.rows.map((r) => ({ __id: r.id, ...r.values })) }]));
+// TEST FIXTURE ONLY: the shipped datasets are empty schemas (no fabricated records),
+// so give each one a single clearly fake row for rendering the templates.
+const data = Object.fromEntries(sampleData().tables.map((t) => [t.key, { columns: t.columns.map((c) => c.key), rows: [{ __id: 'fixture1', ...Object.fromEntries(t.columns.map((c) => [c.key, c.type === 'number' ? 1 : `Test ${c.name}`])) }] }]));
 const profile = { name: 'Sam Lee', email: 'sam@example.com', phone: '+1 555 0100', company: 'Acme', title: 'Manager', website: 'https://acme.test', signature: 'Sam Lee\nAcme' };
 
 // Fill every visible field with a plausible value and re-render until stable.

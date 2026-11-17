@@ -10,7 +10,7 @@ import type { Snippet } from '../../../shared/types';
 import { FileText, Pin, Star, Download, Upload, Trash2, Power, PowerOff, FolderInput, Share2, X, Users, Sparkles } from 'lucide-react';
 
 export function SnippetsView() {
-  const { snippets, folders, usage, saveSnippets, deleteSnippets, toast, settings } = useStore();
+  const { snippets, folders, usage, saveSnippets, deleteSnippets, toast, settings, inWs, ws } = useStore();
   const [path, qs, go] = useRoute();
   const seg = path.split('/').filter(Boolean);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -40,14 +40,15 @@ export function SnippetsView() {
   const { title, list } = useMemo(() => {
     const p = (listScope || '/snippets').split('/').filter(Boolean);
     const v = p[0] || 'snippets';
-    let title = 'My Snippets';
-    let list = snippets;
+    const mine = snippets.filter(inWs);
+    let title = `Snippets — ${ws.name}`;
+    let list = mine;
     if (v === 'folder') {
       const f = folders.find((x) => x.id === p[1]);
       title = f ? folderPath(folders, f.id) : 'Folder';
       list = snippets.filter((s) => s.folderId === p[1]);
-    } else if (v === 'favorites') { title = 'Favorites'; list = snippets.filter((s) => s.favorite); }
-    else if (v === 'pinned') { title = 'Pinned'; list = snippets.filter((s) => s.pinned); }
+    } else if (v === 'favorites') { title = 'Favorites'; list = mine.filter((s) => s.favorite); }
+    else if (v === 'pinned') { title = 'Pinned'; list = mine.filter((s) => s.pinned); }
     else if (v === 'recent') { title = 'Recently used'; list = snippets.filter((s) => usage.has(s.id)).sort((a, b) => usage.get(b.id)!.lastUsedAt - usage.get(a.id)!.lastUsedAt).slice(0, 50); }
     else if (v === 'search') {
       const q = (qs.get('q') || '').toLowerCase().trim();
@@ -66,7 +67,7 @@ export function SnippetsView() {
       });
     }
     return { title, list };
-  }, [listScope, snippets, folders, usage, sort, qs.toString()]);
+  }, [listScope, snippets, folders, usage, sort, qs.toString(), ws.id]);
 
   const toggle = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -78,7 +79,7 @@ export function SnippetsView() {
   const bulk = async (patch: Partial<Snippet>, msg: string) => { await saveSnippets(sel.map((s) => ({ ...s, ...patch }))); toast(msg); };
   const exportList = (items: Snippet[]) => {
     const fids = new Set(items.map((s) => s.folderId).filter(Boolean));
-    download(`quicktext-snippets-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify({ format: 'quicktext-hub', version: 1, exportedAt: Date.now(), snippets: items, folders: folders.filter((f) => fids.has(f.id)) }, null, 2));
+    download(`k-flow-snippets-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify({ format: 'k-flow', version: 1, exportedAt: Date.now(), snippets: items, folders: folders.filter((f) => fids.has(f.id)) }, null, 2));
   };
   const currentFolder = listScope.startsWith('/folder/') ? listScope.split('/')[2] : null;
   const editing = editingId ? snippets.find((s) => s.id === editingId) : null;
@@ -111,7 +112,7 @@ export function SnippetsView() {
           </div>
         )}
         {list.length > 0 && (
-          <label className="check muted" style={{ padding: '6px 14px', fontSize: 12, borderBottom: '1px solid var(--qth-border)' }}>
+          <label className="check muted" style={{ padding: '6px 14px', fontSize: 12, borderBottom: '1px solid var(--kf-border)' }}>
             <input type="checkbox" checked={list.length > 0 && list.every((s) => selected.has(s.id))} onChange={(e) => setSelected(e.target.checked ? new Set(list.map((s) => s.id)) : new Set())} /> Select all
           </label>
         )}

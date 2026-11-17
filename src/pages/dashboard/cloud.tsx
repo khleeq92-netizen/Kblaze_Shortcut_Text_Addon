@@ -21,6 +21,13 @@ interface CloudCtx {
 const Ctx = createContext<CloudCtx>({ configured: false, mod: null, user: null, sync: { status: 'disabled', lastSyncAt: null, conflicts: [] }, syncNow: async () => {}, loading: false });
 export const useCloud = () => useContext(Ctx);
 
+async function runSync(m: CloudMod) {
+  const st = await m.syncNow();
+  if (st.status !== 'idle') return;
+  await m.org.pushActivity().catch(() => {});
+  await m.backup.maybeAutoBackup().catch(() => {});
+}
+
 export function CloudProvider({ children }: { children: React.ReactNode }) {
   const { cloud, settings } = useStore();
   const configured = !!cloud.firebase?.apiKey;
@@ -48,7 +55,7 @@ export function CloudProvider({ children }: { children: React.ReactNode }) {
       off = await m.onUser((u) => {
         setLoading(false);
         setUser(u ? { uid: u.uid, email: u.email, displayName: u.displayName, emailVerified: u.emailVerified, photoURL: u.photoURL } : null);
-        if (u) m.syncNow();
+        if (u) runSync(m);
       });
     }).catch(() => setLoading(false));
     return () => { cancelled = true; off(); };
@@ -58,11 +65,12 @@ export function CloudProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!mod || !user || !settings.autoSync) return;
     const offChange = onLocalChange(({ origin, collections }) => {
-      if (origin === 'sync' || (collections.length === 1 && collections[0] === 'usage')) return;
+      if (origin === 'sync' || collections.every((c) => ['usage', 'executions', 'audit', 'versions'].includes(c))) return;
       clearTimeout(timer.current);
-      timer.current = setTimeout(() => mod.syncNow(), 2500);
+      timer.current = setTimeout(() => runSync(mod), 2500);
     });
-    const iv = setInterval(() => mod.syncNow(), 2 * 60 * 1000);
+    // 5-minute interval keeps Firestore usage inside the free tier for typical use
+    const iv = setInterval(() => runSync(mod), 5 * 60 * 1000);
     const online = () => mod.syncNow();
     window.addEventListener('online', online);
     return () => { offChange(); clearInterval(iv); clearTimeout(timer.current); window.removeEventListener('online', online); };
