@@ -132,6 +132,29 @@ function pressKey(el: Element, key: string) {
   for (const type of ['keydown', 'keypress', 'keyup']) el.dispatchEvent(new W.KeyboardEvent(type, { ...k, bubbles: true, cancelable: true, composed: true }));
 }
 
+function deepActive(doc: Document): Element | null {
+  let a: Element | null = doc.activeElement;
+  while (a && (a as any).shadowRoot?.activeElement) a = (a as any).shadowRoot.activeElement;
+  return a && a !== doc.body && a !== doc.documentElement ? a : null;
+}
+
+function tabbables(doc: Document): HTMLElement[] {
+  const sel = 'a[href],button,input:not([type=hidden]),select,textarea,[tabindex],[contenteditable=""],[contenteditable=true]';
+  const all = Array.from(doc.querySelectorAll<HTMLElement>(sel)).filter((e) => !(e as any).disabled && e.tabIndex >= 0 && isVisible(e));
+  const pos = all.filter((e) => e.tabIndex > 0).sort((a, b) => a.tabIndex - b.tabIndex);
+  return [...pos, ...all.filter((e) => e.tabIndex === 0)];
+}
+
+/** Moves focus like the Tab key (synthetic key events cannot move focus). */
+export function moveFocus(doc: Document, back = false) {
+  const list = tabbables(doc);
+  const cur = deepActive(doc) as HTMLElement | null;
+  const i = cur ? list.indexOf(cur) : -1;
+  const next = list[(i + (back ? -1 : 1) + list.length) % list.length];
+  next?.focus();
+  return next;
+}
+
 function realClick(el: Element) {
   const W = (el.ownerDocument.defaultView || window) as any;
   const r = (el as HTMLElement).getBoundingClientRect();
@@ -157,6 +180,17 @@ export async function playMacro(macro: Pick<Macro, 'id' | 'name' | 'steps' | 'se
   const log = (i: number, label: string, status: MacroRunState['stepLog'][0]['status'], ms?: number, error?: string) => {
     state.stepLog.push({ i, label, status, ms, error });
     if (state.stepLog.length > 2000) state.stepLog.splice(0, state.stepLog.length - 2000);
+  };
+
+  // Steps that may unload the page are logged as done *before* they act, so the
+  // record survives the navigation (the run continues on the next page).
+  let preLogged = -1;
+  const handoff = async (step: MacroStep, i: number) => {
+    const last = state.stepLog[state.stepLog.length - 1];
+    if (!(preLogged === i && last && last.i === i)) log(i, step.note || describeStep(step), 'done');
+    preLogged = i;
+    state.stepIndex = i + 1;
+    await deps.checkpoint(state);
   };
 
   while (state.stepIndex < steps.length) {
@@ -191,7 +225,8 @@ export async function playMacro(macro: Pick<Macro, 'id' | 'name' | 'steps' | 'se
         }
       }
       deps.onStep(i, 'done');
-      log(i, label, 'done', Date.now() - t0);
+      if (preLogged === i) { const last = state.stepLog[state.stepLog.length - 1]; if (last && last.i === i) last.ms = Date.now() - t0; preLogged = -1; }
+      else log(i, label, 'done', Date.now() - t0);
       if (ended) { state.stepIndex = steps.length; break; }
       if (!jumped) state.stepIndex++;
       if (!MAY_NAVIGATE.has(step.type)) await deps.checkpoint(state);
@@ -199,6 +234,7 @@ export async function playMacro(macro: Pick<Macro, 'id' | 'name' | 'steps' | 'se
     } catch (e: any) {
       const msg = e?.message || String(e);
       deps.onStep(i, 'fail');
+      if (preLogged === i) { const last = state.stepLog[state.stepLog.length - 1]; if (last && last.i === i) state.stepLog.pop(); preLogged = -1; }
       log(i, label, 'fail', Date.now() - t0, msg);
       const policy = step.onError && step.onError !== 'default' && step.onError !== 'retry' ? step.onError : st.onError;
       if (policy === 'continue') { state.logs.push(`Step ${i + 1} failed, continuing: ${msg}`); state.stepIndex++; await deps.checkpoint(state); continue; }
@@ -214,7 +250,11 @@ export async function playMacro(macro: Pick<Macro, 'id' | 'name' | 'steps' | 'se
     const timeout = step.ms && ['waitFor', 'waitGone'].includes(step.type) ? step.ms : st.timeoutMs || 10000;
     const needsEl = ['click', 'type', 'select', 'check', 'uncheck', 'radio', 'waitFor', 'extract', 'hover', 'focus'].includes(step.type) || (step.type === 'scroll' && step.target) || (step.type === 'key' && step.target);
     let el: Element | null = null;
-    if (needsEl && step.target) {
+    if (needsEl && !step.target?.value && ['type', 'select', 'check', 'uncheck', 'radio', 'focus', 'extract'].includes(step.type)) {
+      // no target = the field that currently has focus
+      el = deepActive(deps.doc);
+      if (!el) throw new Error('No field is focused — click into a field or choose a target for this step');
+    } else if (needsEl && step.target) {
       el = await waitForTarget(deps.doc, step.target, timeout, { clickable: ['click', 'hover', 'waitFor', 'extract', 'scroll', 'focus'].includes(step.type), visible: step.type === 'waitFor', signal: deps.isStopped });
       if (!el) throw new Error(`${describeTarget(step.target)} not found within ${Math.round(timeout / 1000)} s`);
       (el as HTMLElement).scrollIntoView?.({ block: 'center' });
@@ -224,8 +264,7 @@ export async function playMacro(macro: Pick<Macro, 'id' | 'name' | 'steps' | 'se
       case 'click': {
         const why = sensitiveReason(el, 'click') || (deps.official && fieldKind(el!) === 'button' ? 'This is an official/government portal. K-Flow asks before every action button.' : null);
         if (why && !(await deps.confirm(`${macro.name} — step ${i + 1}`, why))) throw new Error('Step was not approved');
-        state.stepIndex = i + 1;
-        await deps.checkpoint(state);
+        await handoff(step, i);
         realClick(el!);
         await sleep(60);
         return 'jump';
@@ -273,8 +312,7 @@ export async function playMacro(macro: Pick<Macro, 'id' | 'name' | 'steps' | 'se
         const url = (await deps.renderText(step.value || '', state.vars)).trim();
         if (!/^https?:\/\//i.test(url)) throw new Error(`Refusing to open "${url}" — only http(s) URLs are allowed`);
         if (++state.navigations > MAX_NAVIGATIONS) throw new Error('Too many page navigations in one run');
-        state.stepIndex = i + 1;
-        await deps.checkpoint(state);
+        await handoff(step, i);
         if (url.replace(/#.*$/, '') === deps.url().replace(/#.*$/, '')) { deps.navigate(url); return 'jump'; }
         deps.navigate(url);
         return 'navigating';
@@ -300,8 +338,8 @@ export async function playMacro(macro: Pick<Macro, 'id' | 'name' | 'steps' | 'se
         const target = el || deps.doc.activeElement || deps.doc.body;
         const why = sensitiveReason(target, 'key', key);
         if (why && !(await deps.confirm(`${macro.name} — step ${i + 1}`, why))) throw new Error('Step was not approved');
-        state.stepIndex = i + 1;
-        await deps.checkpoint(state);
+        await handoff(step, i);
+        if (/^(shift\+)?tab$/i.test(key)) { moveFocus(deps.doc, /^shift/i.test(key)); return 'jump'; }
         if (/^enter$/i.test(key) && target.tagName === 'INPUT' && (target as HTMLElement).closest('form')) {
           pressKey(target, key);
           const form = (target as HTMLElement).closest('form')!;
@@ -310,14 +348,12 @@ export async function playMacro(macro: Pick<Macro, 'id' | 'name' | 'steps' | 'se
         return 'jump';
       }
       case 'autofill': {
-        state.stepIndex = i + 1;
-        await deps.checkpoint(state);
+        await handoff(step, i);
         if (!(await deps.runAutofill(step.refId!))) throw new Error('Autofill reported problems');
         return 'jump';
       }
       case 'script': {
-        state.stepIndex = i + 1;
-        await deps.checkpoint(state);
+        await handoff(step, i);
         const r = await deps.runScript(step.refId!, state.vars);
         if (r.vars) Object.assign(state.vars, r.vars);
         if (!r.ok) throw new Error(r.error || 'Script failed');

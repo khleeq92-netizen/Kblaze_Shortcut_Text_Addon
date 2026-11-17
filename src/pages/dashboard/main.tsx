@@ -95,7 +95,7 @@ function Routes() {
     case 'settings': return <SettingsView />;
     case 'import': return <ImportView />;
     case 'welcome': return <WelcomeView />;
-    case 'snippets': case 'pinned': case 'favorites': case 'recent': case 'folder': case 'search': case 'new': return <SnippetsView />;
+    case 'snippets': case 'snippet': case 'pinned': case 'favorites': case 'recent': case 'folder': case 'search': case 'new': return <SnippetsView />;
     default: return <OverviewView />;
   }
 }

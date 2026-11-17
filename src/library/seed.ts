@@ -13,7 +13,7 @@ export function workflowToMacro(w: Workflow): Macro {
     switch (s.type) {
       case 'focus': return { ...base, type: 'focus' };
       case 'type': return { ...base, type: 'type', value: s.value, clear: s.clear !== false };
-      case 'tab': return { ...base, type: 'key', value: 'Tab', target: undefined };
+      case 'tab': return { ...base, type: 'key', value: s.value === 'shift' ? 'Shift+Tab' : 'Tab', target: undefined };
       case 'select': return { ...base, type: 'select', value: s.value };
       case 'check': return { ...base, type: s.checked === false ? 'uncheck' : 'check' };
       case 'click': return { ...base, type: 'click' };

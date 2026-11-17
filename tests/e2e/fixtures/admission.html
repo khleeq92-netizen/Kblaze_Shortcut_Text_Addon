@@ -1,0 +1,36 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>DEMO FYJC Admission — Part 1</title>
+<style>body{font:14px sans-serif;margin:20px} td{padding:4px 8px} #distlist{border:1px solid #999;list-style:none;padding:0;margin:0} #distlist li{padding:3px 6px;cursor:pointer}</style></head>
+<body>
+<h1>FYJC Online Admission — Part 1 (demonstration page for tests)</h1>
+<form id="adm" onsubmit="event.preventDefault()">
+<table id="tbl">
+<tr><td>Name of Candidate <span style="color:red">*</span></td><td><input name="cand_name" id="cand_name" required></td></tr>
+<tr><td>Date of Birth</td><td><input name="dob" id="dob" readonly class="datepicker" placeholder="dd/mm/yyyy"></td></tr>
+<tr><td>Gender</td><td><label><input type="radio" name="gender" value="M"> Male</label> <label><input type="radio" name="gender" value="F"> Female</label></td></tr>
+<tr><td>Category</td><td><select id="category" name="category"><option value="">--Select--</option><option value="1">OPEN</option><option value="2">OBC</option><option value="3">SC</option></select></td></tr>
+<tr><td>Mobile No</td><td><input id="mobile" name="mobile" maxlength="10"></td></tr>
+<tr><td>District</td><td><div role="combobox" id="district" aria-controls="distlist" tabindex="0" style="border:1px solid #999;padding:3px;width:200px">Select district</div><ul id="distlist" role="listbox" hidden><li role="option">Aurangabad</li><li role="option">Jalna</li></ul></td></tr>
+<tr><td>I confirm the details are correct</td><td><input type="checkbox" id="confirm" name="confirm"></td></tr>
+<tr><td>Enter Captcha <img alt="captcha image" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"></td><td><input id="captcha" name="captcha"></td></tr>
+</table>
+<a id="nextlink" href="step2.html?from=part1">Continue to address</a>
+<button type="button" id="savenext" onclick="location.href='step2.html?from=save'">Save &amp; Next</button>
+</form>
+<script>
+  // dynamically generated field: appears 400 ms after a reserved category is chosen
+  document.getElementById('category').addEventListener('change', (e) => {
+    const old = document.getElementById('certrow'); if (old) old.remove();
+    if (!['2', '3'].includes(e.target.value)) return;
+    setTimeout(() => {
+      const tr = document.createElement('tr'); tr.id = 'certrow';
+      tr.innerHTML = '<td>Caste Certificate No</td><td><input id="cert" name="cert"></td>';
+      const ref = document.getElementById('tbl').rows[4];
+      ref.parentNode.insertBefore(tr, ref);
+    }, 400);
+  });
+  const dd = document.getElementById('district'), list = document.getElementById('distlist');
+  dd.addEventListener('click', () => { list.hidden = !list.hidden; });
+  list.querySelectorAll('li').forEach((li) => li.addEventListener('click', () => { dd.textContent = li.textContent; dd.dataset.value = li.textContent; list.hidden = true; }));
+</script>
+</body></html>

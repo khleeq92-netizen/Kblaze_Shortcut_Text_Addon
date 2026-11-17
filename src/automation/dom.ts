@@ -201,7 +201,10 @@ export function isVisible(el: Element): boolean {
   const he = el as HTMLElement;
   if (!he.getBoundingClientRect) return false;
   const r = he.getBoundingClientRect();
-  const st = el.ownerDocument.defaultView?.getComputedStyle(el);
+  const view = el.ownerDocument.defaultView;
+  // detached documents (DOMParser, sandbox dry runs) have no layout: only attributes decide
+  if (!view) return !(el as HTMLElement).hidden && !/display\s*:\s*none|visibility\s*:\s*hidden/i.test(el.getAttribute('style') || '');
+  const st = view.getComputedStyle(el);
   if (st && (st.visibility === 'hidden' || st.display === 'none')) return false;
   // jsdom reports 0x0 for everything – treat as visible unless styled hidden
   if (r.width === 0 && r.height === 0) return !!(he.offsetParent !== null || (el.ownerDocument.defaultView as any)?.navigator?.userAgent?.includes('jsdom'));

@@ -23,6 +23,10 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'content-type': 'text/html', 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'require-corp' });
     res.end(fs.readFileSync(path.join(here, 'fixtures/index.html'))); return;
   }
+  if (req.url.startsWith('/csp.html')) {
+    res.writeHead(200, { 'content-type': 'text/html', 'Content-Security-Policy': "default-src 'self'; script-src 'self'; object-src 'none'" });
+    res.end(fs.readFileSync(path.join(here, 'fixtures/csp.html'))); return;
+  }
   const p = path.join(here, 'fixtures', decodeURIComponent(new URL(req.url, 'http://x').pathname));
   if (!p.startsWith(path.join(here, 'fixtures')) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) {
     const idx = path.join(here, 'fixtures/index.html');
@@ -82,7 +86,7 @@ const testSnippets = [
   S('t_math', ';calc', '{{= 6 * 7}} items on {{today; format=YYYY}}'),
 ];
 await dash.evaluate(async (snips) => {
-  const db = await new Promise((res, rej) => { const r = indexedDB.open('k-flow-db', 1); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  const db = await new Promise((res, rej) => { const r = indexedDB.open('k-flow-db', 2); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
   await new Promise((res) => { const tx = db.transaction('snippets', 'readwrite'); snips.forEach((s) => tx.objectStore('snippets').put(s)); tx.oncomplete = res; });
   await chrome.storage.local.set({ 'kf.revision': { at: Date.now(), collections: ['snippets'] } });
 }, testSnippets);
@@ -118,7 +122,7 @@ console.log(`\nK-Flow Automation E2E (extension ${extId})\n`);
 
 await test('sample data is seeded on install (/ty, /sig, /payment, /trade)', async () => {
   const n = await dash.evaluate(async () => {
-    const db = await new Promise((res) => { const r = indexedDB.open('k-flow-db', 1); r.onsuccess = () => res(r.result); });
+    const db = await new Promise((res) => { const r = indexedDB.open('k-flow-db', 2); r.onsuccess = () => res(r.result); });
     return new Promise((res) => { const q = db.transaction('snippets').objectStore('snippets').getAll(); q.onsuccess = () => res(q.result.map((s) => s.shortcut)); });
   });
   for (const s of ['/ty', '/sig', '/payment', '/trade']) assert(n.includes(s), 'missing ' + s);
@@ -252,20 +256,22 @@ await test('per-site disable list stops expansion', async () => {
   await setSettings({ blockedSites: [] });
   await sleep(400);
 });
-await test('Autopilot: fills by label, selects option, ticks box, asks before submitting', async () => {
+await test('macro: fills by label, Tab to focused field, selects, ticks, asks before submitting', async () => {
   await dash.evaluate(async () => {
-    const wf = { id: 'wf_e2e', name: 'E2E form', enabled: true, createdAt: Date.now(), updatedAt: Date.now(), steps: [
-      { id: 'a', type: 'type', target: { kind: 'label', value: 'Name' }, value: '{{me.name}}', clear: true },
-      { id: 'b', type: 'tab' },
-      { id: 'c', type: 'type', target: { kind: 'focused', value: '' }, value: 'ada@example.com' },
-      { id: 'd', type: 'select', target: { kind: 'label', value: 'Topic' }, value: 'Support' },
-      { id: 'e', type: 'check', target: { kind: 'label', value: 'I agree' }, checked: true },
-      { id: 'f', type: 'click', target: { kind: 'label', value: 'Send message' } },
+    const m = { id: 'mac_e2e', name: 'E2E form', enabled: true, sites: [], tags: [], workspaceId: 'ws_general', createdAt: Date.now(), updatedAt: Date.now(),
+      settings: { stepDelayMs: 50, retries: 0, retryDelayMs: 100, timeoutMs: 4000, onError: 'stop', speed: 1 }, steps: [
+      { id: 'a', type: 'type', target: { by: 'label', value: 'Name' }, value: '{{me.name}}', clear: true },
+      { id: 'b', type: 'key', value: 'Tab' },
+      { id: 'c', type: 'type', value: 'ada@example.com' },
+      { id: 'd', type: 'select', target: { by: 'label', value: 'Topic' }, value: 'Support' },
+      { id: 'e', type: 'check', target: { by: 'label', value: 'I agree' } },
+      { id: 'f', type: 'click', target: { by: 'label', value: 'Send message' } },
     ] };
-    const db = await new Promise((res) => { const r = indexedDB.open('k-flow-db', 1); r.onsuccess = () => res(r.result); });
-    await new Promise((res) => { const tx = db.transaction('workflows', 'readwrite'); tx.objectStore('workflows').put(wf); tx.oncomplete = res; });
+    const db = await new Promise((res) => { const r = indexedDB.open('k-flow-db', 2); r.onsuccess = () => res(r.result); });
+    await new Promise((res) => { const tx = db.transaction('macros', 'readwrite'); tx.objectStore('macros').put(m); tx.oncomplete = res; });
     const [tab] = await chrome.tabs.query({ url: 'http://127.0.0.1/*' });
-    await chrome.tabs.sendMessage(tab.id, { type: 'kf/runWorkflow', id: 'wf_e2e' }, { frameId: 0 });
+    const r = await chrome.runtime.sendMessage({ type: 'kf/macro/start', tabId: tab.id, macroId: 'mac_e2e' });
+    if (!r?.ok) throw new Error(JSON.stringify(r));
   });
   const of = await until(() => page.frames().find((f) => !f.isDetached() && f.url().includes('/overlay/index.html')), 8000, 'confirmation dialog');
   await of.waitForSelector('button:has-text("Approve")');
@@ -278,10 +284,10 @@ await test('Autopilot: fills by label, selects option, ticks box, asks before su
   await until(async () => (await page.$eval('#submitted', (e) => e.textContent)).startsWith('SUBMITTED'), 4000, 'submit');
   eq(await page.$eval('#submitted', (e) => e.textContent), 'SUBMITTED:Test User|ada@example.com|Support');
 });
-await test('Autopilot: cancelling the confirmation stops the workflow', async () => {
-  await sleep(800); // let the previous run finish
-  await page.evaluate(() => { document.getElementById('submitted').textContent = ''; });
-  await dash.evaluate(async () => { const [tab] = await chrome.tabs.query({ url: 'http://127.0.0.1/*' }); await chrome.tabs.sendMessage(tab.id, { type: 'kf/runWorkflow', id: 'wf_e2e' }, { frameId: 0 }); });
+await test('macro: declining the confirmation stops the run (nothing submitted)', async () => {
+  await sleep(800);
+  await page.evaluate(() => { document.getElementById('submitted').textContent = ''; document.querySelectorAll('kf-ui-root').forEach((e) => e.remove()); });
+  await dash.evaluate(async () => { const [tab] = await chrome.tabs.query({ url: 'http://127.0.0.1/*' }); await chrome.runtime.sendMessage({ type: 'kf/macro/start', tabId: tab.id, macroId: 'mac_e2e' }); });
   const of = await until(() => page.frames().find((f) => !f.isDetached() && f.url().includes('/overlay/index.html')), 8000, 'confirmation dialog');
   await of.click('button:has-text("Cancel")');
   await sleep(500);
@@ -312,7 +318,7 @@ await test('dashboard: live preview renders the form + output', async () => {
 await test('dashboard: every main view renders without errors', async () => {
   const errors = [];
   dash.on('pageerror', (e) => errors.push(e.message));
-  for (const r of ['/snippets', '/favorites', '/recent', '/templates', '/data', '/data/tbl_customers', '/autopilot', '/autopilot/wf_contact_form', '/marketplace', '/stats', '/settings', '/settings?tab=expansion', '/settings?tab=cloud', '/settings?tab=backup', '/settings?tab=plan', '/settings?tab=syntax', '/welcome', '/search?q=thank']) {
+  for (const r of ['/overview', '/snippets', '/favorites', '/recent', '/templates', '/data', '/data/tbl_col_students', '/data/tbl_gen_customers', '/autofill', '/autofill/afp_fyjc', '/macros', '/macros/mac_col_batch', '/scripts', '/scripts/scr_col_fields', '/variables', '/vault', '/builder', '/history', '/audit', '/org', '/workspaces', '/backup', '/marketplace', '/stats', '/settings', '/settings?tab=automation', '/settings?tab=security', '/settings?tab=ai', '/settings?tab=expansion', '/settings?tab=cloud', '/settings?tab=backup', '/settings?tab=plan', '/settings?tab=syntax', '/welcome', '/search?q=thank']) {
     await dash.goto(ext('dashboard/index.html#' + r));
     await dash.waitForSelector('.main >> *', { timeout: 4000 });
     await sleep(120);
@@ -365,6 +371,9 @@ await test('WhatsApp-style isolated page: plain snippet + assistant popup window
 await test('side panel: lists snippets, fills a gold signal form inline, live preview computes pips', async () => {
   const sp = await ctx.newPage();
   await sp.goto(ext('sidepanel/index.html'));
+  await sp.waitForSelector('.sp-ws');
+  await sp.selectOption('.sp-ws', 'ws_trading'); // trading templates live in the Trading workspace
+  await sp.click('.sp-tabs button:has-text("Snippets")');
   await sp.waitForSelector('.sp-item');
   await sp.fill('.sp-filter input', 'Trading update');
   await sp.click('.sp-item-head');
@@ -374,6 +383,7 @@ await test('side panel: lists snippets, fills a gold signal form inline, live pr
   await nums.nth(1).fill('3790');
   await nums.nth(2).fill('3830');
   await until(async () => (await sp.textContent('.sp-open .preview-box')).includes('Risk/Reward: 1 : 3'), 3000, 'preview');
+  await sp.selectOption('.sp-ws', 'ws_general');
   await sp.close();
 });
 await test('side panel insert path: rendered text is inserted into the focused field', async () => {
@@ -398,16 +408,20 @@ await test('templates: "Add all" creates a category folder with its snippets', a
   await dash.goto(ext('dashboard/index.html#/templates'));
   await dash.click('.cat-bar button:has-text("Trade signals")');
   await dash.click('button:has-text("Add all")');
-  await dash.waitForSelector('text=Added');
-  await until(async () => (await dash.$$('.snip')).length >= 3, 3000, 'folder list');
+  // the Trading workspace preset already installed these templates, so nothing is duplicated
+  await dash.waitForSelector('text=already in your snippets');
 });
 await test('popup renders snippet list', async () => {
   const p = await ctx.newPage();
   await p.goto(ext('popup/index.html'));
+  await p.click('.tabs button:has-text("Snippets")');
   await p.waitForSelector('.list li');
   assert((await p.$$('.list li')).length > 3, 'few rows');
   await p.close();
 });
+
+const { automationTests } = await import('./automation.mjs');
+await automationTests({ test, ctx, dash, ext, origin: new URL(base).origin, sleep, until, eq, assert });
 
 const passed = results.filter((r) => r.ok).length;
 console.log(`\n${passed}/${results.length} passed`);

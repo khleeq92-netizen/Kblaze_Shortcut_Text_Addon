@@ -1,0 +1,12 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>DEMO FYJC Admission — Part 2</title></head>
+<body>
+<h1>Part 2 — Address (demonstration page)</h1>
+<form id="f2" onsubmit="event.preventDefault(); document.getElementById('done').textContent = 'SUBMITTED:' + document.getElementById('addr').value + '|' + document.getElementById('pincode').value">
+  <p><label for="addr">Residential Address</label><br><textarea id="addr" name="addr"></textarea></p>
+  <p><label for="pincode">Pincode</label> <input id="pincode" name="pincode"></p>
+  <p><label for="portal_pw">Portal Password</label> <input type="password" id="portal_pw" name="portal_pw"></p>
+  <button type="submit" id="final">Final Submit</button>
+</form>
+<div id="done"></div>
+</body></html>
